@@ -3,13 +3,14 @@ import 'package:alcancia_movil/views/avanzados.dart';
 import 'package:alcancia_movil/views/estadisticos.dart';
 import 'package:alcancia_movil/views/metas.dart';
 import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+// import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 import 'ajustes.dart';
 
 class pantallaPrincipal extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
+    final logo = 'lib/assets/images/logo.png';
     return Scaffold(
       appBar: AppBar(),
       drawer: Drawer(
@@ -20,12 +21,11 @@ class pantallaPrincipal extends StatelessWidget {
                 child: Column(
               children: [
                 Container(
-                  child: Icon(
-                    FontAwesomeIcons.piggyBank,
-                    size: 90,
-                    color: Colors.pinkAccent,
-                  ),
-                ),
+                    child: Image.asset(
+                  logo,
+                  width: 120,
+                  height: 95,
+                )),
                 Container(
                   child: Text("PocketMetrics",
                       style: TextStyle(
@@ -107,12 +107,11 @@ class pantallaPrincipal extends StatelessWidget {
               child: Column(
                 children: [
                   Container(
-                    child: Icon(
-                      FontAwesomeIcons.piggyBank,
-                      size: 100,
-                      color: Colors.pinkAccent,
-                    ),
-                  ),
+                      child: Image.asset(
+                    logo,
+                    width: 150,
+                    height: 130,
+                  )),
                   Container(
                     child: Text("PocketMetrics",
                         style: TextStyle(
