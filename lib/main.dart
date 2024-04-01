@@ -1,3 +1,4 @@
+import 'package:alcancia_movil/views/alcancia.dart';
 import 'package:alcancia_movil/views/pantallaPrincipal.dart';
 import 'package:flutter/material.dart';
 
@@ -14,7 +15,9 @@ class MainApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       home: Scaffold(
         body: Center(
-          child: pantallaPrincipal(),
+          child: pantallaPrincipal(
+            valorTotalAhorrado: alcancia().valorTotalAhorrado,
+          ),
         ),
       ),
     );

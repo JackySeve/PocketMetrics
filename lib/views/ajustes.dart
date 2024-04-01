@@ -1,15 +1,13 @@
+import 'package:alcancia_movil/views/widgets/menuDesplegablePrincipal.dart';
 import 'package:flutter/material.dart';
 
 class ajustes extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
+    final logo = 'lib/assets/images/logo.png';
     return Scaffold(
-      appBar: AppBar(
-        title: Text('Ajustes'),
-      ),
-      body: Center(
-        child: Text('Esta es la pantalla de los ajustes'),
-      ),
+      appBar: AppBar(),
+      drawer: menuDesplegablePrincipal(logo, context),
     );
   }
 }
