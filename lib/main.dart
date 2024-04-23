@@ -16,7 +16,7 @@ class MainApp extends StatelessWidget {
       home: Scaffold(
         body: Center(
           child: pantallaPrincipal(
-            valorTotalAhorrado: alcancia().valorTotalAhorrado,
+            valorTotalAhorrado: const alcancia().valorTotalAhorrado,
           ),
         ),
       ),

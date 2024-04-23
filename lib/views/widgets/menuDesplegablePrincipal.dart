@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:alcancia_movil/views/ajustes.dart';
 import 'package:alcancia_movil/views/alcancia.dart';
 import 'package:alcancia_movil/views/avanzados.dart';
@@ -6,16 +8,18 @@ import 'package:alcancia_movil/views/historial.dart';
 import 'package:alcancia_movil/views/metas.dart';
 import 'package:alcancia_movil/views/pantallaPrincipal.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter/widgets.dart';
 
-Container menuDesplegablePrincipal(String logo, BuildContext context) {
-  return Container(
+SizedBox menuDesplegablePrincipal(String logo, BuildContext context) {
+  return SizedBox(
       width: 220,
       child: Drawer(
         child: ListView(
           padding: EdgeInsets.zero,
           children: [
             SizedBox(
-                height: 185.0,
+                height: 200.0,
                 child: DrawerHeader(
                     child: Column(
                   children: [
@@ -26,7 +30,7 @@ Container menuDesplegablePrincipal(String logo, BuildContext context) {
                       height: 85,
                     )),
                     Container(
-                      child: Text("PocketMetrics",
+                      child: const Text("PocketMetrics",
                           style: TextStyle(
                               color: Colors.green,
                               fontSize: 26,
@@ -34,160 +38,197 @@ Container menuDesplegablePrincipal(String logo, BuildContext context) {
                     ),
                   ],
                 ))),
-            ListTile(
-              contentPadding: EdgeInsets.only(left: 30),
-              leading: Icon(
-                Icons.apps,
-                color: Color.fromRGBO(16, 162, 31, 1),
-                size: 40,
+            Container(
+              decoration:
+                  BoxDecoration(color: Color.fromARGB(255, 226, 225, 225)),
+              child: ListTile(
+                contentPadding: const EdgeInsets.only(left: 30),
+                leading: const Icon(
+                  Icons.apps,
+                  color: Color.fromRGBO(16, 162, 31, 1),
+                  size: 40,
+                ),
+                title: const Text(
+                  "Inicio",
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                ),
+                onTap: () {
+                  Navigator.pop(context);
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => pantallaPrincipal(
+                              valorTotalAhorrado:
+                                  const alcancia().valorTotalAhorrado,
+                            )),
+                  );
+                },
               ),
-              title: Text(
-                "Inicio",
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-              ),
-              onTap: () {
-                Navigator.pop(context);
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                      builder: (context) => pantallaPrincipal(
-                            valorTotalAhorrado: alcancia().valorTotalAhorrado,
-                          )),
-                );
-              },
             ),
-            ListTile(
-              contentPadding: EdgeInsets.only(left: 30),
-              leading: Icon(
-                Icons.account_balance,
-                color: Color.fromRGBO(16, 162, 31, 1),
-                size: 40,
+            const SizedBox(height: 5),
+            Container(
+              decoration:
+                  BoxDecoration(color: Color.fromARGB(255, 226, 225, 225)),
+              child: ListTile(
+                contentPadding: const EdgeInsets.only(left: 30),
+                leading: const Icon(
+                  Icons.account_balance,
+                  color: Color.fromRGBO(16, 162, 31, 1),
+                  size: 40,
+                ),
+                title: const Text(
+                  "Alcancía",
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                ),
+                onTap: () {
+                  Navigator.pop(context);
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const alcancia()),
+                  );
+                },
               ),
-              title: Text(
-                "Alcancía",
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-              ),
-              onTap: () {
-                Navigator.pop(context);
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => alcancia()),
-                );
-              },
             ),
-            ListTile(
-              contentPadding: EdgeInsets.only(left: 30),
-              leading: Icon(
-                Icons.history,
-                color: Color.fromRGBO(16, 162, 31, 1),
-                size: 40,
+            const SizedBox(height: 5),
+            Container(
+              decoration:
+                  BoxDecoration(color: Color.fromARGB(255, 226, 225, 225)),
+              child: ListTile(
+                contentPadding: const EdgeInsets.only(left: 30),
+                leading: const Icon(
+                  Icons.history,
+                  color: Color.fromRGBO(16, 162, 31, 1),
+                  size: 40,
+                ),
+                title: const Text(
+                  'Historial de Movimientos',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                ),
+                onTap: () {
+                  Navigator.pop(context);
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const historial()),
+                  );
+                },
               ),
-              title: Text(
-                'Historial de Movimientos',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-              ),
-              onTap: () {
-                Navigator.pop(context);
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => historial()),
-                );
-              },
             ),
-            ListTile(
-              contentPadding: EdgeInsets.only(left: 30),
-              leading: Icon(
-                Icons.equalizer,
-                color: Color.fromRGBO(16, 162, 31, 1),
-                size: 40,
+            const SizedBox(height: 5),
+            Container(
+              decoration:
+                  BoxDecoration(color: Color.fromARGB(255, 226, 225, 225)),
+              child: ListTile(
+                contentPadding: const EdgeInsets.only(left: 30),
+                leading: const Icon(
+                  Icons.equalizer,
+                  color: Color.fromRGBO(16, 162, 31, 1),
+                  size: 40,
+                ),
+                title: const Text(
+                  "Estadísticos",
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                ),
+                onTap: () {
+                  Navigator.pop(context);
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => const estadisticos()),
+                  );
+                },
               ),
-              title: Text(
-                "Estadísticos",
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-              ),
-              onTap: () {
-                Navigator.pop(context);
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => estadisticos()),
-                );
-              },
             ),
-            ListTile(
-              contentPadding: EdgeInsets.only(left: 30),
-              leading: Icon(
-                Icons.trending_up,
-                color: Color.fromRGBO(16, 162, 31, 1),
-                size: 40,
+            const SizedBox(height: 5),
+            Container(
+              decoration:
+                  BoxDecoration(color: Color.fromARGB(255, 226, 225, 225)),
+              child: ListTile(
+                contentPadding: const EdgeInsets.only(left: 30),
+                leading: const Icon(
+                  Icons.trending_up,
+                  color: Color.fromRGBO(16, 162, 31, 1),
+                  size: 40,
+                ),
+                title: const Text(
+                  "Avanzados",
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                ),
+                onTap: () {
+                  Navigator.pop(context);
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const avanzados()),
+                  );
+                },
               ),
-              title: Text(
-                "Avanzados",
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-              ),
-              onTap: () {
-                Navigator.pop(context);
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => avanzados()),
-                );
-              },
             ),
-            ListTile(
-              contentPadding: EdgeInsets.only(left: 30),
-              leading: Icon(
-                Icons.flag,
-                color: Color.fromRGBO(16, 162, 31, 1),
-                size: 40,
+            const SizedBox(height: 5),
+            Container(
+              decoration:
+                  BoxDecoration(color: Color.fromARGB(255, 226, 225, 225)),
+              child: ListTile(
+                contentPadding: const EdgeInsets.only(left: 30),
+                leading: const Icon(
+                  Icons.flag,
+                  color: Color.fromRGBO(16, 162, 31, 1),
+                  size: 40,
+                ),
+                title: const Text(
+                  "Metas",
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                ),
+                onTap: () {
+                  Navigator.pop(context);
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const metas()),
+                  );
+                },
               ),
-              title: Text(
-                "Metas",
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-              ),
-              onTap: () {
-                Navigator.pop(context);
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => metas()),
-                );
-              },
             ),
-            ListTile(
-              contentPadding: EdgeInsets.only(left: 30),
-              leading: Icon(
-                Icons.settings,
-                color: Color.fromRGBO(16, 162, 31, 1),
-                size: 40,
+            const SizedBox(height: 5),
+            Container(
+              decoration:
+                  BoxDecoration(color: Color.fromARGB(255, 226, 225, 225)),
+              child: ListTile(
+                contentPadding: const EdgeInsets.only(left: 30),
+                leading: const Icon(
+                  Icons.settings,
+                  color: Color.fromRGBO(16, 162, 31, 1),
+                  size: 40,
+                ),
+                title: const Text(
+                  "Ajustes",
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                ),
+                onTap: () {
+                  Navigator.pop(context);
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const ajustes()),
+                  );
+                },
               ),
-              title: Text(
-                "Ajustes",
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-              ),
-              onTap: () {
-                Navigator.pop(context);
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => ajustes()),
-                );
-              },
             ),
-            ListTile(
-              contentPadding: EdgeInsets.only(left: 30),
-              leading: Icon(
-                Icons.input,
-                color: Color.fromRGBO(16, 162, 31, 1),
-                size: 40,
+            const SizedBox(height: 5),
+            Container(
+              decoration:
+                  BoxDecoration(color: Color.fromARGB(255, 226, 225, 225)),
+              child: ListTile(
+                contentPadding: const EdgeInsets.only(left: 30),
+                leading: const Icon(
+                  Icons.input,
+                  color: Color.fromRGBO(16, 162, 31, 1),
+                  size: 40,
+                ),
+                title: const Text(
+                  "Cerrar Sesión",
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                ),
+                onTap: () {
+                  SystemNavigator.pop();
+                },
               ),
-              title: Text(
-                "Cerrar Sesión",
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-              ),
-              onTap: () {
-                Navigator.pop(context);
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => ajustes()),
-                );
-              },
             ),
           ],
         ),

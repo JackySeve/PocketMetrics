@@ -6,11 +6,11 @@ import 'package:flutter/material.dart';
 class pantallaPrincipal extends StatelessWidget {
   final int valorTotalAhorrado;
 
-  pantallaPrincipal({required this.valorTotalAhorrado});
+  const pantallaPrincipal({super.key, required this.valorTotalAhorrado});
 
   @override
   Widget build(BuildContext context) {
-    final logo = 'lib/assets/images/logo.png';
+    const logo = 'lib/assets/images/logo.png';
     return Scaffold(
         appBar: AppBar(),
         drawer: menuDesplegablePrincipal(logo, context),
@@ -18,7 +18,7 @@ class pantallaPrincipal extends StatelessWidget {
           child: Container(
             child: Column(
               children: [
-                SizedBox(height: 20),
+                const SizedBox(height: 20),
                 Column(
                   children: [
                     Container(
@@ -28,14 +28,14 @@ class pantallaPrincipal extends StatelessWidget {
                       height: 130,
                     )),
                     Container(
-                      child: Text("PocketMetrics",
+                      child: const Text("PocketMetrics",
                           style: TextStyle(
                               color: Colors.green,
                               fontSize: 30,
                               fontWeight: FontWeight.bold)),
                     ),
                     Container(
-                      child: Text(
+                      child: const Text(
                         "Tu Analizador de Ahorros en el Bolsillo",
                         style: TextStyle(
                             fontSize: 16, fontWeight: FontWeight.w100),
@@ -43,7 +43,7 @@ class pantallaPrincipal extends StatelessWidget {
                     )
                   ],
                 ),
-                SizedBox(height: 30),
+                const SizedBox(height: 30),
                 Container(
                   child: Center(
                     child: Row(
@@ -55,38 +55,39 @@ class pantallaPrincipal extends StatelessWidget {
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                  builder: (context) => alcancia()),
+                                  builder: (context) => const alcancia()),
                             );
                           },
-                          child: Text('Alcancía'),
+                          child: const Text('Alcancía'),
                         ),
-                        SizedBox(width: 20),
+                        const SizedBox(width: 20),
                         ElevatedButton(
                           onPressed: () {
                             Navigator.pop(context);
                             Navigator.push(
                               context,
-                              MaterialPageRoute(builder: (context) => metas()),
+                              MaterialPageRoute(
+                                  builder: (context) => const metas()),
                             );
                           },
-                          child: Text('Metas'),
+                          child: const Text('Metas'),
                         ),
                       ],
                     ),
                   ),
                 ),
-                SizedBox(height: 30),
+                const SizedBox(height: 30),
                 Column(
                   children: [
                     Container(
-                      child: Text("Total Ahorrado",
+                      child: const Text("Total Ahorrado",
                           style: TextStyle(
                               fontSize: 18, fontWeight: FontWeight.bold)),
                     ),
                     Container(
                       child: Text(
                         "\$ " "$valorTotalAhorrado",
-                        style: TextStyle(
+                        style: const TextStyle(
                             fontSize: 18, fontWeight: FontWeight.bold),
                       ),
                     )
