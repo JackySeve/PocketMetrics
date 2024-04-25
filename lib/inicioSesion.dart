@@ -38,7 +38,61 @@ class _SecondPageState extends State<SecondPage> {
             const Text(
               "¡Hola! Es bueno verte de nuevo.",
               style: TextStyle(fontSize: 15, color: Colors.grey),
-            )
+            ),
+            Form(
+                child: Column(
+              children: [
+                SizedBox(
+                  width: 350,
+                  child: TextFormField(
+                    decoration: InputDecoration(
+                        label: Text(
+                      "Correo o Usuario",
+                      style: TextStyle(color: Colors.green),
+                    )),
+                  ),
+                ),
+                const Text(""),
+                SizedBox(
+                  width: 350,
+                  child: TextFormField(
+                    obscureText: true,
+                    decoration: InputDecoration(
+                        label: Text(
+                      "Contraseña",
+                      style: TextStyle(color: Colors.green),
+                    )),
+                  ),
+                ),
+                const Text(" "),
+                ElevatedButton(
+                    style: ButtonStyle(
+                        backgroundColor:
+                            MaterialStateProperty.all<Color>(Colors.green),
+                        shape:
+                            MaterialStateProperty.all<RoundedRectangleBorder>(
+                          RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                        )),
+                    onPressed: () {},
+                    child: const Text(
+                      "Iniciar Sesion",
+                      style: TextStyle(color: Colors.white, fontSize: 15),
+                    )),
+                const Text(" "),
+                Text(
+                  "¿Aun no estas registrado?",
+                  style: TextStyle(color: Colors.grey),
+                ),
+                TextButton(
+                    onPressed: () {},
+                    child: const Text(
+                      "Registrate",
+                      style: TextStyle(color: Colors.green),
+                    ))
+              ],
+            ))
           ],
         ),
       ),
