@@ -16,7 +16,7 @@
 //       home: Scaffold(
 //         body: Center(
 //           child: pantallaPrincipal(
-//             valorTotalAhorrado: alcancia().valorTotalAhorrado,
+//              
 //           ),
 //         ),
 
@@ -25,6 +25,7 @@
 //   }
 // }
 import 'package:flutter/material.dart';
+import 'inicioSesion.dart';
 
 void main() {
   runApp(const MainApp());
@@ -52,7 +53,7 @@ class _MainAppState extends State<MainApp> {
                 width: 200,
                 child: const Image(
                     image: NetworkImage(
-                        'https://github.com/JackySeve/Alcancia-Movil/blob/main/lib/assets/images/logo.png?raw=true')),
+                        'https://raw.githubusercontent.com/JackySeve/Alcancia-Movil/main/lib/assets/images/logo.png')),
               ),
               const Text(
                 "PocketMetrics",
@@ -68,26 +69,7 @@ class _MainAppState extends State<MainApp> {
                     TextStyle(fontFamily: 'Asap', fontWeight: FontWeight.bold),
               ),
               const Text(" "),
-              ElevatedButton(
-                style: ButtonStyle(
-                  backgroundColor:
-                      MaterialStateProperty.all<Color>(Colors.green),
-                  shape: MaterialStateProperty.all<RoundedRectangleBorder>(
-                    RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                  ),
-                ),
-                onPressed: () {
-                  setState(() {
-                    print("PRESIONO EL BTN INICIAR SESION");
-                  });
-                },
-                child: const Text(
-                  'Iniciar Sesión',
-                  style: TextStyle(color: Colors.white),
-                ),
-              ),
+              NewWidget(),
               const Text(" "),
               const Text(
                 "¿Eres nuevo? Unete e inicia una nueva forma",
@@ -121,6 +103,36 @@ class _MainAppState extends State<MainApp> {
             ],
           ),
         ),
+      ),
+    );
+  }
+}
+
+class NewWidget extends StatelessWidget {
+  const NewWidget({
+    Key? key, 
+  }) : super(key: key); 
+
+  @override
+  Widget build(BuildContext context) {
+    return ElevatedButton(
+      style: ButtonStyle(
+        backgroundColor: MaterialStateProperty.all<Color>(Colors.green),
+        shape: MaterialStateProperty.all<RoundedRectangleBorder>(
+          RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10),
+          ),
+        ),
+      ),
+      onPressed: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => SecondPage()),
+        );
+      },
+      child: const Text(
+        'Iniciar Sesión',
+        style: TextStyle(color: Colors.white),
       ),
     );
   }
