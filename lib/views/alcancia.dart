@@ -112,7 +112,7 @@ class Alcancia extends StatelessWidget {
                           final esIngreso = false;
                           final monto = billete.valor.toDouble();
                           alcanciaProvider.agregarTransaccion(monto, esIngreso);
-                          alcanciaProvider.actualizarCantidadMoneda(
+                          alcanciaProvider.actualizarCantidadBillete(
                               index, billete.cantidad - 1);
                         }
                       },
