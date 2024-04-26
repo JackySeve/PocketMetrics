@@ -1,99 +1,28 @@
+import 'package:alcancia_movil/providers/alcancia_provider.dart';
 import 'package:alcancia_movil/views/widgets/menuDesplegablePrincipal.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
-class alcancia extends StatefulWidget {
-  const alcancia({super.key});
-
-  @override
-  State<alcancia> createState() => _alcanciaState();
-
-  int get valorTotalAhorrado => _alcanciaState().totalAhorrado;
-}
-
-class Moneda {
-  final int valor;
-  int cantidad;
-
-  Moneda(this.valor, {this.cantidad = 0});
-
-  int get total => valor * cantidad;
-}
-
-class Billete {
-  final int valor;
-  int cantidad;
-
-  Billete(this.valor, {this.cantidad = 0});
-
-  int get total => valor * cantidad;
-}
-
-class alcanciaState extends StatefulWidget {
-  @override
-  _alcanciaState createState() => _alcanciaState();
-}
-
-class _alcanciaState extends State<alcancia> {
-  List<Moneda> monedas = [
-    Moneda(50),
-    Moneda(100),
-    Moneda(200),
-    Moneda(500),
-    Moneda(1000),
-  ];
-
-  List<Billete> billetes = [
-    Billete(1000),
-    Billete(2000),
-    Billete(5000),
-    Billete(10000),
-    Billete(20000),
-    Billete(50000),
-    Billete(100000),
-  ];
-
-  int get totalAhorrado {
-    int total = 0;
-    for (var moneda in monedas) {
-      total += moneda.total;
-    }
-    for (var billete in billetes) {
-      total += billete.total;
-    }
-    return total;
-  }
-
-  int get totalAhorradoMonedas {
-    int total = 0;
-    for (var moneda in monedas) {
-      total += moneda.total;
-    }
-    return total;
-  }
-
-  int get totalAhorradoBilletes {
-    int total = 0;
-    for (var billete in billetes) {
-      total += billete.total;
-    }
-    return total;
-  }
+class Alcancia extends StatelessWidget {
+  const Alcancia({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final alcanciaProvider = context.watch<AlcanciaProvider>();
     const logo = 'lib/assets/images/logo.png';
+
     return Scaffold(
       appBar: AppBar(
         centerTitle: true,
-        title: Text('Ahorros'),
+        title: const Text('Ahorros'),
       ),
       drawer: menuDesplegablePrincipal(logo, context),
       body: Center(
         child: Column(
           children: [
             const SizedBox(height: 20),
-            Text('Monedas:'),
-            SizedBox(height: 10),
+            const Text('Monedas:'),
+            const SizedBox(height: 10),
             const Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
@@ -105,28 +34,34 @@ class _alcanciaState extends State<alcancia> {
               ],
             ),
             Column(
-              children: monedas.map((moneda) {
+              children: alcanciaProvider.monedas.asMap().entries.map((entry) {
+                final index = entry.key;
+                final moneda = entry.value;
                 return Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Text('${moneda.valor}'),
                     IconButton(
-                      icon: Icon(Icons.add),
+                      icon: const Icon(Icons.add),
                       onPressed: () {
-                        setState(() {
-                          moneda.cantidad++;
-                        });
+                        final esIngreso = true;
+                        final monto = moneda.valor.toDouble();
+                        alcanciaProvider.agregarTransaccion(monto, esIngreso);
+                        alcanciaProvider.actualizarCantidadMoneda(
+                            index, moneda.cantidad + 1);
                       },
                     ),
                     Text("${moneda.cantidad}"),
                     IconButton(
-                      icon: Icon(Icons.remove),
+                      icon: const Icon(Icons.remove),
                       onPressed: () {
-                        setState(() {
-                          if (moneda.cantidad > 0) {
-                            moneda.cantidad--;
-                          }
-                        });
+                        if (moneda.cantidad > 0) {
+                          final esIngreso = false;
+                          final monto = moneda.valor.toDouble();
+                          alcanciaProvider.agregarTransaccion(monto, esIngreso);
+                          alcanciaProvider.actualizarCantidadMoneda(
+                              index, moneda.cantidad - 1);
+                        }
                       },
                     ),
                     Text("\$ ${moneda.valor * moneda.cantidad}")
@@ -134,11 +69,13 @@ class _alcanciaState extends State<alcancia> {
                 );
               }).toList(),
             ),
-            Text('Total Ahorrado (Monedas): \$ $totalAhorradoMonedas',
-                style: TextStyle(color: Colors.red)),
-            SizedBox(height: 20),
-            Text('Billetes:'),
-            SizedBox(height: 10),
+            Text(
+              'Total Ahorrado (Monedas): \$ ${alcanciaProvider.totalAhorradoMonedas}',
+              style: const TextStyle(color: Colors.red),
+            ),
+            const SizedBox(height: 20),
+            const Text('Billetes:'),
+            const SizedBox(height: 10),
             const Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
@@ -150,28 +87,34 @@ class _alcanciaState extends State<alcancia> {
               ],
             ),
             Column(
-              children: billetes.map((billete) {
+              children: alcanciaProvider.billetes.asMap().entries.map((entry) {
+                final index = entry.key;
+                final billete = entry.value;
                 return Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Text('${billete.valor}'),
                     IconButton(
-                      icon: Icon(Icons.add),
+                      icon: const Icon(Icons.add),
                       onPressed: () {
-                        setState(() {
-                          billete.cantidad++;
-                        });
+                        final esIngreso = true;
+                        final monto = billete.valor.toDouble();
+                        alcanciaProvider.agregarTransaccion(monto, esIngreso);
+                        alcanciaProvider.actualizarCantidadBillete(
+                            index, billete.cantidad + 1);
                       },
                     ),
                     Text("${billete.cantidad}"),
                     IconButton(
-                      icon: Icon(Icons.remove),
+                      icon: const Icon(Icons.remove),
                       onPressed: () {
-                        setState(() {
-                          if (billete.cantidad > 0) {
-                            billete.cantidad--;
-                          }
-                        });
+                        if (billete.cantidad > 0) {
+                          final esIngreso = false;
+                          final monto = billete.valor.toDouble();
+                          alcanciaProvider.agregarTransaccion(monto, esIngreso);
+                          alcanciaProvider.actualizarCantidadMoneda(
+                              index, billete.cantidad - 1);
+                        }
                       },
                     ),
                     Text("\$ ${billete.valor * billete.cantidad}")
@@ -179,12 +122,14 @@ class _alcanciaState extends State<alcancia> {
                 );
               }).toList(),
             ),
-            Text('Total Ahorrado (Billetes): \$ $totalAhorradoBilletes',
-                style: TextStyle(color: Colors.red)),
+            Text(
+              'Total Ahorrado (Billetes): \$ ${alcanciaProvider.totalAhorradoBilletes}',
+              style: const TextStyle(color: Colors.red),
+            ),
             const SizedBox(height: 20),
             Text(
-              "Total Ahorrado: ${totalAhorrado}",
-              style: TextStyle(fontWeight: FontWeight.w900),
+              "Total Ahorrado: ${alcanciaProvider.totalAhorrado}",
+              style: const TextStyle(fontWeight: FontWeight.w900),
             ),
           ],
         ),

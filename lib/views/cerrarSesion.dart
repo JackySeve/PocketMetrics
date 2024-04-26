@@ -1,8 +1,8 @@
 import 'package:alcancia_movil/views/widgets/menuDesplegablePrincipal.dart';
 import 'package:flutter/material.dart';
 
-class Metas extends StatelessWidget {
-  const Metas({super.key});
+class CerrarSesion extends StatelessWidget {
+  const CerrarSesion({super.key});
 
   @override
   Widget build(BuildContext context) {

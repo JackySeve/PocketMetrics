@@ -1,9 +1,15 @@
-import 'package:alcancia_movil/views/alcancia.dart';
-import 'package:alcancia_movil/views/pantallaPrincipal.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:alcancia_movil/providers/alcancia_provider.dart';
+import 'package:alcancia_movil/views/pantallaPrincipal.dart';
 
 void main() {
-  runApp(const MainApp());
+  runApp(
+    ChangeNotifierProvider(
+      create: (_) => AlcanciaProvider(),
+      child: const MainApp(),
+    ),
+  );
 }
 
 class MainApp extends StatelessWidget {
@@ -11,13 +17,11 @@ class MainApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    return const MaterialApp(
       debugShowCheckedModeBanner: false,
       home: Scaffold(
         body: Center(
-          child: pantallaPrincipal(
-            valorTotalAhorrado: const alcancia().valorTotalAhorrado,
-          ),
+          child: PantallaPrincipal(),
         ),
       ),
     );

@@ -2,15 +2,18 @@ import 'package:alcancia_movil/views/alcancia.dart';
 import 'package:alcancia_movil/views/metas.dart';
 import 'package:alcancia_movil/views/widgets/menuDesplegablePrincipal.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
-class pantallaPrincipal extends StatelessWidget {
-  final int valorTotalAhorrado;
+import '../providers/alcancia_provider.dart';
 
-  const pantallaPrincipal({super.key, required this.valorTotalAhorrado});
+class PantallaPrincipal extends StatelessWidget {
+  const PantallaPrincipal({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final alcanciaProvider = context.watch<AlcanciaProvider>();
     const logo = 'lib/assets/images/logo.png';
+
     return Scaffold(
         appBar: AppBar(),
         drawer: menuDesplegablePrincipal(logo, context),
@@ -55,7 +58,7 @@ class pantallaPrincipal extends StatelessWidget {
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                  builder: (context) => const alcancia()),
+                                  builder: (context) => const Alcancia()),
                             );
                           },
                           child: const Text('Alcancía'),
@@ -67,7 +70,7 @@ class pantallaPrincipal extends StatelessWidget {
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                  builder: (context) => const metas()),
+                                  builder: (context) => const Metas()),
                             );
                           },
                           child: const Text('Metas'),
@@ -80,17 +83,23 @@ class pantallaPrincipal extends StatelessWidget {
                 Column(
                   children: [
                     Container(
-                      child: const Text("Total Ahorrado",
-                          style: TextStyle(
-                              fontSize: 18, fontWeight: FontWeight.bold)),
+                      child: const Text(
+                        "Total Ahorrado",
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
                     ),
                     Container(
                       child: Text(
-                        "\$ " "$valorTotalAhorrado",
+                        "\$ ${alcanciaProvider.montoTotalAhorrado}",
                         style: const TextStyle(
-                            fontSize: 18, fontWeight: FontWeight.bold),
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
-                    )
+                    ),
                   ],
                 )
               ],

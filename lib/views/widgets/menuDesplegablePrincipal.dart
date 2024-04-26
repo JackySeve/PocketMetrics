@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:alcancia_movil/views/ajustes.dart';
 import 'package:alcancia_movil/views/alcancia.dart';
 import 'package:alcancia_movil/views/avanzados.dart';
@@ -9,228 +7,107 @@ import 'package:alcancia_movil/views/metas.dart';
 import 'package:alcancia_movil/views/pantallaPrincipal.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter/widgets.dart';
+
+import '../cerrarSesion.dart';
 
 SizedBox menuDesplegablePrincipal(String logo, BuildContext context) {
   return SizedBox(
-      width: 220,
-      child: Drawer(
-        child: ListView(
-          padding: EdgeInsets.zero,
-          children: [
-            SizedBox(
-                height: 200.0,
-                child: DrawerHeader(
-                    child: Column(
-                  children: [
-                    Container(
-                        child: Image.asset(
+    width: 220,
+    child: Drawer(
+      child: ListView(
+        padding: EdgeInsets.zero,
+        children: [
+          SizedBox(
+            height: 200.0,
+            child: DrawerHeader(
+              child: Column(
+                children: [
+                  Container(
+                    child: Image.asset(
                       logo,
                       width: 100,
                       height: 85,
-                    )),
-                    Container(
-                      child: const Text("PocketMetrics",
-                          style: TextStyle(
-                              color: Colors.green,
-                              fontSize: 26,
-                              fontWeight: FontWeight.bold)),
                     ),
-                  ],
-                ))),
-            Container(
-              decoration:
-                  BoxDecoration(color: Color.fromARGB(255, 226, 225, 225)),
-              child: ListTile(
-                contentPadding: const EdgeInsets.only(left: 30),
-                leading: const Icon(
-                  Icons.apps,
-                  color: Color.fromRGBO(16, 162, 31, 1),
-                  size: 40,
-                ),
-                title: const Text(
-                  "Inicio",
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                ),
-                onTap: () {
-                  Navigator.pop(context);
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) => pantallaPrincipal(
-                              valorTotalAhorrado:
-                                  const alcancia().valorTotalAhorrado,
-                            )),
-                  );
-                },
+                  ),
+                  Container(
+                    child: const Text(
+                      "PocketMetrics",
+                      style: TextStyle(
+                        color: Colors.green,
+                        fontSize: 26,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
-            const SizedBox(height: 5),
-            Container(
-              decoration:
-                  BoxDecoration(color: Color.fromARGB(255, 226, 225, 225)),
-              child: ListTile(
-                contentPadding: const EdgeInsets.only(left: 30),
-                leading: const Icon(
-                  Icons.account_balance,
-                  color: Color.fromRGBO(16, 162, 31, 1),
-                  size: 40,
-                ),
-                title: const Text(
-                  "Alcancía",
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                ),
-                onTap: () {
-                  Navigator.pop(context);
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => const alcancia()),
-                  );
-                },
-              ),
-            ),
-            const SizedBox(height: 5),
-            Container(
-              decoration:
-                  BoxDecoration(color: Color.fromARGB(255, 226, 225, 225)),
-              child: ListTile(
-                contentPadding: const EdgeInsets.only(left: 30),
-                leading: const Icon(
-                  Icons.history,
-                  color: Color.fromRGBO(16, 162, 31, 1),
-                  size: 40,
-                ),
-                title: const Text(
-                  'Historial de Movimientos',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                ),
-                onTap: () {
-                  Navigator.pop(context);
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => const historial()),
-                  );
-                },
-              ),
-            ),
-            const SizedBox(height: 5),
-            Container(
-              decoration:
-                  BoxDecoration(color: Color.fromARGB(255, 226, 225, 225)),
-              child: ListTile(
-                contentPadding: const EdgeInsets.only(left: 30),
-                leading: const Icon(
-                  Icons.equalizer,
-                  color: Color.fromRGBO(16, 162, 31, 1),
-                  size: 40,
-                ),
-                title: const Text(
-                  "Estadísticos",
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                ),
-                onTap: () {
-                  Navigator.pop(context);
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) => const estadisticos()),
-                  );
-                },
-              ),
-            ),
-            const SizedBox(height: 5),
-            Container(
-              decoration:
-                  BoxDecoration(color: Color.fromARGB(255, 226, 225, 225)),
-              child: ListTile(
-                contentPadding: const EdgeInsets.only(left: 30),
-                leading: const Icon(
-                  Icons.trending_up,
-                  color: Color.fromRGBO(16, 162, 31, 1),
-                  size: 40,
-                ),
-                title: const Text(
-                  "Avanzados",
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                ),
-                onTap: () {
-                  Navigator.pop(context);
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => const avanzados()),
-                  );
-                },
-              ),
-            ),
-            const SizedBox(height: 5),
-            Container(
-              decoration:
-                  BoxDecoration(color: Color.fromARGB(255, 226, 225, 225)),
-              child: ListTile(
-                contentPadding: const EdgeInsets.only(left: 30),
-                leading: const Icon(
-                  Icons.flag,
-                  color: Color.fromRGBO(16, 162, 31, 1),
-                  size: 40,
-                ),
-                title: const Text(
-                  "Metas",
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                ),
-                onTap: () {
-                  Navigator.pop(context);
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => const metas()),
-                  );
-                },
-              ),
-            ),
-            const SizedBox(height: 5),
-            Container(
-              decoration:
-                  BoxDecoration(color: Color.fromARGB(255, 226, 225, 225)),
-              child: ListTile(
-                contentPadding: const EdgeInsets.only(left: 30),
-                leading: const Icon(
-                  Icons.settings,
-                  color: Color.fromRGBO(16, 162, 31, 1),
-                  size: 40,
-                ),
-                title: const Text(
-                  "Ajustes",
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                ),
-                onTap: () {
-                  Navigator.pop(context);
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => const ajustes()),
-                  );
-                },
-              ),
-            ),
-            const SizedBox(height: 5),
-            Container(
-              decoration:
-                  BoxDecoration(color: Color.fromARGB(255, 226, 225, 225)),
-              child: ListTile(
-                contentPadding: const EdgeInsets.only(left: 30),
-                leading: const Icon(
-                  Icons.input,
-                  color: Color.fromRGBO(16, 162, 31, 1),
-                  size: 40,
-                ),
-                title: const Text(
-                  "Cerrar Sesión",
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                ),
-                onTap: () {
-                  SystemNavigator.pop();
-                },
-              ),
-            ),
-          ],
+          ),
+          menuOption(context, Icons.apps, "Inicio", const PantallaPrincipal()),
+          const SizedBox(height: 5),
+          menuOption(
+              context, Icons.account_balance, "Alcancía", const Alcancia()),
+          const SizedBox(height: 5),
+          menuOption(context, Icons.history, "Historial de Movimientos",
+              const Historial()),
+          const SizedBox(height: 5),
+          menuOption(
+              context, Icons.equalizer, "Estadísticos", const Estadisticos()),
+          const SizedBox(height: 5),
+          menuOption(
+              context, Icons.trending_up, "Avanzados", const Avanzados()),
+          const SizedBox(height: 5),
+          menuOption(context, Icons.flag, "Metas", const Metas()),
+          const SizedBox(height: 5),
+          menuOption(context, Icons.settings, "Ajustes", const Ajustes()),
+          const SizedBox(height: 5),
+          menuOption(
+              context, Icons.input, "Cerrar Sesión", const CerrarSesion(),
+              closeApp: true),
+        ],
+      ),
+    ),
+  );
+}
+
+Widget menuOption(
+    BuildContext context, IconData icon, String title, Widget? destination,
+    {bool closeApp = false}) {
+  return SizedBox(
+    height: 55,
+    child: Container(
+      decoration: const BoxDecoration(
+        color: Color.fromARGB(255, 226, 225, 225),
+      ),
+      child: Center(
+        child: ListTile(
+          contentPadding: const EdgeInsets.only(left: 30),
+          leading: Icon(
+            icon,
+            color: const Color.fromRGBO(16, 162, 31, 1),
+            size: 40,
+          ),
+          title: Text(
+            title,
+            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+          ),
+          onTap: () {
+            if (destination != null) {
+              if (closeApp) {
+                SystemNavigator.pop();
+              } else {
+                Navigator.pop(context);
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(builder: (context) => destination),
+                );
+              }
+            } else {
+              SystemNavigator.pop();
+            }
+          },
         ),
-      ));
+      ),
+    ),
+  );
 }

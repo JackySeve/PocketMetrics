@@ -1,8 +1,8 @@
 import 'package:alcancia_movil/views/widgets/menuDesplegablePrincipal.dart';
 import 'package:flutter/material.dart';
 
-class estadisticos extends StatelessWidget {
-  const estadisticos({super.key});
+class Estadisticos extends StatelessWidget {
+  const Estadisticos({super.key});
 
   @override
   Widget build(BuildContext context) {

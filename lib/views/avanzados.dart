@@ -1,8 +1,8 @@
 import 'package:alcancia_movil/views/widgets/menuDesplegablePrincipal.dart';
 import 'package:flutter/material.dart';
 
-class avanzados extends StatelessWidget {
-  const avanzados({super.key});
+class Avanzados extends StatelessWidget {
+  const Avanzados({super.key});
 
   @override
   Widget build(BuildContext context) {
