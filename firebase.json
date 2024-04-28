@@ -1,0 +1,1 @@
+{"flutter":{"platforms":{"android":{"default":{"projectId":"pocketmetrics","appId":"1:64964084126:android:1dccae960796f2b893568f","fileOutput":"android/app/google-services.json"}},"dart":{"lib/firebase_options.dart":{"projectId":"pocketmetrics","configurations":{"android":"1:64964084126:android:1dccae960796f2b893568f","web":"1:64964084126:web:bbfa6978370f675293568f"}}}}}}

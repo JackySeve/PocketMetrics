@@ -100,6 +100,35 @@ class PantallaPrincipal extends StatelessWidget {
                         ),
                       ),
                     ),
+                    Container(
+                      child: Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            ElevatedButton(
+                              onPressed: () {
+                                alcanciaProvider.guardarDatosEnFirestore();
+                              },
+                              child: const Text("Guardar en Firebase"),
+                            ),
+                            const SizedBox(height: 16.0),
+                            ElevatedButton(
+                              onPressed: () {
+                                alcanciaProvider.eliminarDatosEnFirestore();
+                              },
+                              child: const Text("Eliminar datos de Firebase"),
+                            ),
+                            const SizedBox(height: 16.0),
+                            ElevatedButton(
+                              onPressed: () {
+                                alcanciaProvider.cargarDatosDesdeFirestore();
+                              },
+                              child: const Text("Cargar datos desde Firebase"),
+                            ),
+                          ],
+                        ),
+                      ),
+                    )
                   ],
                 )
               ],

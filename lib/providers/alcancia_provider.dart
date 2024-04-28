@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'dart:math';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class Moneda {
   final int valor;
@@ -7,6 +9,17 @@ class Moneda {
   Moneda(this.valor, {this.cantidad = 0});
 
   int get total => valor * cantidad;
+
+  Map<String, dynamic> toMap() {
+    return {
+      'valor': valor,
+      'cantidad': cantidad,
+    };
+  }
+
+  Moneda.fromMap(Map<String, dynamic> map)
+      : valor = map['valor'],
+        cantidad = map['cantidad'];
 }
 
 class Billete {
@@ -16,6 +29,17 @@ class Billete {
   Billete(this.valor, {this.cantidad = 0});
 
   int get total => valor * cantidad;
+
+  Map<String, dynamic> toMap() {
+    return {
+      'valor': valor,
+      'cantidad': cantidad,
+    };
+  }
+
+  Billete.fromMap(Map<String, dynamic> map)
+      : valor = map['valor'],
+        cantidad = map['cantidad'];
 }
 
 class AlcanciaProvider with ChangeNotifier {
@@ -98,6 +122,160 @@ class AlcanciaProvider with ChangeNotifier {
     }
     _transacciones.add(Transaccion(monto, esIngreso, DateTime.now()));
     notifyListeners();
+  }
+
+  double calcularMedia() {
+    double total = 0;
+    int count = 0;
+    for (var moneda in _monedas) {
+      total += moneda.valor * moneda.cantidad;
+      count += moneda.cantidad;
+    }
+    for (var billete in _billetes) {
+      total += billete.valor * billete.cantidad;
+      count += billete.cantidad;
+    }
+    return total / count;
+  }
+
+  double calcularMediana() {
+    List<double> valores = [];
+    for (var moneda in _monedas) {
+      for (int i = 0; i < moneda.cantidad; i++) {
+        valores.add(moneda.valor.toDouble());
+      }
+    }
+    for (var billete in _billetes) {
+      for (int i = 0; i < billete.cantidad; i++) {
+        valores.add(billete.valor.toDouble());
+      }
+    }
+    valores.sort();
+    int n = valores.length;
+    if (n == 0) {
+      return 0.0;
+    } else if (n % 2 == 0) {
+      return (valores[n ~/ 2 - 1] + valores[n ~/ 2]) / 2;
+    } else {
+      return valores[n ~/ 2];
+    }
+  }
+
+  double calcularModa() {
+    Map<double, int> frecuencias = {};
+    for (var moneda in _monedas) {
+      frecuencias[moneda.valor.toDouble()] =
+          (frecuencias[moneda.valor.toDouble()] ?? 0) + moneda.cantidad;
+    }
+    for (var billete in _billetes) {
+      frecuencias[billete.valor.toDouble()] =
+          (frecuencias[billete.valor.toDouble()] ?? 0) + billete.cantidad;
+    }
+    double moda = 0;
+    int maxFrecuencia = 0;
+    frecuencias.forEach((valor, frecuencia) {
+      if (frecuencia > maxFrecuencia) {
+        maxFrecuencia = frecuencia;
+        moda = valor;
+      }
+    });
+    return moda;
+  }
+
+  double calcularDesviacionEstandar() {
+    double media = calcularMedia();
+    double suma = 0;
+    int count = 0;
+    for (var moneda in _monedas) {
+      suma += pow(moneda.valor - media, 2) * moneda.cantidad;
+      count += moneda.cantidad;
+    }
+    for (var billete in _billetes) {
+      suma += pow(billete.valor - media, 2) * billete.cantidad;
+      count += billete.cantidad;
+    }
+    return sqrt(suma / count);
+  }
+
+  double calcularRangoIntercuartil() {
+    List<double> valores = [];
+    for (var moneda in _monedas) {
+      for (int i = 0; i < moneda.cantidad; i++) {
+        valores.add(moneda.valor.toDouble());
+      }
+    }
+    for (var billete in _billetes) {
+      for (int i = 0; i < billete.cantidad; i++) {
+        valores.add(billete.valor.toDouble());
+      }
+    }
+    valores.sort();
+    int n = valores.length;
+    if (n == 0) {
+      return 0.0;
+    } else {
+      int q1 = (n + 1) ~/ 4;
+      int q3 = 3 * (n + 1) ~/ 4;
+      return valores[q3 - 1] - valores[q1 - 1];
+    }
+  }
+
+  double calcularCoeficienteVariacion() {
+    double media = calcularMedia();
+    double desviacionEstandar = calcularDesviacionEstandar();
+    return desviacionEstandar / media;
+  }
+
+  Future<void> guardarDatosEnFirestore() async {
+    try {
+      final firestore = FirebaseFirestore.instance;
+      final datosAlcancia = {
+        'monedas': _monedas.map((moneda) => moneda.toMap()).toList(),
+        'billetes': _billetes.map((billete) => billete.toMap()).toList(),
+        'totalAhorrado': totalAhorrado,
+      };
+
+      // Crea un nuevo documento en la colección 'alcancia'
+      await firestore.collection('alcancia').doc('datos').set(datosAlcancia);
+    } catch (e) {
+      print('Error al guardar datos en Firestore: $e');
+    }
+  }
+
+  Future<void> eliminarDatosEnFirestore() async {
+    try {
+      final firestore = FirebaseFirestore.instance;
+      await firestore.collection('alcancia').doc('datos').delete();
+      print('Datos eliminados de Firestore');
+    } catch (e) {
+      print('Error al eliminar datos de Firestore: $e');
+    }
+  }
+
+  Future<void> cargarDatosDesdeFirestore() async {
+    try {
+      final firestore = FirebaseFirestore.instance;
+      final docSnapshot =
+          await firestore.collection('alcancia').doc('datos').get();
+      if (docSnapshot.exists) {
+        final data = docSnapshot.data();
+        _monedas = (data?['monedas'] as List<dynamic>?)
+                ?.map((monedaMap) => Moneda.fromMap(monedaMap))
+                .toList() ??
+            [];
+        _billetes = (data?['billetes'] as List<dynamic>?)
+                ?.map((billeteMap) => Billete.fromMap(billeteMap))
+                .toList() ??
+            [];
+        _montoTotalAhorrado = data?['totalAhorrado']?.toDouble() ?? 0.0;
+        notifyListeners();
+        print('Datos cargados desde Firestore');
+      } else {
+        print('No se encontraron datos en Firestore');
+      }
+    } catch (e) {
+      print('Error al cargar datos desde Firestore: $e');
+    }
   }
 }
 
