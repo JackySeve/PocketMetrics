@@ -122,6 +122,19 @@ class AlcanciaProvider with ChangeNotifier {
     }
     _transacciones.add(Transaccion(monto, esIngreso, DateTime.now()));
     notifyListeners();
+
+    guardarTransaccionEnFirestore(
+        Transaccion(monto, esIngreso, DateTime.now()));
+  }
+
+  //Transacción se refiere al historial
+  Future<void> guardarTransaccionEnFirestore(Transaccion transaccion) async {
+    try {
+      final firestore = FirebaseFirestore.instance;
+      await firestore.collection('transacciones').add(transaccion.toMap());
+    } catch (e) {
+      print('Error al guardar transacción en Firestore: $e');
+    }
   }
 
   double calcularMedia() {
@@ -277,6 +290,54 @@ class AlcanciaProvider with ChangeNotifier {
       print('Error al cargar datos desde Firestore: $e');
     }
   }
+
+  Future<void> guardarTransaccionesEnFirestore() async {
+    try {
+      final firestore = FirebaseFirestore.instance;
+      final transaccionesRef = firestore.collection('transacciones');
+
+      final snapshot = await transaccionesRef.get();
+      for (var doc in snapshot.docs) {
+        await doc.reference.delete();
+      }
+
+      _transacciones.sort((a, b) => a.fecha.compareTo(b.fecha));
+
+      for (var transaccion in _transacciones) {
+        await transaccionesRef.add(transaccion.toMap());
+      }
+    } catch (e) {
+      print('Error al guardar transacciones en Firestore: $e');
+    }
+  }
+
+  Future<void> eliminarTransaccionesEnFirestore() async {
+    try {
+      final firestore = FirebaseFirestore.instance;
+      final transaccionesRef = firestore.collection('transacciones');
+      await transaccionesRef.get().then((snapshot) {
+        for (DocumentSnapshot doc in snapshot.docs) {
+          doc.reference.delete();
+        }
+      });
+      print('Transacciones eliminadas de Firestore');
+    } catch (e) {
+      print('Error al eliminar transacciones de Firestore: $e');
+    }
+  }
+
+  Future<void> cargarTransaccionesDesdeFirestore() async {
+    try {
+      final firestore = FirebaseFirestore.instance;
+      final snapshot = await firestore.collection('transacciones').get();
+      _transacciones =
+          snapshot.docs.map((doc) => Transaccion.fromMap(doc.data())).toList();
+      notifyListeners();
+      print('Transacciones cargadas desde Firestore');
+    } catch (e) {
+      print('Error al cargar transacciones desde Firestore: $e');
+    }
+  }
 }
 
 class Transaccion {
@@ -285,4 +346,20 @@ class Transaccion {
   final DateTime fecha;
 
   Transaccion(this.monto, this.esIngreso, this.fecha);
+
+  Map<String, dynamic> toMap() {
+    return {
+      'monto': monto,
+      'esIngreso': esIngreso,
+      'fecha': fecha.millisecondsSinceEpoch,
+    };
+  }
+
+  factory Transaccion.fromMap(Map<String, dynamic> map) {
+    return Transaccion(
+      map['monto'],
+      map['esIngreso'],
+      DateTime.fromMillisecondsSinceEpoch(map['fecha']),
+    );
+  }
 }

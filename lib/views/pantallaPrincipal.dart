@@ -108,6 +108,8 @@ class PantallaPrincipal extends StatelessWidget {
                             ElevatedButton(
                               onPressed: () {
                                 alcanciaProvider.guardarDatosEnFirestore();
+                                alcanciaProvider
+                                    .guardarTransaccionesEnFirestore();
                               },
                               child: const Text("Guardar en Firebase"),
                             ),
@@ -115,6 +117,8 @@ class PantallaPrincipal extends StatelessWidget {
                             ElevatedButton(
                               onPressed: () {
                                 alcanciaProvider.eliminarDatosEnFirestore();
+                                alcanciaProvider
+                                    .eliminarTransaccionesEnFirestore();
                               },
                               child: const Text("Eliminar datos de Firebase"),
                             ),
@@ -122,6 +126,8 @@ class PantallaPrincipal extends StatelessWidget {
                             ElevatedButton(
                               onPressed: () {
                                 alcanciaProvider.cargarDatosDesdeFirestore();
+                                alcanciaProvider
+                                    .cargarTransaccionesDesdeFirestore();
                               },
                               child: const Text("Cargar datos desde Firebase"),
                             ),
