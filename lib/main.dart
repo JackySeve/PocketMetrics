@@ -16,7 +16,7 @@
 //       home: Scaffold(
 //         body: Center(
 //           child: pantallaPrincipal(
-//              
+//
 //           ),
 //         ),
 
@@ -26,6 +26,7 @@
 // }
 import 'package:flutter/material.dart';
 import 'inicioSesion.dart';
+import 'registroUsuario.dart';
 
 void main() {
   runApp(const MainApp());
@@ -80,26 +81,7 @@ class _MainAppState extends State<MainApp> {
                 style: TextStyle(fontWeight: FontWeight.bold),
               ),
               const Text(" "),
-              ElevatedButton(
-                style: ButtonStyle(
-                  backgroundColor:
-                      MaterialStateProperty.all<Color>(Colors.green),
-                  shape: MaterialStateProperty.all<RoundedRectangleBorder>(
-                    RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                  ),
-                ),
-                onPressed: () {
-                  setState(() {
-                    print("PRESIONO EL BTN REGISTRARSE");
-                  });
-                },
-                child: const Text(
-                  'Registrarse',
-                  style: TextStyle(color: Colors.white),
-                ),
-              ),
+              pageUserRegister(),
             ],
           ),
         ),
@@ -108,10 +90,40 @@ class _MainAppState extends State<MainApp> {
   }
 }
 
+class pageUserRegister extends StatelessWidget {
+  const pageUserRegister({
+    super.key,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return ElevatedButton(
+      style: ButtonStyle(
+        backgroundColor: MaterialStateProperty.all<Color>(Colors.green),
+        shape: MaterialStateProperty.all<RoundedRectangleBorder>(
+          RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10),
+          ),
+        ),
+      ),
+      onPressed: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => registerPage()),
+        );
+      },
+      child: const Text(
+        'Registrarse',
+        style: TextStyle(color: Colors.white),
+      ),
+    );
+  }
+}
+
 class NewWidget extends StatelessWidget {
   const NewWidget({
-    Key? key, 
-  }) : super(key: key); 
+    Key? key,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {

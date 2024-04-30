@@ -4,17 +4,14 @@ class registerPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      debugShowCheckedModeBanner: false,
       title: 'Hola Mundo en Flutter',
       home: Scaffold(
-        appBar: AppBar(
-          title: Text('Hola Mundo'),
-        ),
         body: Center(
-          child: Text(
-            '¡Hola Mundo!',
-            style: TextStyle(fontSize: 24),
-          ),
-        ),
+            child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [Text("HOLAMUNDO")],
+        )),
       ),
     );
   }
