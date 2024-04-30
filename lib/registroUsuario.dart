@@ -6,6 +6,7 @@ class registerPage extends StatefulWidget {
 }
 
 class _registerPageState extends State<registerPage> {
+  bool _isChecked = false;
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -39,7 +40,7 @@ class _registerPageState extends State<registerPage> {
                 child: Column(
               children: [
                 SizedBox(
-                  width: 350,
+                  width: 300,
                   child: TextFormField(
                     decoration: InputDecoration(
                       label: const Text(
@@ -49,6 +50,60 @@ class _registerPageState extends State<registerPage> {
                     ),
                   ),
                 ),
+                const Text(""),
+                SizedBox(
+                  width: 300,
+                  child: TextFormField(
+                    decoration: InputDecoration(
+                      label: const Text(
+                        "Correo",
+                        style: TextStyle(color: Colors.green),
+                      ),
+                    ),
+                  ),
+                ),
+                const Text(""),
+                SizedBox(
+                  width: 300,
+                  child: TextFormField(
+                    obscureText: true,
+                    decoration: InputDecoration(
+                      label: const Text(
+                        "Contraseña",
+                        style: TextStyle(color: Colors.green),
+                      ),
+                    ),
+                  ),
+                ),
+                const Text(""),
+                SizedBox(
+                  width: 300,
+                  child: TextFormField(
+                    obscureText: true,
+                    decoration: InputDecoration(
+                      label: const Text(
+                        "Verificar contraseña",
+                        style: TextStyle(color: Colors.green),
+                      ),
+                    ),
+                  ),
+                ),
+                const Text(""),
+                ElevatedButton(
+                    style: ButtonStyle(
+                        backgroundColor:
+                            MaterialStateProperty.all<Color>(Colors.green),
+                        shape:
+                            MaterialStateProperty.all<RoundedRectangleBorder>(
+                          RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                        )),
+                    onPressed: () {},
+                    child: const Text(
+                      "Registrarse",
+                      style: TextStyle(color: Colors.white, fontSize: 15),
+                    ))
               ],
             ))
           ],
