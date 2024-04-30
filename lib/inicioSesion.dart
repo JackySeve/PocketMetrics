@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'registroUsuario.dart';
 
 class SecondPage extends StatefulWidget {
   @override
@@ -86,7 +87,12 @@ class _SecondPageState extends State<SecondPage> {
                   style: TextStyle(color: Colors.grey),
                 ),
                 TextButton(
-                    onPressed: () {},
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => registerPage()),
+                      );
+                    },
                     child: const Text(
                       "Registrate",
                       style: TextStyle(color: Colors.green),
