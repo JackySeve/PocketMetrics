@@ -6,7 +6,6 @@ class registerPage extends StatefulWidget {
 }
 
 class _registerPageState extends State<registerPage> {
-  bool _isChecked = false;
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
