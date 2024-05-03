@@ -8,19 +8,19 @@ class InicioPrincipal extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return const Scaffold(
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Container(
+            SizedBox(
               height: 200,
               width: 200,
-              child: const Image(
+              child: Image(
                   image: NetworkImage(
                       'https://raw.githubusercontent.com/JackySeve/Alcancia-Movil/main/lib/assets/images/logo.png')),
             ),
-            const Text(
+            Text(
               "PocketMetrics",
               style: TextStyle(
                   color: Colors.green,
@@ -28,22 +28,22 @@ class InicioPrincipal extends StatelessWidget {
                   fontWeight: FontWeight.bold,
                   fontFamily: 'Asap'),
             ),
-            const Text(
+            Text(
               '¡Bienvenido de nuevo! Es un placer poderte servir',
               style: TextStyle(fontFamily: 'Asap', fontWeight: FontWeight.bold),
             ),
-            const Text(" "),
+            Text(" "),
             NewWidget(),
-            const Text(" "),
-            const Text(
+            Text(" "),
+            Text(
               "¿Eres nuevo? Unete e inicia una nueva forma",
               style: TextStyle(fontWeight: FontWeight.bold),
             ),
-            const Text(
+            Text(
               "de organizar tus metas financieras",
               style: TextStyle(fontWeight: FontWeight.bold),
             ),
-            const Text(" "),
+            Text(" "),
             pageUserRegister(),
           ],
         ),
@@ -71,7 +71,7 @@ class pageUserRegister extends StatelessWidget {
       onPressed: () {
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => registerPage()),
+          MaterialPageRoute(builder: (context) => const registerPage()),
         );
       },
       child: const Text(
@@ -84,8 +84,8 @@ class pageUserRegister extends StatelessWidget {
 
 class NewWidget extends StatelessWidget {
   const NewWidget({
-    Key? key,
-  }) : super(key: key);
+    super.key,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -101,7 +101,7 @@ class NewWidget extends StatelessWidget {
       onPressed: () {
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => SecondPage()),
+          MaterialPageRoute(builder: (context) => const SecondPage()),
         );
       },
       child: const Text(

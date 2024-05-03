@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'dart:math';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
+import '../views/metas.dart';
+
 class Moneda {
   final int valor;
   int cantidad;
@@ -75,11 +77,13 @@ class AlcanciaProvider with ChangeNotifier {
   void actualizarCantidadMoneda(int index, int cantidad) {
     _monedas[index].cantidad = cantidad < 0 ? 0 : cantidad;
     notifyListeners();
+    actualizarValoresAhorradosMetas();
   }
 
   void actualizarCantidadBillete(int index, int cantidad) {
     _billetes[index].cantidad = cantidad < 0 ? 0 : cantidad;
     notifyListeners();
+    actualizarValoresAhorradosMetas();
   }
 
   int get totalAhorrado {
@@ -337,6 +341,107 @@ class AlcanciaProvider with ChangeNotifier {
     } catch (e) {
       print('Error al cargar transacciones desde Firestore: $e');
     }
+  }
+
+  List<Meta> _metas = [];
+
+  List<Meta> get metas => _metas;
+
+  void agregarMeta(Meta meta) {
+    _metas.add(meta);
+    notifyListeners();
+    guardarMetasEnFirestore();
+  }
+
+  void editarMeta(Meta meta) {
+    int index = _metas.indexWhere((m) => m.id == meta.id);
+    if (index != -1) {
+      _metas[index] = meta;
+      notifyListeners();
+      guardarMetasEnFirestore();
+    }
+  }
+
+  void eliminarMeta(String id) {
+    _metas.removeWhere((meta) => meta.id == id);
+    notifyListeners();
+    guardarMetasEnFirestore();
+  }
+
+  Future<void> guardarMetasEnFirestore() async {
+    try {
+      final firestore = FirebaseFirestore.instance;
+      final metasRef = firestore.collection('metas');
+
+      final snapshot = await metasRef.get();
+      for (var doc in snapshot.docs) {
+        await doc.reference.delete();
+      }
+
+      for (var meta in _metas) {
+        await metasRef.add(meta.toMap());
+      }
+    } catch (e) {
+      print('Error al guardar metas en Firestore: $e');
+    }
+  }
+
+  Future<void> cargarMetasDesdeFirestore() async {
+    try {
+      final firestore = FirebaseFirestore.instance;
+      final snapshot = await firestore.collection('metas').get();
+      _metas = snapshot.docs.map((doc) => Meta.fromMap(doc.data())).toList();
+      notifyListeners();
+      print('Metas cargadas desde Firestore');
+    } catch (e) {
+      print('Error al cargar metas desde Firestore: $e');
+    }
+  }
+
+  void actualizarValoresAhorradosMetas() {
+    int totalAhorrado = this.totalAhorrado;
+    for (var meta in _metas) {
+      if (totalAhorrado >= meta.valorObjetivo) {
+        meta.valorAhorrado = meta.valorObjetivo;
+      } else {
+        meta.valorAhorrado = totalAhorrado;
+      }
+    }
+    notifyListeners();
+  }
+
+  void verificarMetasCumplidas() {
+    final DateTime ahora = DateTime.now();
+    for (var meta in _metas) {
+      if (ahora.isAfter(meta.fechaLimite)) {
+        if (meta.valorAhorrado >= meta.valorObjetivo) {
+          // Meta cumplida
+          meta.cumplida = true;
+        } else {
+          // Meta incumplida
+          meta.cumplida = false;
+        }
+      }
+    }
+    notifyListeners();
+  }
+
+  Map<String, int> obtenerMetasCumplidasEIncumplidas() {
+    int metasCumplidas = 0;
+    int metasIncumplidas = 0;
+
+    for (var meta in _metas) {
+      if (meta.cumplida) {
+        metasCumplidas++;
+      } else {
+        metasIncumplidas++;
+      }
+    }
+
+    return {
+      'metasCumplidas': metasCumplidas,
+      'metasIncumplidas': metasIncumplidas,
+    };
   }
 }
 

@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'registroUsuario.dart';
 
 class SecondPage extends StatefulWidget {
+  const SecondPage({super.key});
+
   @override
   State<SecondPage> createState() => _SecondPageState();
 }
@@ -14,7 +16,7 @@ class _SecondPageState extends State<SecondPage> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Container(
+            const SizedBox(
               width: 200,
               height: 200,
               child: Image(
@@ -46,7 +48,7 @@ class _SecondPageState extends State<SecondPage> {
                 SizedBox(
                   width: 350,
                   child: TextFormField(
-                    decoration: InputDecoration(
+                    decoration: const InputDecoration(
                         label: Text(
                       "Correo o Usuario",
                       style: TextStyle(color: Colors.green),
@@ -58,7 +60,7 @@ class _SecondPageState extends State<SecondPage> {
                   width: 350,
                   child: TextFormField(
                     obscureText: true,
-                    decoration: InputDecoration(
+                    decoration: const InputDecoration(
                         label: Text(
                       "Contraseña",
                       style: TextStyle(color: Colors.green),
@@ -82,7 +84,7 @@ class _SecondPageState extends State<SecondPage> {
                       style: TextStyle(color: Colors.white, fontSize: 15),
                     )),
                 const Text(" "),
-                Text(
+                const Text(
                   "¿Aun no estas registrado?",
                   style: TextStyle(color: Colors.grey),
                 ),
@@ -90,7 +92,7 @@ class _SecondPageState extends State<SecondPage> {
                     onPressed: () {
                       Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (context) => registerPage()),
+                        MaterialPageRoute(builder: (context) => const registerPage()),
                       );
                     },
                     child: const Text(

@@ -44,7 +44,7 @@ class Alcancia extends StatelessWidget {
                     IconButton(
                       icon: const Icon(Icons.add),
                       onPressed: () {
-                        final esIngreso = true;
+                        const esIngreso = true;
                         final monto = moneda.valor.toDouble();
                         alcanciaProvider.agregarTransaccion(monto, esIngreso);
                         alcanciaProvider.actualizarCantidadMoneda(
@@ -56,7 +56,7 @@ class Alcancia extends StatelessWidget {
                       icon: const Icon(Icons.remove),
                       onPressed: () {
                         if (moneda.cantidad > 0) {
-                          final esIngreso = false;
+                          const esIngreso = false;
                           final monto = moneda.valor.toDouble();
                           alcanciaProvider.agregarTransaccion(monto, esIngreso);
                           alcanciaProvider.actualizarCantidadMoneda(
@@ -97,7 +97,7 @@ class Alcancia extends StatelessWidget {
                     IconButton(
                       icon: const Icon(Icons.add),
                       onPressed: () {
-                        final esIngreso = true;
+                        const esIngreso = true;
                         final monto = billete.valor.toDouble();
                         alcanciaProvider.agregarTransaccion(monto, esIngreso);
                         alcanciaProvider.actualizarCantidadBillete(
@@ -109,7 +109,7 @@ class Alcancia extends StatelessWidget {
                       icon: const Icon(Icons.remove),
                       onPressed: () {
                         if (billete.cantidad > 0) {
-                          final esIngreso = false;
+                          const esIngreso = false;
                           final monto = billete.valor.toDouble();
                           alcanciaProvider.agregarTransaccion(monto, esIngreso);
                           alcanciaProvider.actualizarCantidadBillete(

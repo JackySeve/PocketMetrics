@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
 class registerPage extends StatefulWidget {
+  const registerPage({super.key});
+
   @override
   State<registerPage> createState() => _registerPageState();
 }
@@ -16,7 +18,7 @@ class _registerPageState extends State<registerPage> {
             child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Container(
+            const SizedBox(
               width: 200,
               height: 200,
               child: Image(
@@ -41,8 +43,8 @@ class _registerPageState extends State<registerPage> {
                 SizedBox(
                   width: 300,
                   child: TextFormField(
-                    decoration: InputDecoration(
-                      label: const Text(
+                    decoration: const InputDecoration(
+                      label: Text(
                         "Usuario",
                         style: TextStyle(color: Colors.green),
                       ),
@@ -53,8 +55,8 @@ class _registerPageState extends State<registerPage> {
                 SizedBox(
                   width: 300,
                   child: TextFormField(
-                    decoration: InputDecoration(
-                      label: const Text(
+                    decoration: const InputDecoration(
+                      label: Text(
                         "Correo",
                         style: TextStyle(color: Colors.green),
                       ),
@@ -66,8 +68,8 @@ class _registerPageState extends State<registerPage> {
                   width: 300,
                   child: TextFormField(
                     obscureText: true,
-                    decoration: InputDecoration(
-                      label: const Text(
+                    decoration: const InputDecoration(
+                      label: Text(
                         "Contraseña",
                         style: TextStyle(color: Colors.green),
                       ),
@@ -79,8 +81,8 @@ class _registerPageState extends State<registerPage> {
                   width: 300,
                   child: TextFormField(
                     obscureText: true,
-                    decoration: InputDecoration(
-                      label: const Text(
+                    decoration: const InputDecoration(
+                      label: Text(
                         "Verificar contraseña",
                         style: TextStyle(color: Colors.green),
                       ),

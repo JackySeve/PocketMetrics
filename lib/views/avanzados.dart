@@ -3,9 +3,10 @@ import 'package:charts_flutter/flutter.dart' as charts;
 import 'package:provider/provider.dart';
 import '../providers/alcancia_provider.dart';
 import 'widgets/menuDesplegablePrincipal.dart';
+import 'package:fl_chart/fl_chart.dart';
 
 class Avanzados extends StatefulWidget {
-  const Avanzados({super.key});
+  const Avanzados({Key? key}) : super(key: key);
 
   @override
   _AvanzadosState createState() => _AvanzadosState();
@@ -87,40 +88,69 @@ class _AvanzadosState extends State<Avanzados> {
 
   @override
   Widget build(BuildContext context) {
+    final alcanciaProvider = Provider.of<AlcanciaProvider>(context);
+    final metasData = alcanciaProvider.obtenerMetasCumplidasEIncumplidas();
+    final metasCumplidas = metasData['metasCumplidas'] ?? 0;
+    final metasIncumplidas = metasData['metasIncumplidas'] ?? 0;
+    final totalMetas = metasCumplidas + metasIncumplidas;
+
     const logo = 'lib/assets/images/logo.png';
     return Scaffold(
       appBar: AppBar(
-        title: Text('Avanzados'),
+        title: const Text('Avanzados'),
       ),
       drawer: menuDesplegablePrincipal(logo, context),
       body: Padding(
-        padding: EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Text(
+            const Text(
               'Histograma de Ingresos',
               style: TextStyle(fontSize: 18.0, fontWeight: FontWeight.bold),
             ),
-            SizedBox(height: 16.0),
+            const SizedBox(height: 16.0),
             Expanded(
               child: charts.BarChart(
                 _seriesIngresos,
                 animate: true,
               ),
             ),
-            SizedBox(height: 32.0),
-            Text(
+            const SizedBox(height: 32.0),
+            const Text(
               'Histograma de Egresos',
               style: TextStyle(fontSize: 18.0, fontWeight: FontWeight.bold),
             ),
-            SizedBox(height: 16.0),
+            const SizedBox(height: 16.0),
             Expanded(
               child: charts.BarChart(
                 _seriesEgresos,
                 animate: true,
               ),
             ),
+            const SizedBox(height: 32.0),
+            totalMetas > 0
+                ? Flexible(
+                    child: PieChart(
+                      PieChartData(
+                        sections: [
+                          PieChartSectionData(
+                            value: metasCumplidas.toDouble(),
+                            color: Colors.green,
+                            title:
+                                '${(metasCumplidas / totalMetas * 100).toStringAsFixed(2)}%',
+                          ),
+                          PieChartSectionData(
+                            value: metasIncumplidas.toDouble(),
+                            color: Colors.red,
+                            title:
+                                '${(metasIncumplidas / totalMetas * 100).toStringAsFixed(2)}%',
+                          ),
+                        ],
+                      ),
+                    ),
+                  )
+                : Text('No hay metas aún'),
           ],
         ),
       ),
