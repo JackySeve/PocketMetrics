@@ -100,41 +100,41 @@ class PantallaPrincipal extends StatelessWidget {
                         ),
                       ),
                     ),
-                    Container(
-                      child: Center(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            ElevatedButton(
-                              onPressed: () {
-                                alcanciaProvider.guardarDatosEnFirestore();
-                                alcanciaProvider
-                                    .guardarTransaccionesEnFirestore();
-                              },
-                              child: const Text("Guardar en Firebase"),
-                            ),
-                            const SizedBox(height: 16.0),
-                            ElevatedButton(
-                              onPressed: () {
-                                alcanciaProvider.eliminarDatosEnFirestore();
-                                alcanciaProvider
-                                    .eliminarTransaccionesEnFirestore();
-                              },
-                              child: const Text("Eliminar datos de Firebase"),
-                            ),
-                            const SizedBox(height: 16.0),
-                            ElevatedButton(
-                              onPressed: () {
-                                alcanciaProvider.cargarDatosDesdeFirestore();
-                                alcanciaProvider
-                                    .cargarTransaccionesDesdeFirestore();
-                              },
-                              child: const Text("Cargar datos desde Firebase"),
-                            ),
-                          ],
-                        ),
-                      ),
-                    )
+                    // Container(
+                    //   child: Center(
+                    //     child: Column(
+                    //       mainAxisAlignment: MainAxisAlignment.center,
+                    //       children: [
+                    //         ElevatedButton(
+                    //           onPressed: () {
+                    //             alcanciaProvider.guardarDatosEnFirestore();
+                    //             alcanciaProvider
+                    //                 .guardarTransaccionesEnFirestore();
+                    //           },
+                    //           child: const Text("Guardar en Firebase"),
+                    //         ),
+                    //         const SizedBox(height: 16.0),
+                    //         ElevatedButton(
+                    //           onPressed: () {
+                    //             alcanciaProvider.eliminarDatosEnFirestore();
+                    //             alcanciaProvider
+                    //                 .eliminarTransaccionesEnFirestore();
+                    //           },
+                    //           child: const Text("Eliminar datos de Firebase"),
+                    //         ),
+                    //         const SizedBox(height: 16.0),
+                    //         ElevatedButton(
+                    //           onPressed: () {
+                    //             alcanciaProvider.cargarDatosDesdeFirestore();
+                    //             alcanciaProvider
+                    //                 .cargarTransaccionesDesdeFirestore();
+                    //           },
+                    //           child: const Text("Cargar datos desde Firebase"),
+                    //         ),
+                    //       ],
+                    //     ),
+                    //   ),
+                    // )
                   ],
                 )
               ],

@@ -26,6 +26,22 @@ class MainApp extends StatefulWidget {
 
 class _MainAppState extends State<MainApp> {
   @override
+  void initState() {
+    super.initState();
+    _descargarDatosDesdeFirebase();
+    Provider.of<AlcanciaProvider>(context, listen: false)
+        .cargarMetasDesdeFirebase();
+    Provider.of<AlcanciaProvider>(context, listen: false)
+        .cargarTransaccionesDesdeFirebase();
+  }
+
+  Future<void> _descargarDatosDesdeFirebase() async {
+    final alcanciaProvider =
+        Provider.of<AlcanciaProvider>(context, listen: false);
+    await alcanciaProvider.cargarDatosDesdeFirebase();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return const MaterialApp(
       debugShowCheckedModeBanner: false,

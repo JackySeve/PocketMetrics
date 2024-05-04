@@ -59,7 +59,8 @@ class _MetasState extends State<Metas> {
 
   @override
   Widget build(BuildContext context) {
-    final alcanciaProvider = Provider.of<AlcanciaProvider>(context);
+    final alcanciaProvider =
+        Provider.of<AlcanciaProvider>(context, listen: true);
     const logo = 'lib/assets/images/logo.png';
 
     return Scaffold(
@@ -98,13 +99,13 @@ class _MetasState extends State<Metas> {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       IconButton(
-                        icon: Icon(Icons.edit),
+                        icon: const Icon(Icons.edit),
                         onPressed: () {
                           _mostrarDialogoMeta(meta);
                         },
                       ),
                       IconButton(
-                        icon: Icon(Icons.delete),
+                        icon: const Icon(Icons.delete),
                         onPressed: () {
                           _mostrarDialogoConfirmacion(
                             context,
@@ -125,7 +126,7 @@ class _MetasState extends State<Metas> {
               onPressed: () {
                 _mostrarDialogoMeta(null);
               },
-              child: Text('Agregar Meta'),
+              child: const Text('Agregar Meta'),
             ),
           ),
         ],
@@ -151,7 +152,7 @@ class _MetasState extends State<Metas> {
               children: [
                 TextFormField(
                   initialValue: _nombreMeta,
-                  decoration: InputDecoration(
+                  decoration: const InputDecoration(
                     labelText: 'Nombre de la meta',
                   ),
                   onSaved: (value) {
@@ -160,7 +161,7 @@ class _MetasState extends State<Metas> {
                 ),
                 TextFormField(
                   initialValue: _valorObjetivo.toString(),
-                  decoration: InputDecoration(
+                  decoration: const InputDecoration(
                     labelText: 'Valor Objetivo',
                   ),
                   keyboardType: TextInputType.number,
@@ -176,7 +177,7 @@ class _MetasState extends State<Metas> {
                     padding: const EdgeInsets.all(8.0),
                     child: Text(
                       'Fecha Límite: ${_fechaLimite.toString().split(' ')[0]}',
-                      style: TextStyle(
+                      style: const TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
                       ),
@@ -191,7 +192,7 @@ class _MetasState extends State<Metas> {
               onPressed: () {
                 Navigator.of(context).pop();
               },
-              child: Text('Cancelar'),
+              child: const Text('Cancelar'),
             ),
             ElevatedButton(
               onPressed: () {
@@ -253,21 +254,22 @@ class _MetasState extends State<Metas> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text('Eliminar Meta'),
-          content: Text('¿Estás seguro de que deseas eliminar esta meta?'),
+          title: const Text('Eliminar Meta'),
+          content:
+              const Text('¿Estás seguro de que deseas eliminar esta meta?'),
           actions: [
             TextButton(
               onPressed: () {
                 Navigator.of(context).pop();
               },
-              child: Text('Cancelar'),
+              child: const Text('Cancelar'),
             ),
             ElevatedButton(
               onPressed: () {
                 alcanciaProvider.eliminarMeta(idMeta);
                 Navigator.of(context).pop();
               },
-              child: Text('Eliminar'),
+              child: const Text('Eliminar'),
             ),
           ],
         );

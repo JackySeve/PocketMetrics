@@ -6,7 +6,7 @@ import 'widgets/menuDesplegablePrincipal.dart';
 import 'package:fl_chart/fl_chart.dart';
 
 class Avanzados extends StatefulWidget {
-  const Avanzados({Key? key}) : super(key: key);
+  const Avanzados({super.key});
 
   @override
   _AvanzadosState createState() => _AvanzadosState();
@@ -150,7 +150,7 @@ class _AvanzadosState extends State<Avanzados> {
                       ),
                     ),
                   )
-                : Text('No hay metas aún'),
+                : const Text('No hay metas aún'),
           ],
         ),
       ),

@@ -8,7 +8,8 @@ class Alcancia extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final alcanciaProvider = context.watch<AlcanciaProvider>();
+    final alcanciaProvider =
+        Provider.of<AlcanciaProvider>(context, listen: true);
     const logo = 'lib/assets/images/logo.png';
 
     return Scaffold(
@@ -130,6 +131,18 @@ class Alcancia extends StatelessWidget {
             Text(
               "Total Ahorrado: ${alcanciaProvider.totalAhorrado}",
               style: const TextStyle(fontWeight: FontWeight.w900),
+            ),
+            FutureBuilder(
+              future: alcanciaProvider.guardarDatosEnFirebase(),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return CircularProgressIndicator();
+                } else if (snapshot.hasError) {
+                  return Text('Error: ${snapshot.error}');
+                } else {
+                  return SizedBox();
+                }
+              },
             ),
           ],
         ),

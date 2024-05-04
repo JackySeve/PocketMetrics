@@ -10,6 +10,16 @@ class Historial extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     const logo = 'lib/assets/images/logo.png';
+
+    // Get the AlcanciaProvider instance
+    final alcanciaProvider =
+        Provider.of<AlcanciaProvider>(context, listen: false);
+
+    final transaccionesOrdenadas = alcanciaProvider.transacciones
+      ..sort((a, b) {
+        return b.fecha.compareTo(a.fecha);
+      });
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Historial'),
@@ -18,9 +28,9 @@ class Historial extends StatelessWidget {
       body: Consumer<AlcanciaProvider>(
         builder: (context, alcanciaProvider, child) {
           return ListView.builder(
-            itemCount: alcanciaProvider.transacciones.length,
+            itemCount: transaccionesOrdenadas.length,
             itemBuilder: (context, index) {
-              final transaccion = alcanciaProvider.transacciones[index];
+              final transaccion = transaccionesOrdenadas[index];
               return ListTile(
                 title: Text(
                   '${transaccion.esIngreso ? 'Ingreso' : 'Egreso'}: ${transaccion.monto}',
