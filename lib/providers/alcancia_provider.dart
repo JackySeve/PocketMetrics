@@ -291,11 +291,27 @@ class AlcanciaProvider with ChangeNotifier {
   Future<void> _guardarMetaEnFirebase(Meta meta) async {
     try {
       final firestore = FirebaseFirestore.instance;
-      final metasRef = firestore.collection('metas');
-      await metasRef.add(meta.toMap());
-      print('Meta guardada en Firebase');
+      await firestore.collection('metas').doc(meta.id).set({
+        'nombre': meta.nombre,
+        'valorObjetivo': meta.valorObjetivo,
+        'fechaLimite': meta.fechaLimite.millisecondsSinceEpoch,
+        'cumplida': meta.cumplida,
+      });
+      print('Meta actualizada en Firebase');
     } catch (e) {
-      print('Error al guardar meta en Firebase: $e');
+      print('Error al actualizar meta en Firebase: $e');
+    }
+  }
+
+  Future<void> _guardarMetasEnFirebase() async {
+    try {
+      final firestore = FirebaseFirestore.instance;
+      for (var meta in _metas) {
+        await firestore.collection('metas').doc(meta.id).set(meta.toMap());
+      }
+      print('Metas actualizadas en Firebase');
+    } catch (e) {
+      print('Error al actualizar metas en Firebase: $e');
     }
   }
 
@@ -349,11 +365,14 @@ class AlcanciaProvider with ChangeNotifier {
     for (var meta in _metas) {
       if (totalAhorrado >= meta.valorObjetivo) {
         meta.valorAhorrado = meta.valorObjetivo;
+        meta.cumplida = true;
       } else {
         meta.valorAhorrado = totalAhorrado;
+        meta.cumplida = false;
       }
     }
     notifyListeners();
+    _guardarMetasEnFirebase();
   }
 
   void verificarMetasCumplidas() {

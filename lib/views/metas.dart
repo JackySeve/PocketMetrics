@@ -222,15 +222,10 @@ class _MetasState extends State<Metas> {
                     );
                     alcanciaProvider.agregarMeta(meta);
                   } else {
-                    final metaEditada = Meta(
-                      id: _metaEditando!.id,
-                      nombre: _nombreMeta,
-                      valorObjetivo: _valorObjetivo,
-                      valorAhorrado: _metaEditando!.valorAhorrado,
-                      fechaLimite: _fechaLimite,
-                      cumplida: _metaEditando!.cumplida,
-                    );
-                    alcanciaProvider.editarMeta(metaEditada);
+                    _metaEditando!.nombre = _nombreMeta;
+                    _metaEditando!.valorObjetivo = _valorObjetivo;
+                    _metaEditando!.fechaLimite = _fechaLimite;
+                    alcanciaProvider.editarMeta(_metaEditando!);
                   }
                   Navigator.of(context).pop();
                 }
