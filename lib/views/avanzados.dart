@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:charts_flutter/flutter.dart' as charts;
 import 'package:provider/provider.dart';
 import '../providers/alcancia_provider.dart';
+import 'metas.dart';
 import 'widgets/menuDesplegablePrincipal.dart';
 import 'package:fl_chart/fl_chart.dart';
 
@@ -13,6 +14,20 @@ class Avanzados extends StatefulWidget {
 }
 
 class _AvanzadosState extends State<Avanzados> {
+  List<Meta> _metasCumplidas() {
+    return Provider.of<AlcanciaProvider>(context, listen: false)
+        .metas
+        .where((meta) => meta.valorAhorrado == meta.valorObjetivo)
+        .toList();
+  }
+
+  List<Meta> _metasIncumplidas() {
+    return Provider.of<AlcanciaProvider>(context, listen: false)
+        .metas
+        .where((meta) => meta.valorAhorrado < meta.valorObjetivo)
+        .toList();
+  }
+
   late List<charts.Series<TransaccionPorDia, String>> _seriesIngresos;
   late List<charts.Series<TransaccionPorDia, String>> _seriesEgresos;
 
@@ -95,6 +110,18 @@ class _AvanzadosState extends State<Avanzados> {
     final totalMetas = metasCumplidas + metasIncumplidas;
 
     const logo = 'lib/assets/images/logo.png';
+    if (alcanciaProvider.transacciones.isEmpty) {
+      return Scaffold(
+        appBar: AppBar(
+          title: const Text('Avanzados'),
+        ),
+        drawer: menuDesplegablePrincipal(logo, context),
+        body: const Center(
+          child: Text('No hay transacciones aún'),
+        ),
+      );
+    }
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Avanzados'),
@@ -129,25 +156,33 @@ class _AvanzadosState extends State<Avanzados> {
               ),
             ),
             const SizedBox(height: 32.0),
+            const Text(
+              'Gráfico de Pastel de Metas',
+              style: TextStyle(fontSize: 18.0, fontWeight: FontWeight.bold),
+            ),
             totalMetas > 0
                 ? Flexible(
-                    child: PieChart(
-                      PieChartData(
-                        sections: [
-                          PieChartSectionData(
-                            value: metasCumplidas.toDouble(),
-                            color: Colors.green,
-                            title:
-                                '${(metasCumplidas / totalMetas * 100).toStringAsFixed(2)}%',
+                    child: Consumer<AlcanciaProvider>(
+                      builder: (context, provider, child) {
+                        return PieChart(
+                          PieChartData(
+                            sections: [
+                              PieChartSectionData(
+                                value: _metasCumplidas().length.toDouble(),
+                                color: Colors.green,
+                                title:
+                                    '${(_metasCumplidas().length / provider.metas.length * 100).toStringAsFixed(2)}%',
+                              ),
+                              PieChartSectionData(
+                                value: _metasIncumplidas().length.toDouble(),
+                                color: Colors.red,
+                                title:
+                                    '${(_metasIncumplidas().length / provider.metas.length * 100).toStringAsFixed(2)}%',
+                              ),
+                            ],
                           ),
-                          PieChartSectionData(
-                            value: metasIncumplidas.toDouble(),
-                            color: Colors.red,
-                            title:
-                                '${(metasIncumplidas / totalMetas * 100).toStringAsFixed(2)}%',
-                          ),
-                        ],
-                      ),
+                        );
+                      },
                     ),
                   )
                 : const Text('No hay metas aún'),

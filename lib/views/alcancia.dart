@@ -15,7 +15,7 @@ class Alcancia extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         centerTitle: true,
-        title: const Text('Ahorros'),
+        title: const Text('Alcancía'),
       ),
       drawer: menuDesplegablePrincipal(logo, context),
       body: Center(

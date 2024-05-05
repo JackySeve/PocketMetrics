@@ -28,6 +28,7 @@ class _MainAppState extends State<MainApp> {
   @override
   void initState() {
     super.initState();
+    Provider.of<AlcanciaProvider>(context, listen: false).verificarFechaMetas();
     _descargarDatosDesdeFirebase();
     Provider.of<AlcanciaProvider>(context, listen: false)
         .cargarMetasDesdeFirebase();

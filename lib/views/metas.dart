@@ -64,7 +64,9 @@ class _MetasState extends State<Metas> {
     const logo = 'lib/assets/images/logo.png';
 
     return Scaffold(
-      appBar: AppBar(),
+      appBar: AppBar(
+        title: const Text('Mis metas'),
+      ),
       drawer: menuDesplegablePrincipal(logo, context),
       body: Column(
         children: [
@@ -73,49 +75,54 @@ class _MetasState extends State<Metas> {
               itemCount: alcanciaProvider.metas.length,
               itemBuilder: (context, index) {
                 final meta = alcanciaProvider.metas[index];
-                return ListTile(
-                  title: Text(
-                    meta.nombre,
-                    style: TextStyle(
-                      color: meta.cumplida == true
-                          ? Colors.green
-                          : meta.fechaLimite.isBefore(DateTime.now()) &&
-                                  meta.valorAhorrado < meta.valorObjetivo
-                              ? Colors.red
-                              : Colors.green,
+                return Column(
+                  children: [
+                    ListTile(
+                      title: Text(
+                        meta.nombre,
+                        style: TextStyle(
+                          color: meta.cumplida == true
+                              ? Colors.green
+                              : meta.fechaLimite.isBefore(DateTime.now()) &&
+                                      meta.valorAhorrado < meta.valorObjetivo
+                                  ? Colors.red
+                                  : Colors.green,
+                        ),
+                      ),
+                      subtitle: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text('Valor Objetivo: ${meta.valorObjetivo}'),
+                          Text('Valor Ahorrado: ${meta.valorAhorrado}'),
+                          LinearProgressIndicator(
+                            value: meta.valorAhorrado / meta.valorObjetivo,
+                          ),
+                        ],
+                      ),
+                      trailing: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          IconButton(
+                            icon: const Icon(Icons.edit),
+                            onPressed: () {
+                              _mostrarDialogoMeta(meta);
+                            },
+                          ),
+                          IconButton(
+                            icon: const Icon(Icons.delete),
+                            onPressed: () {
+                              _mostrarDialogoConfirmacion(
+                                context,
+                                alcanciaProvider,
+                                meta.id,
+                              );
+                            },
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
-                  subtitle: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text('Valor Objetivo: ${meta.valorObjetivo}'),
-                      Text('Valor Ahorrado: ${meta.valorAhorrado}'),
-                      LinearProgressIndicator(
-                        value: meta.valorAhorrado / meta.valorObjetivo,
-                      ),
-                    ],
-                  ),
-                  trailing: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      IconButton(
-                        icon: const Icon(Icons.edit),
-                        onPressed: () {
-                          _mostrarDialogoMeta(meta);
-                        },
-                      ),
-                      IconButton(
-                        icon: const Icon(Icons.delete),
-                        onPressed: () {
-                          _mostrarDialogoConfirmacion(
-                            context,
-                            alcanciaProvider,
-                            meta.id,
-                          );
-                        },
-                      ),
-                    ],
-                  ),
+                    const Divider(),
+                  ],
                 );
               },
             ),
@@ -167,6 +174,12 @@ class _MetasState extends State<Metas> {
                   keyboardType: TextInputType.number,
                   onSaved: (value) {
                     _valorObjetivo = int.tryParse(value!) ?? 0;
+                  },
+                  validator: (value) {
+                    if (int.tryParse(value!) == null || int.parse(value) <= 0) {
+                      return 'El valor objetivo debe ser mayor a cero';
+                    }
+                    return null;
                   },
                 ),
                 GestureDetector(
@@ -231,9 +244,13 @@ class _MetasState extends State<Metas> {
   }
 
   Future<void> _seleccionarFechaLimite(BuildContext context) async {
+    final DateTime now = DateTime.now();
+    final DateTime initialDate =
+        _fechaLimite.isBefore(now) ? now : _fechaLimite;
+
     final DateTime? fechaSeleccionada = await showDatePicker(
       context: context,
-      initialDate: _fechaLimite,
+      initialDate: initialDate,
       firstDate: DateTime.now(),
       lastDate: DateTime(2100),
     );

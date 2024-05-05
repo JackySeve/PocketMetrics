@@ -1,6 +1,7 @@
 import 'package:alcancia_movil/views/ajustes.dart';
 import 'package:alcancia_movil/views/alcancia.dart';
 import 'package:alcancia_movil/views/avanzados.dart';
+import 'package:alcancia_movil/views/divisas.dart';
 import 'package:alcancia_movil/views/estadisticos.dart';
 import 'package:alcancia_movil/views/historial.dart';
 import 'package:alcancia_movil/views/metas.dart';
@@ -60,6 +61,9 @@ SizedBox menuDesplegablePrincipal(String logo, BuildContext context) {
           menuOption(context, Icons.flag, "Metas", const Metas()),
           const SizedBox(height: 5),
           menuOption(context, Icons.settings, "Ajustes", const Ajustes()),
+          const SizedBox(height: 5),
+          menuOption(
+              context, Icons.currency_exchange, "Divisas", const Divisas()),
           const SizedBox(height: 5),
           menuOption(
               context, Icons.input, "Cerrar Sesión", const CerrarSesion(),

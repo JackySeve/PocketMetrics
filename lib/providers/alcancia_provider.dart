@@ -1,13 +1,8 @@
 import 'dart:convert';
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'dart:math';
 import 'package:cloud_firestore/cloud_firestore.dart';
-
 import '../views/metas.dart';
-
-import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class Moneda {
@@ -51,12 +46,6 @@ class Billete {
 }
 
 class AlcanciaProvider with ChangeNotifier {
-  Future<void> inicializarDatos() async {
-    await cargarDatosDesdeFirestore();
-    await cargarTransaccionesDesdeFirestore();
-    await cargarMetasDesdeFirestore();
-  }
-
   List<Transaccion> _transacciones = [];
 
   List<Transaccion> get transacciones => _transacciones;
@@ -150,7 +139,6 @@ class AlcanciaProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  //Transacción se refiere al historial
   Future<void> guardarTransaccionEnFirestore(Transaccion transaccion) async {
     try {
       final firestore = FirebaseFirestore.instance;
@@ -262,106 +250,6 @@ class AlcanciaProvider with ChangeNotifier {
     return desviacionEstandar / media;
   }
 
-  Future<void> guardarDatosEnFirestore() async {
-    try {
-      final firestore = FirebaseFirestore.instance;
-      final datosAlcancia = {
-        'monedas': _monedas.map((moneda) => moneda.toMap()).toList(),
-        'billetes': _billetes.map((billete) => billete.toMap()).toList(),
-        'totalAhorrado': totalAhorrado,
-      };
-
-      // Crea un nuevo documento en la colección 'alcancia'
-      await firestore.collection('alcancia').doc('datos').set(datosAlcancia);
-    } catch (e) {
-      print('Error al guardar datos en Firestore: $e');
-    }
-  }
-
-  Future<void> eliminarDatosEnFirestore() async {
-    try {
-      final firestore = FirebaseFirestore.instance;
-      await firestore.collection('alcancia').doc('datos').delete();
-      print('Datos eliminados de Firestore');
-    } catch (e) {
-      print('Error al eliminar datos de Firestore: $e');
-    }
-  }
-
-  Future<void> cargarDatosDesdeFirestore() async {
-    try {
-      final firestore = FirebaseFirestore.instance;
-      final docSnapshot =
-          await firestore.collection('alcancia').doc('datos').get();
-      if (docSnapshot.exists) {
-        final data = docSnapshot.data();
-        _monedas = (data?['monedas'] as List<dynamic>?)
-                ?.map((monedaMap) => Moneda.fromMap(monedaMap))
-                .toList() ??
-            [];
-        _billetes = (data?['billetes'] as List<dynamic>?)
-                ?.map((billeteMap) => Billete.fromMap(billeteMap))
-                .toList() ??
-            [];
-        _montoTotalAhorrado = data?['totalAhorrado']?.toDouble() ?? 0.0;
-        notifyListeners();
-        print('Datos cargados desde Firestore');
-      } else {
-        print('No se encontraron datos en Firestore');
-      }
-    } catch (e) {
-      print('Error al cargar datos desde Firestore: $e');
-    }
-  }
-
-  Future<void> guardarTransaccionesEnFirestore() async {
-    try {
-      final firestore = FirebaseFirestore.instance;
-      final transaccionesRef = firestore.collection('transacciones');
-
-      final snapshot = await transaccionesRef.get();
-      for (var doc in snapshot.docs) {
-        await doc.reference.delete();
-      }
-
-      _transacciones.sort((a, b) => a.fecha.compareTo(b.fecha));
-
-      for (var transaccion in _transacciones) {
-        await transaccionesRef.add(transaccion.toMap());
-      }
-    } catch (e) {
-      print('Error al guardar transacciones en Firestore: $e');
-    }
-  }
-
-  Future<void> eliminarTransaccionesEnFirestore() async {
-    try {
-      final firestore = FirebaseFirestore.instance;
-      final transaccionesRef = firestore.collection('transacciones');
-      await transaccionesRef.get().then((snapshot) {
-        for (DocumentSnapshot doc in snapshot.docs) {
-          doc.reference.delete();
-        }
-      });
-      print('Transacciones eliminadas de Firestore');
-    } catch (e) {
-      print('Error al eliminar transacciones de Firestore: $e');
-    }
-  }
-
-  Future<void> cargarTransaccionesDesdeFirestore() async {
-    try {
-      final firestore = FirebaseFirestore.instance;
-      final snapshot = await firestore.collection('transacciones').get();
-      _transacciones =
-          snapshot.docs.map((doc) => Transaccion.fromMap(doc.data())).toList();
-      notifyListeners();
-      print('Transacciones cargadas desde Firestore');
-    } catch (e) {
-      print('Error al cargar transacciones desde Firestore: $e');
-    }
-  }
-
   List<Meta> _metas = [];
 
   List<Meta> get metas => _metas;
@@ -370,6 +258,34 @@ class AlcanciaProvider with ChangeNotifier {
     _metas.add(meta);
     notifyListeners();
     _guardarMetaEnFirebase(meta);
+  }
+
+  void crearMeta(
+      String nombre, double valorObjetivo, DateTime fechaLimite) async {
+    await FirebaseFirestore.instance.collection('metas').add({
+      'nombre': nombre,
+      'valorObjetivo': valorObjetivo,
+      'fechaLimite': fechaLimite,
+      'cumplida': false,
+    });
+  }
+
+  Future<void> verificarFechaMetas() async {
+    QuerySnapshot querySnapshot =
+        await FirebaseFirestore.instance.collection('metas').get();
+
+    querySnapshot.docs.forEach((doc) async {
+      DateTime fechaLimite =
+          DateTime.fromMillisecondsSinceEpoch(doc['fechaLimite']);
+      if (DateTime.now().isAfter(fechaLimite)) {
+        await FirebaseFirestore.instance
+            .collection('metas')
+            .doc(doc.id)
+            .update({
+          'cumplida': true,
+        });
+      }
+    });
   }
 
   Future<void> _guardarMetaEnFirebase(Meta meta) async {
@@ -483,14 +399,12 @@ class AlcanciaProvider with ChangeNotifier {
         'totalAhorrado': totalAhorrado,
       };
 
-      // Crea un nuevo documento en la colección 'alcancia'
       await firestore.collection('alcancia').doc('datos').set(datosAlcancia);
     } catch (e) {
       print('Error al guardar datos en Firebase: $e');
     }
   }
 
-  // Función para cargar los datos desde Firebase
   Future<void> cargarDatosDesdeFirebase() async {
     try {
       final firestore = FirebaseFirestore.instance;
@@ -517,7 +431,6 @@ class AlcanciaProvider with ChangeNotifier {
     }
   }
 
-  // Función para guardar los datos en el dispositivo
   Future<void> guardarDatosLocalmente() async {
     try {
       final prefs = await SharedPreferences.getInstance();
@@ -533,7 +446,6 @@ class AlcanciaProvider with ChangeNotifier {
     }
   }
 
-  // Función para cargar los datos desde el dispositivo
   Future<void> cargarDatosLocalmente() async {
     try {
       final prefs = await SharedPreferences.getInstance();
@@ -559,7 +471,6 @@ class AlcanciaProvider with ChangeNotifier {
     }
   }
 
-  // Función para guardar las transacciones en Firebase
   Future<void> guardarTransaccionesEnFirebase() async {
     try {
       final firestore = FirebaseFirestore.instance;
@@ -580,7 +491,6 @@ class AlcanciaProvider with ChangeNotifier {
     }
   }
 
-  // Función para cargar las transacciones desde Firebase
   Future<void> cargarTransaccionesDesdeFirebase() async {
     try {
       final transaccionesRef =
@@ -595,7 +505,6 @@ class AlcanciaProvider with ChangeNotifier {
     }
   }
 
-  // Función para guardar las metas en Firebase
   Future<void> guardarMetasEnFirebase() async {
     try {
       final firestore = FirebaseFirestore.instance;
@@ -614,7 +523,6 @@ class AlcanciaProvider with ChangeNotifier {
     }
   }
 
-  // Función para cargar las metas desde Firebase
   Future<void> cargarMetasDesdeFirebase() async {
     try {
       final metasRef = FirebaseFirestore.instance.collection('metas');
@@ -625,107 +533,6 @@ class AlcanciaProvider with ChangeNotifier {
       notifyListeners();
     } catch (e) {
       print('Error al cargar metas desde Firebase: $e');
-    }
-  }
-
-  // Función para guardar los datos en el dispositivo cuando no hay conexión a internet
-  Future<void> guardarDatosOffline() async {
-    try {
-      final directory = await getApplicationDocumentsDirectory();
-      final file = File('${directory.path}/datosAlcancia.json');
-      final datosAlcancia = {
-        'monedas': _monedas.map((moneda) => moneda.toMap()).toList(),
-        'billetes': _billetes.map((billete) => billete.toMap()).toList(),
-        'totalAhorrado': totalAhorrado,
-      };
-      await file.writeAsString(json.encode(datosAlcancia));
-      print('Datos guardados offline');
-    } catch (e) {
-      print('Error al guardar datos offline: $e');
-    }
-  }
-
-  // Función para cargar los datos desde el dispositivo cuando no hay conexión a internet
-  Future<void> cargarDatosOffline() async {
-    try {
-      final directory = await getApplicationDocumentsDirectory();
-      final file = File('${directory.path}/datosAlcancia.json');
-      final datosAlcancia = file.readAsStringSync();
-      final data = json.decode(datosAlcancia);
-      _monedas = (data['monedas'] as List<dynamic>?)
-              ?.map((monedaMap) => Moneda.fromMap(monedaMap))
-              .toList() ??
-          [];
-      _billetes = (data['billetes'] as List<dynamic>?)
-              ?.map((billeteMap) => Billete.fromMap(billeteMap))
-              .toList() ??
-          [];
-      _montoTotalAhorrado = data['totalAhorrado']?.toDouble() ?? 0.0;
-      notifyListeners();
-      print('Datos cargados offline');
-    } catch (e) {
-      print('Error al cargar datos offline: $e');
-    }
-  }
-
-  // Función para guardar las transacciones en el dispositivo cuando no hay conexión a internet
-  Future<void> guardarTransaccionesOffline() async {
-    try {
-      final directory = await getApplicationDocumentsDirectory();
-      final file = File('${directory.path}/transacciones.json');
-      final transacciones =
-          _transacciones.map((transaccion) => transaccion.toMap()).toList();
-      await file.writeAsString(json.encode(transacciones));
-      print('Transacciones guardadas offline');
-    } catch (e) {
-      print('Error al guardar transacciones offline: $e');
-    }
-  }
-
-  // Función para cargar las transacciones desde el dispositivo cuando no hay conexión a internet
-  Future<void> cargarTransaccionesOffline() async {
-    try {
-      final directory = await getApplicationDocumentsDirectory();
-      final file = File('${directory.path}/transacciones.json');
-      final transaccionesJson = file.readAsStringSync();
-      final transacciones = (json.decode(transaccionesJson) as List<dynamic>)
-          .map((transaccionMap) => Transaccion.fromMap(transaccionMap))
-          .toList();
-      _transacciones = transacciones;
-      notifyListeners();
-      print('Transacciones cargadas offline');
-    } catch (e) {
-      print('Error al cargar transacciones offline: $e');
-    }
-  }
-
-  // Función para guardar las metas en el dispositivo cuando no hay conexión a internet
-  Future<void> guardarMetasOffline() async {
-    try {
-      final directory = await getApplicationDocumentsDirectory();
-      final file = File('${directory.path}/metas.json');
-      final metas = _metas.map((meta) => meta.toMap()).toList();
-      await file.writeAsString(json.encode(metas));
-      print('Metas guardadas offline');
-    } catch (e) {
-      print('Error al guardar metas offline: $e');
-    }
-  }
-
-  // Función para cargar las metas desde el dispositivo cuando no hay conexión a internet
-  Future<void> cargarMetasOffline() async {
-    try {
-      final directory = await getApplicationDocumentsDirectory();
-      final file = File('${directory.path}/metas.json');
-      final metasJson = file.readAsStringSync();
-      final metas = (json.decode(metasJson) as List<dynamic>)
-          .map((metaMap) => Meta.fromMap(metaMap))
-          .toList();
-      _metas = metas;
-      notifyListeners();
-      print('Metas cargadas offline');
-    } catch (e) {
-      print('Error al cargar metas offline: $e');
     }
   }
 }

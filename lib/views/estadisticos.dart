@@ -11,6 +11,24 @@ class Estadisticos extends StatelessWidget {
     final alcanciaProvider = context.watch<AlcanciaProvider>();
     const logo = 'lib/assets/images/logo.png';
 
+    if (alcanciaProvider.monedas.isEmpty && alcanciaProvider.billetes.isEmpty) {
+      return Scaffold(
+        appBar: AppBar(
+          title: const Text('Estadísticos'),
+        ),
+        drawer: menuDesplegablePrincipal(logo, context),
+        body: const Center(
+          child: Text(
+            'No hay datos disponibles para mostrar estadísticas.',
+            style: TextStyle(
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ),
+      );
+    }
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Estadísticos'),
@@ -39,26 +57,31 @@ class Estadisticos extends StatelessWidget {
                       'Media',
                       alcanciaProvider.calcularMedia().toStringAsFixed(2),
                     ),
+                    const SizedBox(height: 16),
                     _estadisticoItem(
                       'Mediana',
                       alcanciaProvider.calcularMediana().toStringAsFixed(2),
                     ),
+                    const SizedBox(height: 16),
                     _estadisticoItem(
                       'Moda',
                       alcanciaProvider.calcularModa().toStringAsFixed(2),
                     ),
+                    const SizedBox(height: 16),
                     _estadisticoItem(
                       'Desviación Estándar',
                       alcanciaProvider
                           .calcularDesviacionEstandar()
                           .toStringAsFixed(2),
                     ),
+                    const SizedBox(height: 16),
                     _estadisticoItem(
                       'Rango Intercuartil',
                       alcanciaProvider
                           .calcularRangoIntercuartil()
                           .toStringAsFixed(2),
                     ),
+                    const SizedBox(height: 16),
                     _estadisticoItem(
                       'Coeficiente de Variación',
                       alcanciaProvider
