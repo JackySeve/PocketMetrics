@@ -1,9 +1,11 @@
-import 'dart:convert';
+// ignore_for_file: avoid_print, deprecated_member_use, avoid_function_literals_in_foreach_calls
+
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'dart:math';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import '../views/metas.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 class Moneda {
   final int valor;
@@ -46,6 +48,33 @@ class Billete {
 }
 
 class AlcanciaProvider with ChangeNotifier {
+  String? _userId;
+  String? _userEmail;
+  String? _userName;
+
+  String? get userId => _userId;
+  String? get userEmail => _userEmail;
+  String? get userName => _userName;
+
+  set userId(String? value) {
+    _userId = value;
+    notifyListeners();
+  }
+
+  set userEmail(String? value) {
+    _userEmail = value;
+    notifyListeners();
+  }
+
+  set userName(String? value) {
+    _userName = value;
+    notifyListeners();
+  }
+
+  User? _user;
+
+  User? get user => _user;
+
   List<Transaccion> _transacciones = [];
 
   List<Transaccion> get transacciones => _transacciones;
@@ -144,7 +173,7 @@ class AlcanciaProvider with ChangeNotifier {
       final firestore = FirebaseFirestore.instance;
       await firestore.collection('transacciones').add(transaccion.toMap());
     } catch (e) {
-      print('Error al guardar transacción en Firestore: $e');
+      print(e);
     }
   }
 
@@ -315,49 +344,30 @@ class AlcanciaProvider with ChangeNotifier {
     }
   }
 
-  void editarMeta(Meta meta) {
-    int index = _metas.indexWhere((m) => m.id == meta.id);
-    if (index != -1) {
-      _metas[index] = meta;
-      notifyListeners();
-      _guardarMetaEnFirebase(meta);
+  void editarMeta(Meta meta) async {
+    try {
+      final metaDocument =
+          FirebaseFirestore.instance.collection('metas').doc(meta.id);
+      if (meta.nombre != null &&
+          meta.valorObjetivo != null &&
+          meta.fechaLimite != null) {
+        await metaDocument.update({
+          'nombre': meta.nombre,
+          'valorObjetivo': meta.valorObjetivo,
+          'fechaLimite': meta.fechaLimite.millisecondsSinceEpoch,
+        });
+      } else {
+        print('Error: Meta properties cannot be null');
+      }
+    } catch (e) {
+      print('Error editing meta: $e');
     }
   }
 
   void eliminarMeta(String id) {
     _metas.removeWhere((meta) => meta.id == id);
     notifyListeners();
-    guardarMetasEnFirestore();
-  }
-
-  Future<void> guardarMetasEnFirestore() async {
-    try {
-      final firestore = FirebaseFirestore.instance;
-      final metasRef = firestore.collection('metas');
-
-      final snapshot = await metasRef.get();
-      for (var doc in snapshot.docs) {
-        await doc.reference.delete();
-      }
-
-      for (var meta in _metas) {
-        await metasRef.add(meta.toMap());
-      }
-    } catch (e) {
-      print('Error al guardar metas en Firestore: $e');
-    }
-  }
-
-  Future<void> cargarMetasDesdeFirestore() async {
-    try {
-      final firestore = FirebaseFirestore.instance;
-      final snapshot = await firestore.collection('metas').get();
-      _metas = snapshot.docs.map((doc) => Meta.fromMap(doc.data())).toList();
-      notifyListeners();
-      print('Metas cargadas desde Firestore');
-    } catch (e) {
-      print('Error al cargar metas desde Firestore: $e');
-    }
+    guardarMetasEnFirebase();
   }
 
   void actualizarValoresAhorradosMetas() {
@@ -450,46 +460,6 @@ class AlcanciaProvider with ChangeNotifier {
     }
   }
 
-  Future<void> guardarDatosLocalmente() async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      final datosAlcancia = {
-        'monedas': _monedas.map((moneda) => moneda.toMap()).toList(),
-        'billetes': _billetes.map((billete) => billete.toMap()).toList(),
-        'totalAhorrado': totalAhorrado,
-      };
-      await prefs.setString('datosAlcancia', json.encode(datosAlcancia));
-      print('Datos guardados localmente');
-    } catch (e) {
-      print('Error al guardar datos localmente: $e');
-    }
-  }
-
-  Future<void> cargarDatosLocalmente() async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      final datosAlcancia = prefs.getString('datosAlcancia');
-      if (datosAlcancia != null) {
-        final data = json.decode(datosAlcancia);
-        _monedas = (data['monedas'] as List<dynamic>?)
-                ?.map((monedaMap) => Moneda.fromMap(monedaMap))
-                .toList() ??
-            [];
-        _billetes = (data['billetes'] as List<dynamic>?)
-                ?.map((billeteMap) => Billete.fromMap(billeteMap))
-                .toList() ??
-            [];
-        _montoTotalAhorrado = data['totalAhorrado']?.toDouble() ?? 0.0;
-        notifyListeners();
-        print('Datos cargados localmente');
-      } else {
-        print('No se encontraron datos localmente');
-      }
-    } catch (e) {
-      print('Error al cargar datos localmente: $e');
-    }
-  }
-
   Future<void> guardarTransaccionesEnFirebase() async {
     try {
       final firestore = FirebaseFirestore.instance;
@@ -542,17 +512,56 @@ class AlcanciaProvider with ChangeNotifier {
     }
   }
 
+//  ERROR AL CARGAR LAS METAS
   Future<void> cargarMetasDesdeFirebase() async {
     try {
-      final metasRef = FirebaseFirestore.instance.collection('metas');
-      final snapshot = await metasRef.get();
-      final metas =
-          snapshot.docs.map((doc) => Meta.fromMap(doc.data())).toList();
-      _metas = metas;
+      final firestore = FirebaseFirestore.instance;
+      final metasRef = firestore.collection('metas');
+      final metaSnapshot = await metasRef.get();
+      print('Metas snapshot data:');
+      for (final doc in metaSnapshot.docs) {
+        print('- ID: ${doc.id}');
+        print('  Data: ${doc.data()}');
+      }
+
+      _metas = metaSnapshot.docs
+          .map((doc) => Meta.fromMap(doc.data()))
+          .cast<Meta>()
+          .toList();
       notifyListeners();
-    } catch (e) {
-      print('Error al cargar metas desde Firebase: $e');
+    } catch (error) {
+      if (error is FirebaseException) {
+        // Handle Firebase-specific errors here
+        print('Error cargando metas del Firebase: ${error.message}');
+      } else {
+        // Handle other exceptions here
+        print('Error cargando metas: $error');
+      }
     }
+  }
+
+  Future<UserCredential?> signInWithGoogle() async {
+    // Trigger the authentication flow
+    final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
+
+    // Obtain the auth details from the request
+    final GoogleSignInAuthentication? googleAuth =
+        await googleUser?.authentication;
+
+    // Create a new credential
+    final credential = GoogleAuthProvider.credential(
+      accessToken: googleAuth?.accessToken,
+      idToken: googleAuth?.idToken,
+    );
+
+    // Once signed in, return the UserCredential
+    final UserCredential userCredential =
+        await FirebaseAuth.instance.signInWithCredential(credential);
+
+    _user = userCredential.user;
+    notifyListeners();
+
+    return userCredential;
   }
 }
 
@@ -562,6 +571,8 @@ class Transaccion {
   final DateTime fecha;
 
   Transaccion(this.monto, this.esIngreso, this.fecha);
+
+  get nombre => null;
 
   Map<String, dynamic> toMap() {
     return {

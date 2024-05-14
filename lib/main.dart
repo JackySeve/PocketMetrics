@@ -1,4 +1,4 @@
-import 'package:alcancia_movil/views/pantallaPrincipal.dart';
+import 'package:alcancia_movil/views/paginaBienvenida.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:provider/provider.dart';
@@ -46,7 +46,7 @@ class _MainAppState extends State<MainApp> {
   Widget build(BuildContext context) {
     return const MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: PantallaPrincipal(),
+      home: InicioPrincipal(),
     );
   }
 }

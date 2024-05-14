@@ -1,4 +1,5 @@
 import 'package:alcancia_movil/providers/alcancia_provider.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -24,7 +25,11 @@ class Historial extends StatelessWidget {
       appBar: AppBar(
         title: const Text('Historial'),
       ),
-      drawer: menuDesplegablePrincipal(logo, context),
+      drawer: menuDesplegablePrincipal(
+        logo,
+        context,
+        user: FirebaseAuth.instance.currentUser,
+      ),
       body: Consumer<AlcanciaProvider>(
         builder: (context, alcanciaProvider, child) {
           return ListView.builder(

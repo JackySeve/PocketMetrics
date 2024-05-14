@@ -12,7 +12,20 @@
           "package_name": "com.example.alcancia_movil"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "64964084126-dpp2q9m8q2ds1d397v8fac1lemid1vol.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.alcancia_movil",
+            "certificate_hash": "6eae6ab3e894fee687cc35fbb70ed1806f25f8ac"
+          }
+        },
+        {
+          "client_id": "64964084126-s509vrvm1q6tjpb1ls8bgumrt16vk5n8.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyAmfR2nrr1LR-N--d6mZCXj9TYFmHRrhrE"
@@ -20,7 +33,12 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "64964084126-s509vrvm1q6tjpb1ls8bgumrt16vk5n8.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
         }
       }
     }

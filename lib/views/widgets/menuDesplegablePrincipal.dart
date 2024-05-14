@@ -8,10 +8,10 @@ import 'package:alcancia_movil/views/metas.dart';
 import 'package:alcancia_movil/views/pantallaPrincipal.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
-import '../cerrarSesion.dart';
-
-SizedBox menuDesplegablePrincipal(String logo, BuildContext context) {
+SizedBox menuDesplegablePrincipal(String logo, BuildContext context,
+    {User? user}) {
   return SizedBox(
     width: 220,
     child: Drawer(
@@ -23,23 +23,25 @@ SizedBox menuDesplegablePrincipal(String logo, BuildContext context) {
             child: DrawerHeader(
               child: Column(
                 children: [
-                  Container(
-                    child: Image.asset(
-                      logo,
-                      width: 100,
-                      height: 85,
+                  Image.asset(
+                    logo,
+                    width: 100,
+                    height: 85,
+                  ),
+                  const Text(
+                    "PocketMetrics",
+                    style: TextStyle(
+                      color: Colors.green,
+                      fontSize: 26,
+                      fontWeight: FontWeight.bold,
                     ),
                   ),
-                  Container(
-                    child: const Text(
-                      "PocketMetrics",
-                      style: TextStyle(
-                        color: Colors.green,
-                        fontSize: 26,
-                        fontWeight: FontWeight.bold,
-                      ),
+                  // Mostrar la información del usuario actual
+                  if (user != null)
+                    Text(
+                      'Bienvenido, ${user.displayName ?? user.email}',
+                      style: TextStyle(fontSize: 16, color: Colors.black),
                     ),
-                  ),
                 ],
               ),
             ),
@@ -66,8 +68,7 @@ SizedBox menuDesplegablePrincipal(String logo, BuildContext context) {
               context, Icons.currency_exchange, "Divisas", const Divisas()),
           const SizedBox(height: 5),
           menuOption(
-              context, Icons.input, "Cerrar Sesión", const CerrarSesion(),
-              closeApp: true),
+              context, Icons.input, "Cerrar Sesión", const CerrarSesion()),
         ],
       ),
     ),
@@ -78,35 +79,30 @@ Widget menuOption(
     BuildContext context, IconData icon, String title, Widget? destination,
     {bool closeApp = false}) {
   return SizedBox(
-    height: 55,
+    height: 60,
     child: Container(
       decoration: const BoxDecoration(
         color: Color.fromARGB(255, 226, 225, 225),
       ),
       child: Center(
         child: ListTile(
-          contentPadding: const EdgeInsets.only(left: 30),
           leading: Icon(
             icon,
-            color: const Color.fromRGBO(16, 162, 31, 1),
-            size: 40,
+            color: Colors.green,
+            size: 32,
           ),
           title: Text(
             title,
-            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            style: TextStyle(fontSize: 18),
           ),
           onTap: () {
             if (destination != null) {
-              if (closeApp) {
-                SystemNavigator.pop();
-              } else {
-                Navigator.pop(context);
-                Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(builder: (context) => destination),
-                );
-              }
-            } else {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => destination),
+              );
+            }
+            if (closeApp) {
               SystemNavigator.pop();
             }
           },
@@ -114,4 +110,22 @@ Widget menuOption(
       ),
     ),
   );
+}
+
+class CerrarSesion extends StatelessWidget {
+  const CerrarSesion({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: OutlinedButton(
+        onPressed: () {
+          FirebaseAuth.instance.signOut();
+          Navigator.pushNamedAndRemoveUntil(
+              context, "/login", (Route<dynamic> route) => false);
+        },
+        child: const Text("Cerrar Sesión"),
+      ),
+    );
+  }
 }

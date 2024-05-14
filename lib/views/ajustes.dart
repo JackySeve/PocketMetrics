@@ -1,6 +1,6 @@
 import 'package:alcancia_movil/views/widgets/menuDesplegablePrincipal.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 
 class Ajustes extends StatefulWidget {
   const Ajustes({super.key});
@@ -49,7 +49,7 @@ class _AjustesState extends State<Ajustes> {
                     child: Container(
                       height: 40,
                       width: 40,
-                      decoration: BoxDecoration(
+                      decoration: const BoxDecoration(
                         color: Colors.white,
                         shape: BoxShape.circle,
                       ),
@@ -86,7 +86,11 @@ class _AjustesState extends State<Ajustes> {
       appBar: AppBar(
         title: const Text('Ajustes'),
       ),
-      drawer: menuDesplegablePrincipal(logo, context),
+      drawer: menuDesplegablePrincipal(
+        logo,
+        context,
+        user: FirebaseAuth.instance.currentUser,
+      ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -94,7 +98,7 @@ class _AjustesState extends State<Ajustes> {
           children: [
             const Text('Ajustes'),
             const SizedBox(height: 16),
-            Text('Tamaño de letra',
+            const Text('Tamaño de letra',
                 style: TextStyle(fontWeight: FontWeight.bold)),
             Slider(
               value: _fontSize,
@@ -109,9 +113,9 @@ class _AjustesState extends State<Ajustes> {
               },
             ),
             Text('${_fontSize.toInt()} puntos',
-                style: TextStyle(fontWeight: FontWeight.bold)),
+                style: const TextStyle(fontWeight: FontWeight.bold)),
             const SizedBox(height: 16),
-            Text('Tipografía de letra',
+            const Text('Tipografía de letra',
                 style: TextStyle(fontWeight: FontWeight.bold)),
             DropdownButton<String>(
               value: _fontFamily,
@@ -120,7 +124,7 @@ class _AjustesState extends State<Ajustes> {
                   _fontFamily = value!;
                 });
               },
-              items: [
+              items: const [
                 DropdownMenuItem(
                   value: 'Roboto',
                   child: Text('Roboto'),
@@ -136,7 +140,7 @@ class _AjustesState extends State<Ajustes> {
               ],
             ),
             const SizedBox(height: 16),
-            Text('Color de letra',
+            const Text('Color de letra',
                 style: TextStyle(fontWeight: FontWeight.bold)),
             ElevatedButton(
               onPressed: () {
@@ -153,11 +157,11 @@ class _AjustesState extends State<Ajustes> {
                   child: Container(
                     height: 40,
                     width: 40,
-                    decoration: BoxDecoration(
+                    decoration: const BoxDecoration(
                       color: Colors.white,
                       shape: BoxShape.circle,
                     ),
-                    child: Center(
+                    child: const Center(
                       child: Text(
                         'A',
                         style: TextStyle(
@@ -191,7 +195,7 @@ class _AjustesState extends State<Ajustes> {
                     _textColor = Colors.black;
                   });
                 },
-                child: Center(child: const Text('Restablecer')),
+                child: const Center(child: Text('Restablecer')),
               ),
             ),
           ],

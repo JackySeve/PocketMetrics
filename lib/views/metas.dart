@@ -1,4 +1,5 @@
 import 'package:alcancia_movil/views/widgets/menuDesplegablePrincipal.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/alcancia_provider.dart';
@@ -67,7 +68,11 @@ class _MetasState extends State<Metas> {
       appBar: AppBar(
         title: const Text('Mis metas'),
       ),
-      drawer: menuDesplegablePrincipal(logo, context),
+      drawer: menuDesplegablePrincipal(
+        logo,
+        context,
+        user: FirebaseAuth.instance.currentUser,
+      ),
       body: Column(
         children: [
           Expanded(
@@ -149,6 +154,7 @@ class _MetasState extends State<Metas> {
 
     showDialog(
       context: context,
+      barrierDismissible: false,
       builder: (BuildContext context) {
         return AlertDialog(
           title: Text(meta == null ? 'Agregar Meta' : 'Editar Meta'),
@@ -264,6 +270,7 @@ class _MetasState extends State<Metas> {
   ) {
     showDialog(
       context: context,
+      barrierDismissible: false,
       builder: (BuildContext context) {
         return AlertDialog(
           title: const Text('Eliminar Meta'),

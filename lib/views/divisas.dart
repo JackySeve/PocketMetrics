@@ -1,12 +1,12 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
 import 'widgets/menuDesplegablePrincipal.dart';
 
 class Divisas extends StatefulWidget {
-  const Divisas({Key? key}) : super(key: key);
+  const Divisas({super.key});
 
   @override
   _DivisasState createState() => _DivisasState();
@@ -92,67 +92,116 @@ class _DivisasState extends State<Divisas> {
       appBar: AppBar(
         title: const Text('Conversor de Divisas'),
       ),
-      drawer: menuDesplegablePrincipal(logo, context),
-      body: Padding(
+      drawer: _buildDrawer(logo, context),
+      body: _buildBody(),
+    );
+  }
+
+  Widget _buildDrawer(String logo, BuildContext context) {
+    return menuDesplegablePrincipal(
+      logo,
+      context,
+      user: FirebaseAuth.instance.currentUser,
+    );
+  }
+
+  Widget _buildBody() {
+    return Padding(
+      padding: const EdgeInsets.all(16.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          _buildConversionCard(),
+          const Divider(),
+          _buildResultText(),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildConversionCard() {
+    return Card(
+      child: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            TextField(
-              keyboardType: TextInputType.number,
-              decoration: InputDecoration(
-                labelText: 'Ingrese un valor',
-              ),
-              onChanged: (value) {
-                setState(() {
-                  _valorIngresado = double.tryParse(value) ?? 0;
-                });
-              },
-            ),
-            const SizedBox(height: 16.0),
-            DropdownButton<String>(
-              value: _monedaOrigen,
-              onChanged: (value) {
-                setState(() {
-                  _monedaOrigen = value!;
-                });
-              },
-              items: _monedas.map((moneda) {
-                return DropdownMenuItem<String>(
-                  value: moneda,
-                  child: Text(moneda),
-                );
-              }).toList(),
-            ),
-            const SizedBox(height: 16.0),
-            DropdownButton<String>(
-              value: _monedaDestino,
-              onChanged: (value) {
-                setState(() {
-                  _monedaDestino = value!;
-                });
-              },
-              items: _monedas.map((moneda) {
-                return DropdownMenuItem<String>(
-                  value: moneda,
-                  child: Text(moneda),
-                );
-              }).toList(),
-            ),
-            const SizedBox(height: 16.0),
-            ElevatedButton(
-              onPressed: _convertirMonedas,
-              child: const Text('Convertir'),
-            ),
-            const SizedBox(height: 16.0),
-            Text(
-              'Resultado: $_resultadoConversion $_monedaDestino',
-              style: const TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
+            _buildInputField(),
+            _buildMonedaOrigenDropdown(),
+            _buildMonedaDestinoDropdown(),
+            _buildConvertButton(),
           ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildInputField() {
+    return TextField(
+      keyboardType: TextInputType.number,
+      decoration: const InputDecoration(
+        labelText: 'Ingrese un valor',
+      ),
+      onChanged: (value) {
+        setState(() {
+          _valorIngresado = double.tryParse(value) ?? 0;
+        });
+      },
+    );
+  }
+
+  Widget _buildMonedaOrigenDropdown() {
+    return DropdownButton<String>(
+      value: _monedaOrigen,
+      onChanged: (value) {
+        setState(() {
+          _monedaOrigen = value!;
+        });
+      },
+      items: _monedas.map((moneda) {
+        return DropdownMenuItem<String>(
+          value: moneda,
+          child: Text(moneda),
+        );
+      }).toList(),
+    );
+  }
+
+  Widget _buildMonedaDestinoDropdown() {
+    return DropdownButton<String>(
+      value: _monedaDestino,
+      onChanged: (value) {
+        setState(() {
+          _monedaDestino = value!;
+        });
+      },
+      items: _monedas.map((moneda) {
+        return DropdownMenuItem<String>(
+          value: moneda,
+          child: Text(moneda),
+        );
+      }).toList(),
+    );
+  }
+
+  Widget _buildConvertButton() {
+    return ElevatedButton(
+      style: ElevatedButton.styleFrom(
+        foregroundColor: Colors.white,
+        backgroundColor: Colors.green,
+        elevation: 5,
+      ),
+      onPressed: _convertirMonedas,
+      child: const Text('Convertir'),
+    );
+  }
+
+  Widget _buildResultText() {
+    return Center(
+      child: Text(
+        'Resultado de la Conversión: ${_resultadoConversion.toStringAsFixed(3)} $_monedaDestino',
+        style: const TextStyle(
+          fontSize: 16,
+          fontWeight: FontWeight.bold,
         ),
       ),
     );

@@ -1,5 +1,6 @@
 import 'package:alcancia_movil/providers/alcancia_provider.dart';
 import 'package:alcancia_movil/views/widgets/menuDesplegablePrincipal.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -17,7 +18,11 @@ class Alcancia extends StatelessWidget {
         centerTitle: true,
         title: const Text('Alcancía'),
       ),
-      drawer: menuDesplegablePrincipal(logo, context),
+      drawer: menuDesplegablePrincipal(
+        logo,
+        context,
+        user: FirebaseAuth.instance.currentUser,
+      ),
       body: Center(
         child: Column(
           children: [
@@ -136,11 +141,11 @@ class Alcancia extends StatelessWidget {
               future: alcanciaProvider.guardarDatosEnFirebase(),
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
-                  return CircularProgressIndicator();
+                  return const CircularProgressIndicator();
                 } else if (snapshot.hasError) {
                   return Text('Error: ${snapshot.error}');
                 } else {
-                  return SizedBox();
+                  return const SizedBox();
                 }
               },
             ),

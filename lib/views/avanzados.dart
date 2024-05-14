@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:charts_flutter/flutter.dart' as charts;
 import 'package:provider/provider.dart';
@@ -115,7 +116,11 @@ class _AvanzadosState extends State<Avanzados> {
         appBar: AppBar(
           title: const Text('Avanzados'),
         ),
-        drawer: menuDesplegablePrincipal(logo, context),
+        drawer: menuDesplegablePrincipal(
+          logo,
+          context,
+          user: FirebaseAuth.instance.currentUser,
+        ),
         body: const Center(
           child: Text('No hay transacciones aún'),
         ),
@@ -164,21 +169,24 @@ class _AvanzadosState extends State<Avanzados> {
                 ? Flexible(
                     child: Consumer<AlcanciaProvider>(
                       builder: (context, provider, child) {
+                        int totalMetas = _metasCumplidas().length +
+                            _metasIncumplidas().length;
                         return PieChart(
                           PieChartData(
+                            centerSpaceRadius: 0,
                             sections: [
                               PieChartSectionData(
-                                value: _metasCumplidas().length.toDouble(),
-                                color: Colors.green,
-                                title:
-                                    '${(_metasCumplidas().length / provider.metas.length * 100).toStringAsFixed(2)}%',
-                              ),
+                                  value: _metasCumplidas().length.toDouble(),
+                                  color: Colors.green,
+                                  title:
+                                      '${((_metasCumplidas().length / totalMetas) * 100).toStringAsFixed(2)}%',
+                                  radius: 100),
                               PieChartSectionData(
-                                value: _metasIncumplidas().length.toDouble(),
-                                color: Colors.red,
-                                title:
-                                    '${(_metasIncumplidas().length / provider.metas.length * 100).toStringAsFixed(2)}%',
-                              ),
+                                  value: _metasIncumplidas().length.toDouble(),
+                                  color: Colors.red,
+                                  title:
+                                      '${((_metasIncumplidas().length / totalMetas) * 100).toStringAsFixed(2)}%',
+                                  radius: 100),
                             ],
                           ),
                         );

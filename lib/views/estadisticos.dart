@@ -1,5 +1,6 @@
 import 'package:alcancia_movil/providers/alcancia_provider.dart';
 import 'package:alcancia_movil/views/widgets/menuDesplegablePrincipal.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -16,7 +17,11 @@ class Estadisticos extends StatelessWidget {
         appBar: AppBar(
           title: const Text('Estadísticos'),
         ),
-        drawer: menuDesplegablePrincipal(logo, context),
+        drawer: menuDesplegablePrincipal(
+          logo,
+          context,
+          user: FirebaseAuth.instance.currentUser,
+        ),
         body: const Center(
           child: Text(
             'No hay datos disponibles para mostrar estadísticas.',
