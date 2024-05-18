@@ -48,6 +48,8 @@ class Billete {
 }
 
 class AlcanciaProvider with ChangeNotifier {
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+
   String? _userId;
   String? _userEmail;
   String? _userName;
@@ -348,17 +350,11 @@ class AlcanciaProvider with ChangeNotifier {
     try {
       final metaDocument =
           FirebaseFirestore.instance.collection('metas').doc(meta.id);
-      if (meta.nombre != null &&
-          meta.valorObjetivo != null &&
-          meta.fechaLimite != null) {
-        await metaDocument.update({
-          'nombre': meta.nombre,
-          'valorObjetivo': meta.valorObjetivo,
-          'fechaLimite': meta.fechaLimite.millisecondsSinceEpoch,
-        });
-      } else {
-        print('Error: Meta properties cannot be null');
-      }
+      await metaDocument.update({
+        'nombre': meta.nombre,
+        'valorObjetivo': meta.valorObjetivo,
+        'fechaLimite': meta.fechaLimite.millisecondsSinceEpoch,
+      });
     } catch (e) {
       print('Error editing meta: $e');
     }
@@ -428,7 +424,12 @@ class AlcanciaProvider with ChangeNotifier {
         'totalAhorrado': totalAhorrado,
       };
 
-      await firestore.collection('alcancia').doc('datos').set(datosAlcancia);
+      await firestore
+          .collection('usuarios')
+          .doc(_userId)
+          .collection('alcancia')
+          .doc('datos')
+          .set(datosAlcancia);
     } catch (e) {
       print('Error al guardar datos en Firebase: $e');
     }
@@ -437,8 +438,12 @@ class AlcanciaProvider with ChangeNotifier {
   Future<void> cargarDatosDesdeFirebase() async {
     try {
       final firestore = FirebaseFirestore.instance;
-      final docSnapshot =
-          await firestore.collection('alcancia').doc('datos').get();
+      final docSnapshot = await firestore
+          .collection('usuarios')
+          .doc(_userId)
+          .collection('alcancia')
+          .doc('datos')
+          .get();
       if (docSnapshot.exists) {
         final data = docSnapshot.data();
         _monedas = (data?['monedas'] as List<dynamic>?)
@@ -463,7 +468,10 @@ class AlcanciaProvider with ChangeNotifier {
   Future<void> guardarTransaccionesEnFirebase() async {
     try {
       final firestore = FirebaseFirestore.instance;
-      final transaccionesRef = firestore.collection('transacciones');
+      final transaccionesRef = firestore
+          .collection('usuarios')
+          .doc(_userId)
+          .collection('transacciones');
 
       final snapshot = await transaccionesRef.get();
       for (var doc in snapshot.docs) {
@@ -482,8 +490,11 @@ class AlcanciaProvider with ChangeNotifier {
 
   Future<void> cargarTransaccionesDesdeFirebase() async {
     try {
-      final transaccionesRef =
-          FirebaseFirestore.instance.collection('transacciones');
+      final firestore = FirebaseFirestore.instance;
+      final transaccionesRef = firestore
+          .collection('usuarios')
+          .doc(_userId)
+          .collection('transacciones');
       final snapshot = await transaccionesRef.get();
       final transacciones =
           snapshot.docs.map((doc) => Transaccion.fromMap(doc.data())).toList();
@@ -497,7 +508,8 @@ class AlcanciaProvider with ChangeNotifier {
   Future<void> guardarMetasEnFirebase() async {
     try {
       final firestore = FirebaseFirestore.instance;
-      final metasRef = firestore.collection('metas');
+      final metasRef =
+          firestore.collection('usuarios').doc(_userId).collection('metas');
 
       final snapshot = await metasRef.get();
       for (var doc in snapshot.docs) {
@@ -512,27 +524,22 @@ class AlcanciaProvider with ChangeNotifier {
     }
   }
 
-//  ERROR AL CARGAR LAS METAS
   Future<void> cargarMetasDesdeFirebase() async {
     try {
       final firestore = FirebaseFirestore.instance;
-      final metasRef = firestore.collection('metas');
+      final metasRef =
+          firestore.collection('usuarios').doc(_userId).collection('metas');
       final metaSnapshot = await metasRef.get();
-      print('Metas snapshot data:');
-      for (final doc in metaSnapshot.docs) {
-        print('- ID: ${doc.id}');
-        print('  Data: ${doc.data()}');
-      }
 
       _metas = metaSnapshot.docs
           .map((doc) => Meta.fromMap(doc.data()))
-          .cast<Meta>()
+          .where((meta) => meta != null) // Filtrar metas que sean nulas
           .toList();
       notifyListeners();
     } catch (error) {
       if (error is FirebaseException) {
         // Handle Firebase-specific errors here
-        print('Error cargando metas del Firebase: ${error.message}');
+        print('Error cargando metas desde Firebase: ${error.message}');
       } else {
         // Handle other exceptions here
         print('Error cargando metas: $error');
@@ -562,6 +569,59 @@ class AlcanciaProvider with ChangeNotifier {
     notifyListeners();
 
     return userCredential;
+  }
+
+  Future<String?> registerUser(
+      String username, String email, String password) async {
+    try {
+      // Utilizamos el método createUserWithEmailAndPassword de FirebaseAuth
+      // para crear un nuevo usuario con el correo electrónico y la contraseña proporcionados.
+      UserCredential userCredential =
+          await _auth.createUserWithEmailAndPassword(
+        email: email,
+        password: password,
+      );
+
+      // Una vez que el usuario se registra correctamente, podemos obtener su ID único.
+      String userId = userCredential.user!.uid;
+
+      // Aquí podrías almacenar información adicional del usuario en Firebase Firestore
+      // o en cualquier otra base de datos que estés utilizando.
+
+      // Retornamos el ID del usuario como confirmación del registro exitoso.
+      return userId;
+    } catch (error) {
+      // Si ocurre algún error durante el registro, lo capturamos y lo mostramos.
+      print("Error al registrar usuario: $error");
+      return null; // Retornamos null para indicar que el registro no fue exitoso.
+    }
+  }
+
+  // Método para iniciar sesión con correo electrónico y contraseña
+  Future<User?> signInWithEmailPassword(String email, String password) async {
+    try {
+      UserCredential userCredential = await _auth.signInWithEmailAndPassword(
+        email: email,
+        password: password,
+      );
+      return userCredential.user;
+    } catch (error) {
+      print('Error al iniciar sesión: $error');
+      return null;
+    }
+  }
+
+  Future<void> loadUserData() async {
+    try {
+      // Aquí colocas el código para cargar los datos del usuario desde Firebase
+      await cargarDatosDesdeFirebase();
+      await cargarMetasDesdeFirebase();
+      await cargarTransaccionesDesdeFirebase();
+    } catch (e) {
+      // Manejo de errores, por ejemplo, si ocurre un error al cargar los datos desde Firebase
+      print('Error al cargar los datos del usuario: $e');
+      throw e; // Puedes lanzar la excepción nuevamente para manejarla en la pantalla principal
+    }
   }
 }
 

@@ -19,7 +19,7 @@ SizedBox menuDesplegablePrincipal(String logo, BuildContext context,
         padding: EdgeInsets.zero,
         children: [
           SizedBox(
-            height: 200.0,
+            height: 240.0,
             child: DrawerHeader(
               child: Column(
                 children: [
@@ -39,8 +39,8 @@ SizedBox menuDesplegablePrincipal(String logo, BuildContext context,
                   // Mostrar la información del usuario actual
                   if (user != null)
                     Text(
-                      'Bienvenido, ${user.displayName ?? user.email}',
-                      style: TextStyle(fontSize: 16, color: Colors.black),
+                      'Bienvenido, \n${user.displayName ?? user.email}',
+                      style: const TextStyle(fontSize: 13, color: Colors.black),
                     ),
                 ],
               ),
@@ -93,7 +93,7 @@ Widget menuOption(
           ),
           title: Text(
             title,
-            style: TextStyle(fontSize: 18),
+            style: const TextStyle(fontSize: 18),
           ),
           onTap: () {
             if (destination != null) {
@@ -113,7 +113,7 @@ Widget menuOption(
 }
 
 class CerrarSesion extends StatelessWidget {
-  const CerrarSesion({Key? key}) : super(key: key);
+  const CerrarSesion({super.key});
 
   @override
   Widget build(BuildContext context) {

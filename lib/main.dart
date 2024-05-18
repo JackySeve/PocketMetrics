@@ -28,18 +28,6 @@ class _MainAppState extends State<MainApp> {
   @override
   void initState() {
     super.initState();
-    Provider.of<AlcanciaProvider>(context, listen: false).verificarFechaMetas();
-    _descargarDatosDesdeFirebase();
-    Provider.of<AlcanciaProvider>(context, listen: false)
-        .cargarMetasDesdeFirebase();
-    Provider.of<AlcanciaProvider>(context, listen: false)
-        .cargarTransaccionesDesdeFirebase();
-  }
-
-  Future<void> _descargarDatosDesdeFirebase() async {
-    final alcanciaProvider =
-        Provider.of<AlcanciaProvider>(context, listen: false);
-    await alcanciaProvider.cargarDatosDesdeFirebase();
   }
 
   @override

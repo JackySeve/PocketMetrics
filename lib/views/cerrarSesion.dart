@@ -1,36 +1,30 @@
 import 'package:alcancia_movil/views/paginaBienvenida.dart';
-import 'package:alcancia_movil/views/widgets/menuDesplegablePrincipal.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
-class CerrarSesion extends StatelessWidget {
-  const CerrarSesion({super.key});
-
+class PantallaCerrarSesion extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    const logo = 'lib/assets/images/logo.png';
     return Scaffold(
       appBar: AppBar(
-        centerTitle: true,
-        title: const Text('Alcancía'),
+        title: Text('Cerrar Sesión'),
       ),
-      drawer: menuDesplegablePrincipal(logo, context),
       body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Text('¿Seguro que quieres cerrar sesión?'),
-            ElevatedButton(
-                onPressed: () {
-                  FirebaseAuth.instance.signOut();
-                  Navigator.pushReplacement(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) => const InicioPrincipal()),
-                  );
-                },
-                child: const Text('Cerrar Sesión'))
-          ],
+        child: ElevatedButton(
+          onPressed: () async {
+            // Cerrar sesión
+            await FirebaseAuth.instance.signOut();
+            // Navegar a la pantalla de inicio de sesión o registro
+            Navigator.pushAndRemoveUntil(
+              context,
+              MaterialPageRoute(
+                  builder: (context) =>
+                      InicioPrincipal()), // Opcional: Cambiar a RegistroUsuario si deseas redirigir a la pantalla de registro
+              (Route<dynamic> route) =>
+                  false, // Elimina todas las rutas anteriores
+            );
+          },
+          child: Text('Cerrar Sesión'),
         ),
       ),
     );

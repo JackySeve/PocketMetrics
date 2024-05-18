@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 class AlcanciaProvider with ChangeNotifier {
-  List<Moneda> _monedas = [
+  final List<Moneda> _monedas = [
     Moneda(50),
     Moneda(100),
     Moneda(200),
@@ -9,7 +9,7 @@ class AlcanciaProvider with ChangeNotifier {
     Moneda(1000),
   ];
 
-  List<Billete> _billetes = [
+  final List<Billete> _billetes = [
     Billete(1000),
     Billete(2000),
     Billete(5000),

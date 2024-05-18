@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 class MetaProvider with ChangeNotifier {
-  List<Meta> _metas = [];
+  final List<Meta> _metas = [];
 
   List<Meta> get metas => _metas;
 

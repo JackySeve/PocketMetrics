@@ -1,14 +1,36 @@
 import 'package:alcancia_movil/views/alcancia.dart';
 import 'package:alcancia_movil/views/metas.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:provider/provider.dart';
 
 import '../providers/alcancia_provider.dart';
 import 'widgets/menuDesplegablePrincipal.dart';
 
-class PantallaPrincipal extends StatelessWidget {
-  const PantallaPrincipal({super.key});
+class PantallaPrincipal extends StatefulWidget {
+  const PantallaPrincipal({Key? key}) : super(key: key);
+
+  @override
+  _PantallaPrincipalState createState() => _PantallaPrincipalState();
+}
+
+class _PantallaPrincipalState extends State<PantallaPrincipal> {
+  @override
+  void initState() {
+    super.initState();
+    Provider.of<AlcanciaProvider>(context, listen: false).verificarFechaMetas();
+    _descargarDatosDesdeFirebase();
+    Provider.of<AlcanciaProvider>(context, listen: false)
+        .cargarMetasDesdeFirebase();
+    Provider.of<AlcanciaProvider>(context, listen: false)
+        .cargarTransaccionesDesdeFirebase();
+  }
+
+  Future<void> _descargarDatosDesdeFirebase() async {
+    final alcanciaProvider =
+        Provider.of<AlcanciaProvider>(context, listen: false);
+    await alcanciaProvider.cargarDatosDesdeFirebase();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -137,11 +159,12 @@ class ImageLogo extends StatelessWidget {
   final double height;
   final String image;
 
-  const ImageLogo(
-      {super.key,
-      required this.width,
-      required this.height,
-      required this.image});
+  const ImageLogo({
+    Key? key,
+    required this.width,
+    required this.height,
+    required this.image,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -157,7 +180,11 @@ class CustomButton extends StatelessWidget {
   final VoidCallback onPressed;
   final Widget child;
 
-  const CustomButton({super.key, required this.onPressed, required this.child});
+  const CustomButton({
+    Key? key,
+    required this.onPressed,
+    required this.child,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {

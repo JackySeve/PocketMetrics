@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 class TransaccionProvider with ChangeNotifier {
-  List<Transaccion> _transacciones = [];
+  final List<Transaccion> _transacciones = [];
 
   List<Transaccion> get transacciones => _transacciones;
 

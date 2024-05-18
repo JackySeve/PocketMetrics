@@ -34,11 +34,13 @@ class Meta {
 
   factory Meta.fromMap(Map<String, dynamic> map) {
     return Meta(
-      id: map['id'],
-      nombre: map['nombre'],
-      valorObjetivo: map['valorObjetivo'],
+      id: map['id'] ?? '',
+      nombre: map['nombre'] ?? '',
+      valorObjetivo: map['valorObjetivo'] ?? 0,
       valorAhorrado: map['valorAhorrado'] ?? 0,
-      fechaLimite: DateTime.fromMillisecondsSinceEpoch(map['fechaLimite']),
+      fechaLimite: map['fechaLimite'] != null
+          ? DateTime.fromMillisecondsSinceEpoch(map['fechaLimite'])
+          : DateTime.now(),
       cumplida: map['cumplida'] ?? false,
     );
   }
