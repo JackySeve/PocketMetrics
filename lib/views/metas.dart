@@ -1,8 +1,9 @@
-import 'package:alcancia_movil/views/widgets/menuDesplegablePrincipal.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import '../providers/alcancia_provider.dart';
+import '../views/widgets/menuDesplegablePrincipal.dart';
 
 class Meta {
   String id;
@@ -47,7 +48,7 @@ class Meta {
 }
 
 class Metas extends StatefulWidget {
-  const Metas({super.key});
+  const Metas({Key? key}) : super(key: key);
 
   @override
   _MetasState createState() => _MetasState();
@@ -59,6 +60,7 @@ class _MetasState extends State<Metas> {
   int _valorObjetivo = 0;
   DateTime _fechaLimite = DateTime.now();
   Meta? _metaEditando;
+  final userEmail = FirebaseAuth.instance.currentUser?.email;
 
   @override
   Widget build(BuildContext context) {
@@ -229,11 +231,19 @@ class _MetasState extends State<Metas> {
                       fechaLimite: _fechaLimite,
                     );
                     alcanciaProvider.agregarMeta(meta);
+                    if (userEmail != null) {
+                      guardarMetasEnFirebase(
+                          alcanciaProvider.metas, userEmail!);
+                    }
                   } else {
                     _metaEditando!.nombre = _nombreMeta;
                     _metaEditando!.valorObjetivo = _valorObjetivo;
                     _metaEditando!.fechaLimite = _fechaLimite;
                     alcanciaProvider.editarMeta(_metaEditando!);
+                    if (userEmail != null) {
+                      guardarMetasEnFirebase(
+                          alcanciaProvider.metas, userEmail!);
+                    }
                   }
                   Navigator.of(context).pop();
                 }
@@ -250,7 +260,6 @@ class _MetasState extends State<Metas> {
     final DateTime now = DateTime.now();
     final DateTime initialDate =
         _fechaLimite.isBefore(now) ? now : _fechaLimite;
-
     final DateTime? fechaSeleccionada = await showDatePicker(
       context: context,
       initialDate: initialDate,
@@ -288,6 +297,9 @@ class _MetasState extends State<Metas> {
             ElevatedButton(
               onPressed: () {
                 alcanciaProvider.eliminarMeta(idMeta);
+                if (userEmail != null) {
+                  eliminarMetaEnFirebase(idMeta, userEmail!);
+                }
                 Navigator.of(context).pop();
               },
               child: const Text('Eliminar'),
@@ -296,5 +308,39 @@ class _MetasState extends State<Metas> {
         );
       },
     );
+  }
+
+  Future<void> guardarMetasEnFirebase(
+      List<Meta> metas, String userEmail) async {
+    try {
+      final firestore = FirebaseFirestore.instance;
+      final metasRef =
+          firestore.collection('usuarios').doc(userEmail).collection('metas');
+      final snapshot = await metasRef.get();
+      for (var doc in snapshot.docs) {
+        await doc.reference.delete();
+      }
+
+      for (var meta in metas) {
+        await metasRef.add(meta.toMap());
+      }
+    } catch (e) {
+      print('Error al guardar metas en Firebase: $e');
+    }
+  }
+
+  Future<void> eliminarMetaEnFirebase(String idMeta, String userEmail) async {
+    try {
+      final firestore = FirebaseFirestore.instance;
+      final metaRef = firestore
+          .collection('usuarios')
+          .doc(userEmail)
+          .collection('metas')
+          .doc(idMeta);
+
+      await metaRef.delete();
+    } catch (e) {
+      print('Error al eliminar meta en Firebase: $e');
+    }
   }
 }

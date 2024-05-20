@@ -106,21 +106,21 @@ class AlcanciaProvider with ChangeNotifier {
 
   double get montoTotalAhorrado => _montoTotalAhorrado;
 
-  void actualizarCantidadMoneda(int index, int cantidad) {
+  void actualizarCantidadMoneda(int index, int cantidad, String email) {
     if (index >= 0 && index < _monedas.length) {
       _monedas[index].cantidad = cantidad < 0 ? 0 : cantidad;
       notifyListeners();
-      actualizarValoresAhorradosMetas();
+      actualizarValoresAhorradosMetas(email);
     } else {
       print('Índice de moneda fuera de rango');
     }
   }
 
-  void actualizarCantidadBillete(int index, int cantidad) {
+  void actualizarCantidadBillete(int index, int cantidad, String email) {
     if (index >= 0 && index < _billetes.length) {
       _billetes[index].cantidad = cantidad < 0 ? 0 : cantidad;
       notifyListeners();
-      actualizarValoresAhorradosMetas();
+      actualizarValoresAhorradosMetas(email);
     } else {
       print('Índice de billete fuera de rango');
     }
@@ -153,7 +153,8 @@ class AlcanciaProvider with ChangeNotifier {
     return total;
   }
 
-  Future<void> agregarTransaccion(double monto, bool esIngreso) async {
+  Future<void> agregarTransaccion(
+      double monto, bool esIngreso, String email) async {
     if (esIngreso) {
       _montoTotalAhorrado += monto;
     } else {
@@ -166,14 +167,19 @@ class AlcanciaProvider with ChangeNotifier {
     }
     Transaccion transaccion = Transaccion(monto, esIngreso, DateTime.now());
     _transacciones.add(transaccion);
-    await guardarTransaccionEnFirestore(transaccion);
+    await guardarTransaccionEnFirestore(transaccion, email);
     notifyListeners();
   }
 
-  Future<void> guardarTransaccionEnFirestore(Transaccion transaccion) async {
+  Future<void> guardarTransaccionEnFirestore(
+      Transaccion transaccion, String email) async {
     try {
       final firestore = FirebaseFirestore.instance;
-      await firestore.collection('transacciones').add(transaccion.toMap());
+      await firestore
+          .collection('usuarios')
+          .doc(email)
+          .collection('transacciones')
+          .add(transaccion.toMap());
     } catch (e) {
       print(e);
     }
@@ -334,17 +340,17 @@ class AlcanciaProvider with ChangeNotifier {
     }
   }
 
-  Future<void> _guardarMetasEnFirebase() async {
-    try {
-      final firestore = FirebaseFirestore.instance;
-      for (var meta in _metas) {
-        await firestore.collection('metas').doc(meta.id).set(meta.toMap());
-      }
-      print('Metas actualizadas en Firebase');
-    } catch (e) {
-      print('Error al actualizar metas en Firebase: $e');
-    }
-  }
+  // Future<void> _guardarMetasEnFirebase() async {
+  //   try {
+  //     final firestore = FirebaseFirestore.instance;
+  //     for (var meta in _metas) {
+  //       await firestore.collection('metas').doc(meta.id).set(meta.toMap());
+  //     }
+  //     print('Metas actualizadas en Firebase');
+  //   } catch (e) {
+  //     print('Error al actualizar metas en Firebase: $e');
+  //   }
+  // }
 
   void editarMeta(Meta meta) async {
     try {
@@ -363,10 +369,10 @@ class AlcanciaProvider with ChangeNotifier {
   void eliminarMeta(String id) {
     _metas.removeWhere((meta) => meta.id == id);
     notifyListeners();
-    guardarMetasEnFirebase();
+    guardarMetasEnFirebase(_metas, userEmail!);
   }
 
-  void actualizarValoresAhorradosMetas() {
+  void actualizarValoresAhorradosMetas(String email) {
     int totalAhorrado = this.totalAhorrado;
     for (var meta in _metas) {
       if (totalAhorrado >= meta.valorObjetivo) {
@@ -378,7 +384,8 @@ class AlcanciaProvider with ChangeNotifier {
       }
     }
     notifyListeners();
-    _guardarMetasEnFirebase();
+    guardarMetasEnFirebase(
+        _metas, email); // Pasar la lista de metas y el correo electrónico
   }
 
   void verificarMetasCumplidas() {
@@ -415,18 +422,19 @@ class AlcanciaProvider with ChangeNotifier {
     };
   }
 
-  Future<void> guardarDatosEnFirebase() async {
+  Future<void> guardarDatosEnFirebase(List<Moneda> monedas,
+      List<Billete> billetes, double totalAhorrado, String email) async {
     try {
       final firestore = FirebaseFirestore.instance;
       final datosAlcancia = {
-        'monedas': _monedas.map((moneda) => moneda.toMap()).toList(),
-        'billetes': _billetes.map((billete) => billete.toMap()).toList(),
+        'monedas': monedas.map((moneda) => moneda.toMap()).toList(),
+        'billetes': billetes.map((billete) => billete.toMap()).toList(),
         'totalAhorrado': totalAhorrado,
       };
 
       await firestore
           .collection('usuarios')
-          .doc(_userId)
+          .doc(email) // Utilizar el correo electrónico como identificador
           .collection('alcancia')
           .doc('datos')
           .set(datosAlcancia);
@@ -435,12 +443,12 @@ class AlcanciaProvider with ChangeNotifier {
     }
   }
 
-  Future<void> cargarDatosDesdeFirebase() async {
+  Future<void> cargarDatosDesdeFirebase(String email) async {
     try {
       final firestore = FirebaseFirestore.instance;
       final docSnapshot = await firestore
           .collection('usuarios')
-          .doc(_userId)
+          .doc(email) // Utilizar el correo electrónico como identificador
           .collection('alcancia')
           .doc('datos')
           .get();
@@ -465,12 +473,14 @@ class AlcanciaProvider with ChangeNotifier {
     }
   }
 
-  Future<void> guardarTransaccionesEnFirebase() async {
+  Future<void> guardarTransaccionesEnFirebase(
+      List<Transaccion> transacciones, String email) async {
     try {
       final firestore = FirebaseFirestore.instance;
       final transaccionesRef = firestore
           .collection('usuarios')
-          .doc(_userId)
+          .doc(
+              email) // Utilizar el correo electrónico como identificador del documento
           .collection('transacciones');
 
       final snapshot = await transaccionesRef.get();
@@ -478,9 +488,9 @@ class AlcanciaProvider with ChangeNotifier {
         await doc.reference.delete();
       }
 
-      _transacciones.sort((a, b) => a.fecha.compareTo(b.fecha));
+      transacciones.sort((a, b) => a.fecha.compareTo(b.fecha));
 
-      for (var transaccion in _transacciones) {
+      for (var transaccion in transacciones) {
         await transaccionesRef.add(transaccion.toMap());
       }
     } catch (e) {
@@ -488,12 +498,13 @@ class AlcanciaProvider with ChangeNotifier {
     }
   }
 
-  Future<void> cargarTransaccionesDesdeFirebase() async {
+  Future<void> cargarTransaccionesDesdeFirebase(String email) async {
     try {
       final firestore = FirebaseFirestore.instance;
       final transaccionesRef = firestore
           .collection('usuarios')
-          .doc(_userId)
+          .doc(
+              email) // Utilizar el correo electrónico como identificador del documento
           .collection('transacciones');
       final snapshot = await transaccionesRef.get();
       final transacciones =
@@ -505,18 +516,18 @@ class AlcanciaProvider with ChangeNotifier {
     }
   }
 
-  Future<void> guardarMetasEnFirebase() async {
+  Future<void> guardarMetasEnFirebase(List<Meta> metas, String email) async {
     try {
       final firestore = FirebaseFirestore.instance;
       final metasRef =
-          firestore.collection('usuarios').doc(_userId).collection('metas');
+          firestore.collection('usuarios').doc(email).collection('metas');
 
       final snapshot = await metasRef.get();
       for (var doc in snapshot.docs) {
         await doc.reference.delete();
       }
 
-      for (var meta in _metas) {
+      for (var meta in metas) {
         await metasRef.add(meta.toMap());
       }
     } catch (e) {
@@ -524,11 +535,11 @@ class AlcanciaProvider with ChangeNotifier {
     }
   }
 
-  Future<void> cargarMetasDesdeFirebase() async {
+  Future<void> cargarMetasDesdeFirebase(String email) async {
     try {
       final firestore = FirebaseFirestore.instance;
       final metasRef =
-          firestore.collection('usuarios').doc(_userId).collection('metas');
+          firestore.collection('usuarios').doc(email).collection('metas');
       final metaSnapshot = await metasRef.get();
 
       _metas = metaSnapshot.docs
@@ -597,30 +608,41 @@ class AlcanciaProvider with ChangeNotifier {
     }
   }
 
-  // Método para iniciar sesión con correo electrónico y contraseña
+// Método para iniciar sesión con correo electrónico y contraseña
   Future<User?> signInWithEmailPassword(String email, String password) async {
     try {
       UserCredential userCredential = await _auth.signInWithEmailAndPassword(
         email: email,
         password: password,
       );
-      return userCredential.user;
+      User? user = userCredential.user;
+      if (user != null) {
+        // Acceder a las propiedades o métodos del objeto user aquí
+        return user;
+      } else {
+        print('Error: el objeto user es nulo');
+        return null;
+      }
     } catch (error) {
       print('Error al iniciar sesión: $error');
-      return null;
+      return null; // Retornar null en caso de error
     }
   }
 
   Future<void> loadUserData() async {
     try {
-      // Aquí colocas el código para cargar los datos del usuario desde Firebase
-      await cargarDatosDesdeFirebase();
-      await cargarMetasDesdeFirebase();
-      await cargarTransaccionesDesdeFirebase();
-    } catch (e) {
-      // Manejo de errores, por ejemplo, si ocurre un error al cargar los datos desde Firebase
-      print('Error al cargar los datos del usuario: $e');
-      throw e; // Puedes lanzar la excepción nuevamente para manejarla en la pantalla principal
+      User? user = FirebaseAuth.instance.currentUser;
+      if (user != null) {
+        // Aquí colocas el código para cargar los datos del usuario desde Firebase
+        await cargarDatosDesdeFirebase(userEmail!);
+        await cargarMetasDesdeFirebase(userEmail!);
+        await cargarTransaccionesDesdeFirebase(userEmail!);
+      } else {
+        // El usuario no está autenticado, manejar este caso según sea necesario
+      }
+    } catch (error) {
+      print('Error al cargar los datos del usuario: $error');
+      // Manejar el error según sea necesario
     }
   }
 }

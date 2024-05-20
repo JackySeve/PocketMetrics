@@ -6,20 +6,11 @@ import 'package:provider/provider.dart';
 import 'widgets/menuDesplegablePrincipal.dart';
 
 class Historial extends StatelessWidget {
-  const Historial({super.key});
+  const Historial({Key? key});
 
   @override
   Widget build(BuildContext context) {
     const logo = 'lib/assets/images/logo.png';
-
-    // Get the AlcanciaProvider instance
-    final alcanciaProvider =
-        Provider.of<AlcanciaProvider>(context, listen: false);
-
-    final transaccionesOrdenadas = alcanciaProvider.transacciones
-      ..sort((a, b) {
-        return b.fecha.compareTo(a.fecha);
-      });
 
     return Scaffold(
       appBar: AppBar(
@@ -32,6 +23,11 @@ class Historial extends StatelessWidget {
       ),
       body: Consumer<AlcanciaProvider>(
         builder: (context, alcanciaProvider, child) {
+          final transaccionesOrdenadas = alcanciaProvider.transacciones
+            ..sort((a, b) {
+              return b.fecha.compareTo(a.fecha);
+            });
+
           return ListView.builder(
             itemCount: transaccionesOrdenadas.length,
             itemBuilder: (context, index) {

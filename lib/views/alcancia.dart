@@ -1,17 +1,20 @@
-import 'package:alcancia_movil/providers/alcancia_provider.dart';
-import 'package:alcancia_movil/views/widgets/menuDesplegablePrincipal.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+
+import '../providers/alcancia_provider.dart';
+import 'widgets/menuDesplegablePrincipal.dart';
 
 class Alcancia extends StatelessWidget {
-  const Alcancia({super.key});
+  const Alcancia({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     final alcanciaProvider =
         Provider.of<AlcanciaProvider>(context, listen: true);
     const logo = 'lib/assets/images/logo.png';
+    final userEmail = FirebaseAuth.instance.currentUser
+        ?.email; // Obtener el correo electrónico del usuario actual
 
     return Scaffold(
       appBar: AppBar(
@@ -52,9 +55,16 @@ class Alcancia extends StatelessWidget {
                       onPressed: () {
                         const esIngreso = true;
                         final monto = moneda.valor.toDouble();
-                        alcanciaProvider.agregarTransaccion(monto, esIngreso);
+                        alcanciaProvider.agregarTransaccion(
+                            monto, esIngreso, userEmail!);
                         alcanciaProvider.actualizarCantidadMoneda(
-                            index, moneda.cantidad + 1);
+                            index, moneda.cantidad + 1, userEmail);
+                        alcanciaProvider.guardarDatosEnFirebase(
+                          alcanciaProvider.monedas,
+                          alcanciaProvider.billetes,
+                          alcanciaProvider.totalAhorrado.toDouble(),
+                          userEmail, // Asegúrate de definir userEmail
+                        );
                       },
                     ),
                     Text("${moneda.cantidad}"),
@@ -64,9 +74,16 @@ class Alcancia extends StatelessWidget {
                         if (moneda.cantidad > 0) {
                           const esIngreso = false;
                           final monto = moneda.valor.toDouble();
-                          alcanciaProvider.agregarTransaccion(monto, esIngreso);
+                          alcanciaProvider.agregarTransaccion(
+                              monto, esIngreso, userEmail!);
                           alcanciaProvider.actualizarCantidadMoneda(
-                              index, moneda.cantidad - 1);
+                              index, moneda.cantidad - 1, userEmail);
+                          alcanciaProvider.guardarDatosEnFirebase(
+                            alcanciaProvider.monedas,
+                            alcanciaProvider.billetes,
+                            alcanciaProvider.totalAhorrado.toDouble(),
+                            userEmail, // Asegúrate de definir userEmail
+                          );
                         }
                       },
                     ),
@@ -105,9 +122,16 @@ class Alcancia extends StatelessWidget {
                       onPressed: () {
                         const esIngreso = true;
                         final monto = billete.valor.toDouble();
-                        alcanciaProvider.agregarTransaccion(monto, esIngreso);
+                        alcanciaProvider.agregarTransaccion(
+                            monto, esIngreso, userEmail!);
                         alcanciaProvider.actualizarCantidadBillete(
-                            index, billete.cantidad + 1);
+                            index, billete.cantidad + 1, userEmail);
+                        alcanciaProvider.guardarDatosEnFirebase(
+                          alcanciaProvider.monedas,
+                          alcanciaProvider.billetes,
+                          alcanciaProvider.totalAhorrado.toDouble(),
+                          userEmail, // Asegúrate de definir userEmail
+                        );
                       },
                     ),
                     Text("${billete.cantidad}"),
@@ -117,9 +141,16 @@ class Alcancia extends StatelessWidget {
                         if (billete.cantidad > 0) {
                           const esIngreso = false;
                           final monto = billete.valor.toDouble();
-                          alcanciaProvider.agregarTransaccion(monto, esIngreso);
+                          alcanciaProvider.agregarTransaccion(
+                              monto, esIngreso, userEmail!);
                           alcanciaProvider.actualizarCantidadBillete(
-                              index, billete.cantidad - 1);
+                              index, billete.cantidad - 1, userEmail);
+                          alcanciaProvider.guardarDatosEnFirebase(
+                            alcanciaProvider.monedas,
+                            alcanciaProvider.billetes,
+                            alcanciaProvider.totalAhorrado.toDouble(),
+                            userEmail, // Asegúrate de definir userEmail
+                          );
                         }
                       },
                     ),
@@ -136,18 +167,6 @@ class Alcancia extends StatelessWidget {
             Text(
               "Total Ahorrado: ${alcanciaProvider.totalAhorrado}",
               style: const TextStyle(fontWeight: FontWeight.w900),
-            ),
-            FutureBuilder(
-              future: alcanciaProvider.guardarDatosEnFirebase(),
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const CircularProgressIndicator();
-                } else if (snapshot.hasError) {
-                  return Text('Error: ${snapshot.error}');
-                } else {
-                  return const SizedBox();
-                }
-              },
             ),
           ],
         ),

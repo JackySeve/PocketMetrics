@@ -9,7 +9,7 @@ import 'pantallaPrincipal.dart';
 import 'inicioSesionUsuario.dart';
 
 class RegistroUsuario extends StatefulWidget {
-  const RegistroUsuario({Key? key}) : super(key: key);
+  const RegistroUsuario({super.key});
 
   @override
   _RegistroUsuarioState createState() => _RegistroUsuarioState();
@@ -39,6 +39,7 @@ class _RegistroUsuarioState extends State<RegistroUsuario> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
+                  const SizedBox(height: 60),
                   SizedBox(
                     height: size.height * 0.15,
                     child: Image.asset(
@@ -76,6 +77,12 @@ class _RegistroUsuarioState extends State<RegistroUsuario> {
                       labelStyle: TextStyle(color: Colors.green),
                       prefixIcon: Icon(Icons.person),
                     ),
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Por favor, ingrese su nombre de usuario';
+                      }
+                      return null;
+                    },
                   ),
                   const SizedBox(height: 20),
                   TextFormField(
@@ -98,8 +105,8 @@ class _RegistroUsuarioState extends State<RegistroUsuario> {
                     obscureText: _obscureText,
                     decoration: InputDecoration(
                       labelText: "Contraseña",
-                      labelStyle: TextStyle(color: Colors.green),
-                      prefixIcon: Icon(Icons.lock),
+                      labelStyle: const TextStyle(color: Colors.green),
+                      prefixIcon: const Icon(Icons.lock),
                       suffixIcon: IconButton(
                         icon: Icon(_obscureText
                             ? Icons.visibility_off
@@ -128,8 +135,8 @@ class _RegistroUsuarioState extends State<RegistroUsuario> {
                     obscureText: _obscureTextCheck,
                     decoration: InputDecoration(
                       labelText: "Verificar contraseña",
-                      labelStyle: TextStyle(color: Colors.green),
-                      prefixIcon: Icon(Icons.lock),
+                      labelStyle: const TextStyle(color: Colors.green),
+                      prefixIcon: const Icon(Icons.lock),
                       suffixIcon: IconButton(
                         icon: Icon(_obscureTextCheck
                             ? Icons.visibility_off
@@ -224,11 +231,24 @@ class _RegistroUsuarioState extends State<RegistroUsuario> {
                               // Registro exitoso, podrías navegar a otra pantalla o mostrar un mensaje de éxito.
                               print(
                                   'Usuario registrado con éxito. ID: $userId');
-                              Navigator.pushReplacement(
-                                context,
-                                MaterialPageRoute(
-                                    builder: (context) => PantallaPrincipal()),
+                              // Envío del correo electrónico de verificación
+                              await FirebaseAuth.instance.sendSignInLinkToEmail(
+                                email: email,
+                                actionCodeSettings: ActionCodeSettings(
+                                  url: 'https://www.ejemplo.com',
+                                  androidInstallApp: true,
+                                  androidMinimumVersion: '1',
+                                  handleCodeInApp: true,
+                                ),
                               );
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text(
+                                      'Se ha enviado un correo electrónico de verificación. Por favor, revise su bandeja de entrada.'),
+                                  backgroundColor: Colors.green,
+                                ),
+                              );
+                              // Navegar a otra pantalla o realizar otras acciones después de enviar el correo electrónico de verificación
                             } else {
                               // Registro fallido, podrías mostrar un mensaje de error al usuario.
                               print('Error al registrar usuario.');
@@ -257,7 +277,7 @@ class _RegistroUsuarioState extends State<RegistroUsuario> {
                         } else {
                           // Si el checkbox no está marcado, mostramos un mensaje de error
                           ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
+                            const SnackBar(
                               content: Text(
                                   'Por favor, acepta los términos y condiciones.'),
                               backgroundColor: Colors.red,
