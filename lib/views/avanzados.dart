@@ -150,7 +150,7 @@ class _AvanzadosState extends State<Avanzados> {
             ),
             const SizedBox(height: 32.0),
             const Text(
-              'Histograma de Egresos',
+              'Histogramade Egresos',
               style: TextStyle(fontSize: 18.0, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 16.0),

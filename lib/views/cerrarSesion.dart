@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import 'paginaBienvenida.dart'; // Importa la página a la que deseas redirigir al cerrar sesión
 
 class PantallaCerrarSesion extends StatelessWidget {
-  const PantallaCerrarSesion({Key? key});
+  const PantallaCerrarSesion({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -23,8 +24,13 @@ class PantallaCerrarSesion extends StatelessWidget {
             const SizedBox(height: 20),
             ElevatedButton(
               onPressed: () async {
-                // Cerrar sesión
+                // Cerrar sesión en Firebase
                 await FirebaseAuth.instance.signOut();
+
+                // Cerrar sesión en Google
+                GoogleSignIn googleSignIn = GoogleSignIn();
+                await googleSignIn.signOut();
+
                 // Navegar a la pantalla de bienvenida
                 Navigator.pushAndRemoveUntil(
                   context,

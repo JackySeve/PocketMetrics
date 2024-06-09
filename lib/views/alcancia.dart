@@ -1,20 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:intl/intl.dart'; // Importa el paquete intl
 
 import '../providers/alcancia_provider.dart';
 import 'widgets/menuDesplegablePrincipal.dart';
 
 class Alcancia extends StatelessWidget {
-  const Alcancia({Key? key}) : super(key: key);
+  const Alcancia({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final alcanciaProvider =
-        Provider.of<AlcanciaProvider>(context, listen: true);
     const logo = 'lib/assets/images/logo.png';
-    final userEmail = FirebaseAuth.instance.currentUser
-        ?.email; // Obtener el correo electrónico del usuario actual
+    final userEmail = FirebaseAuth.instance.currentUser?.email;
 
     return Scaffold(
       appBar: AppBar(
@@ -26,151 +24,237 @@ class Alcancia extends StatelessWidget {
         context,
         user: FirebaseAuth.instance.currentUser,
       ),
-      body: Center(
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
-            const SizedBox(height: 20),
-            const Text('Monedas:'),
+            _buildSectionTitle('Monedas:'),
             const SizedBox(height: 10),
-            const Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text('Valor'),
-                SizedBox(width: 20),
-                Text('Cantidad'),
-                SizedBox(width: 20),
-                Text('Total'),
-              ],
-            ),
-            Column(
-              children: alcanciaProvider.monedas.asMap().entries.map((entry) {
-                final index = entry.key;
-                final moneda = entry.value;
-                return Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text('${moneda.valor}'),
-                    IconButton(
-                      icon: const Icon(Icons.add),
-                      onPressed: () {
-                        const esIngreso = true;
-                        final monto = moneda.valor.toDouble();
-                        alcanciaProvider.agregarTransaccion(
-                            monto, esIngreso, userEmail!);
-                        alcanciaProvider.actualizarCantidadMoneda(
-                            index, moneda.cantidad + 1, userEmail);
-                        alcanciaProvider.guardarDatosEnFirebase(
-                          alcanciaProvider.monedas,
-                          alcanciaProvider.billetes,
-                          alcanciaProvider.totalAhorrado.toDouble(),
-                          userEmail, // Asegúrate de definir userEmail
-                        );
-                      },
-                    ),
-                    Text("${moneda.cantidad}"),
-                    IconButton(
-                      icon: const Icon(Icons.remove),
-                      onPressed: () {
-                        if (moneda.cantidad > 0) {
-                          const esIngreso = false;
-                          final monto = moneda.valor.toDouble();
-                          alcanciaProvider.agregarTransaccion(
-                              monto, esIngreso, userEmail!);
-                          alcanciaProvider.actualizarCantidadMoneda(
-                              index, moneda.cantidad - 1, userEmail);
-                          alcanciaProvider.guardarDatosEnFirebase(
-                            alcanciaProvider.monedas,
-                            alcanciaProvider.billetes,
-                            alcanciaProvider.totalAhorrado.toDouble(),
-                            userEmail, // Asegúrate de definir userEmail
+            _buildTableHeader(),
+            Expanded(
+              child: Consumer<AlcanciaProvider>(
+                builder: (context, alcanciaProvider, child) {
+                  return ListView.builder(
+                    itemCount: alcanciaProvider.monedas.length,
+                    itemBuilder: (context, index) {
+                      final moneda = alcanciaProvider.monedas[index];
+                      return _buildMoneyRow(
+                        context,
+                        value: moneda.valor,
+                        quantity: moneda.cantidad,
+                        total: moneda.valor * moneda.cantidad,
+                        onAdd: () {
+                          _addTransaction(
+                            alcanciaProvider,
+                            moneda.valor.toDouble(),
+                            true,
+                            userEmail!,
+                            index,
+                            true,
                           );
-                        }
-                      },
-                    ),
-                    Text("\$ ${moneda.valor * moneda.cantidad}")
-                  ],
-                );
-              }).toList(),
+                        },
+                        onRemove: () {
+                          if (moneda.cantidad > 0) {
+                            _addTransaction(
+                              alcanciaProvider,
+                              moneda.valor.toDouble(),
+                              false,
+                              userEmail!,
+                              index,
+                              true,
+                            );
+                          }
+                        },
+                      );
+                    },
+                  );
+                },
+              ),
             ),
-            Text(
-              'Total Ahorrado (Monedas): \$ ${alcanciaProvider.totalAhorradoMonedas}',
-              style: const TextStyle(color: Colors.red),
+            Consumer<AlcanciaProvider>(
+              builder: (context, alcanciaProvider, child) {
+                return _buildTotalText(
+                  'Total Ahorrado (Monedas):',
+                  alcanciaProvider.totalAhorradoMonedas,
+                );
+              },
             ),
             const SizedBox(height: 20),
-            const Text('Billetes:'),
+            _buildSectionTitle('Billetes:'),
             const SizedBox(height: 10),
-            const Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text('Valor'),
-                SizedBox(width: 20),
-                Text('Cantidad'),
-                SizedBox(width: 20),
-                Text('Total'),
-              ],
-            ),
-            Column(
-              children: alcanciaProvider.billetes.asMap().entries.map((entry) {
-                final index = entry.key;
-                final billete = entry.value;
-                return Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text('${billete.valor}'),
-                    IconButton(
-                      icon: const Icon(Icons.add),
-                      onPressed: () {
-                        const esIngreso = true;
-                        final monto = billete.valor.toDouble();
-                        alcanciaProvider.agregarTransaccion(
-                            monto, esIngreso, userEmail!);
-                        alcanciaProvider.actualizarCantidadBillete(
-                            index, billete.cantidad + 1, userEmail);
-                        alcanciaProvider.guardarDatosEnFirebase(
-                          alcanciaProvider.monedas,
-                          alcanciaProvider.billetes,
-                          alcanciaProvider.totalAhorrado.toDouble(),
-                          userEmail, // Asegúrate de definir userEmail
-                        );
-                      },
-                    ),
-                    Text("${billete.cantidad}"),
-                    IconButton(
-                      icon: const Icon(Icons.remove),
-                      onPressed: () {
-                        if (billete.cantidad > 0) {
-                          const esIngreso = false;
-                          final monto = billete.valor.toDouble();
-                          alcanciaProvider.agregarTransaccion(
-                              monto, esIngreso, userEmail!);
-                          alcanciaProvider.actualizarCantidadBillete(
-                              index, billete.cantidad - 1, userEmail);
-                          alcanciaProvider.guardarDatosEnFirebase(
-                            alcanciaProvider.monedas,
-                            alcanciaProvider.billetes,
-                            alcanciaProvider.totalAhorrado.toDouble(),
-                            userEmail, // Asegúrate de definir userEmail
+            _buildTableHeader(),
+            Expanded(
+              child: Consumer<AlcanciaProvider>(
+                builder: (context, alcanciaProvider, child) {
+                  return ListView.builder(
+                    itemCount: alcanciaProvider.billetes.length,
+                    itemBuilder: (context, index) {
+                      final billete = alcanciaProvider.billetes[index];
+                      return _buildMoneyRow(
+                        context,
+                        value: billete.valor,
+                        quantity: billete.cantidad,
+                        total: billete.valor * billete.cantidad,
+                        onAdd: () {
+                          _addTransaction(
+                            alcanciaProvider,
+                            billete.valor.toDouble(),
+                            true,
+                            userEmail!,
+                            index,
+                            false,
                           );
-                        }
-                      },
-                    ),
-                    Text("\$ ${billete.valor * billete.cantidad}")
-                  ],
-                );
-              }).toList(),
+                        },
+                        onRemove: () {
+                          if (billete.cantidad > 0) {
+                            _addTransaction(
+                              alcanciaProvider,
+                              billete.valor.toDouble(),
+                              false,
+                              userEmail!,
+                              index,
+                              false,
+                            );
+                          }
+                        },
+                      );
+                    },
+                  );
+                },
+              ),
             ),
-            Text(
-              'Total Ahorrado (Billetes): \$ ${alcanciaProvider.totalAhorradoBilletes}',
-              style: const TextStyle(color: Colors.red),
+            Consumer<AlcanciaProvider>(
+              builder: (context, alcanciaProvider, child) {
+                return _buildTotalText(
+                  'Total Ahorrado (Billetes):',
+                  alcanciaProvider.totalAhorradoBilletes,
+                );
+              },
             ),
             const SizedBox(height: 20),
-            Text(
-              "Total Ahorrado: ${alcanciaProvider.totalAhorrado}",
-              style: const TextStyle(fontWeight: FontWeight.w900),
+            Consumer<AlcanciaProvider>(
+              builder: (context, alcanciaProvider, child) {
+                return _buildTotalText(
+                  'Total Ahorrado:',
+                  alcanciaProvider.totalAhorrado,
+                  isBold: true,
+                  fontSize: 18,
+                );
+              },
             ),
           ],
         ),
       ),
     );
+  }
+
+  void _addTransaction(
+    AlcanciaProvider provider,
+    double amount,
+    bool isAddition,
+    String userEmail,
+    int index,
+    bool isCoin,
+  ) {
+    provider.agregarTransaccion(amount, isAddition, userEmail);
+    if (isCoin) {
+      provider.actualizarCantidadMoneda(
+          index,
+          isAddition
+              ? provider.monedas[index].cantidad + 1
+              : provider.monedas[index].cantidad - 1,
+          userEmail);
+    } else {
+      provider.actualizarCantidadBillete(
+          index,
+          isAddition
+              ? provider.billetes[index].cantidad + 1
+              : provider.billetes[index].cantidad - 1,
+          userEmail);
+    }
+    provider.guardarDatosEnFirebase(
+      provider.monedas,
+      provider.billetes,
+      provider.totalAhorrado.toDouble(),
+      userEmail,
+    );
+  }
+
+  Widget _buildSectionTitle(String title) {
+    return Text(
+      title,
+      style: const TextStyle(
+        fontSize: 18,
+        fontWeight: FontWeight.bold,
+        color: Colors.teal,
+      ),
+    );
+  }
+
+  Widget _buildTableHeader() {
+    return const Row(
+      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+      children: [
+        Text('Valor', style: TextStyle(fontWeight: FontWeight.bold)),
+        Text('Cantidad', style: TextStyle(fontWeight: FontWeight.bold)),
+        Text('Total', style: TextStyle(fontWeight: FontWeight.bold)),
+      ],
+    );
+  }
+
+  Widget _buildMoneyRow(
+    BuildContext context, {
+    required int value,
+    required int quantity,
+    required int total,
+    required VoidCallback onAdd,
+    required VoidCallback onRemove,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8.0),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        children: [
+          Text('${formatCurrency(value)}'),
+          Row(
+            children: [
+              IconButton(
+                icon: const Icon(Icons.add),
+                color: Colors.green,
+                onPressed: onAdd,
+              ),
+              Text("$quantity"),
+              IconButton(
+                icon: const Icon(Icons.remove),
+                color: Colors.red,
+                onPressed: onRemove,
+              ),
+            ],
+          ),
+          Text("\$ ${formatCurrency(total)}"),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTotalText(
+    String label,
+    int amount, {
+    bool isBold = false,
+    double fontSize = 16,
+  }) {
+    return Text(
+      '$label \$ ${formatCurrency(amount)}',
+      style: TextStyle(
+        color: Colors.teal,
+        fontWeight: isBold ? FontWeight.bold : FontWeight.normal,
+        fontSize: fontSize,
+      ),
+    );
+  }
+
+  String formatCurrency(int amount) {
+    final formatter = NumberFormat('#,###', 'es_ES');
+    return formatter.format(amount);
   }
 }

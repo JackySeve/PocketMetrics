@@ -4,6 +4,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 class ForgotPasswordScreen extends StatelessWidget {
   final TextEditingController _emailController = TextEditingController();
 
+  ForgotPasswordScreen({super.key});
+
   Future<void> _resetPassword(BuildContext context) async {
     try {
       await FirebaseAuth.instance.sendPasswordResetEmail(
@@ -11,7 +13,7 @@ class ForgotPasswordScreen extends StatelessWidget {
       );
       // Mostrar un mensaje de éxito o redirigir a una pantalla de éxito.
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
+        const SnackBar(
           content: Text(
               'Se ha enviado un correo electrónico para restablecer tu contraseña.'),
         ),
@@ -21,7 +23,7 @@ class ForgotPasswordScreen extends StatelessWidget {
       print(
           'Error al enviar el correo electrónico de restablecimiento de contraseña: $error');
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
+        const SnackBar(
           content: Text(
               'Error al enviar el correo electrónico de restablecimiento de contraseña.'),
         ),
@@ -33,25 +35,25 @@ class ForgotPasswordScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('¿Olvidaste tu contraseña?'),
+        title: const Text('¿Olvidaste tu contraseña?'),
       ),
       body: Padding(
-        padding: EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             TextField(
               controller: _emailController,
-              decoration: InputDecoration(
+              decoration: const InputDecoration(
                 labelText: 'Correo electrónico',
               ),
             ),
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
             ElevatedButton(
               onPressed: () {
                 _resetPassword(context);
               },
-              child: Text('Restablecer contraseña'),
+              child: const Text('Restablecer contraseña'),
             ),
           ],
         ),

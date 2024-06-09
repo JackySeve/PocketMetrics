@@ -23,6 +23,8 @@ dependencies:
   http: ^1.2.1
   url_launcher: ^6.2.6
   google_sign_in: ^6.2.1
+  intl: ^0.17.0
+  flutter_masked_text2: ^0.9.1
 
 dev_dependencies:
   flutter_test:

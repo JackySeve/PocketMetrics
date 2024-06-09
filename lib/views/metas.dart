@@ -2,6 +2,9 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:intl/intl.dart';
+import 'package:flutter/services.dart';
+
 import '../providers/alcancia_provider.dart';
 import '../views/widgets/menuDesplegablePrincipal.dart';
 
@@ -48,7 +51,7 @@ class Meta {
 }
 
 class Metas extends StatefulWidget {
-  const Metas({Key? key}) : super(key: key);
+  const Metas({super.key});
 
   @override
   _MetasState createState() => _MetasState();
@@ -71,6 +74,7 @@ class _MetasState extends State<Metas> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Mis metas'),
+        centerTitle: true,
       ),
       drawer: menuDesplegablePrincipal(
         logo,
@@ -84,54 +88,65 @@ class _MetasState extends State<Metas> {
               itemCount: alcanciaProvider.metas.length,
               itemBuilder: (context, index) {
                 final meta = alcanciaProvider.metas[index];
-                return Column(
-                  children: [
-                    ListTile(
-                      title: Text(
-                        meta.nombre,
-                        style: TextStyle(
-                          color: meta.cumplida == true
-                              ? Colors.green
-                              : meta.fechaLimite.isBefore(DateTime.now()) &&
-                                      meta.valorAhorrado < meta.valorObjetivo
-                                  ? Colors.red
-                                  : Colors.green,
-                        ),
-                      ),
-                      subtitle: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text('Valor Objetivo: ${meta.valorObjetivo}'),
-                          Text('Valor Ahorrado: ${meta.valorAhorrado}'),
-                          LinearProgressIndicator(
-                            value: meta.valorAhorrado / meta.valorObjetivo,
-                          ),
-                        ],
-                      ),
-                      trailing: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          IconButton(
-                            icon: const Icon(Icons.edit),
-                            onPressed: () {
-                              _mostrarDialogoMeta(meta);
-                            },
-                          ),
-                          IconButton(
-                            icon: const Icon(Icons.delete),
-                            onPressed: () {
-                              _mostrarDialogoConfirmacion(
-                                context,
-                                alcanciaProvider,
-                                meta.id,
-                              );
-                            },
-                          ),
-                        ],
+                return Card(
+                  margin: const EdgeInsets.symmetric(
+                      vertical: 8.0, horizontal: 16.0),
+                  elevation: 4.0,
+                  child: ListTile(
+                    title: Text(
+                      meta.nombre,
+                      style: TextStyle(
+                        color: meta.cumplida
+                            ? Colors.green
+                            : meta.fechaLimite.isBefore(DateTime.now()) &&
+                                    meta.valorAhorrado < meta.valorObjetivo
+                                ? Colors.red
+                                : Colors.black,
+                        fontWeight: FontWeight.bold,
                       ),
                     ),
-                    const Divider(),
-                  ],
+                    subtitle: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                            'Valor Objetivo: ${formatCurrency(meta.valorObjetivo)}'),
+                        Text(
+                            'Valor Ahorrado: ${formatCurrency(meta.valorAhorrado)}'),
+                        const SizedBox(height: 8.0),
+                        LinearProgressIndicator(
+                          value: meta.valorAhorrado / meta.valorObjetivo,
+                          backgroundColor: Colors.grey[300],
+                          valueColor: AlwaysStoppedAnimation<Color>(
+                              meta.valorAhorrado / meta.valorObjetivo >= 1
+                                  ? Colors.green
+                                  : Colors.teal),
+                        ),
+                      ],
+                    ),
+                    trailing: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        IconButton(
+                          icon: const Icon(Icons.edit),
+                          color: Colors.blue,
+                          onPressed: () {
+                            _mostrarDialogoMeta(meta);
+                          },
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.delete),
+                          color: Colors.red,
+                          onPressed: () {
+                            _mostrarDialogoConfirmacion(
+                              context,
+                              alcanciaProvider,
+                              meta.id,
+                            );
+                          },
+                        ),
+                      ],
+                    ),
+                  ),
                 );
               },
             ),
@@ -142,7 +157,15 @@ class _MetasState extends State<Metas> {
               onPressed: () {
                 _mostrarDialogoMeta(null);
               },
-              child: const Text('Agregar Meta'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.teal,
+                padding: const EdgeInsets.symmetric(
+                    vertical: 12.0, horizontal: 18.0),
+              ),
+              child: const Text(
+                'Agregar Meta',
+                style: TextStyle(fontSize: 16.0, color: Colors.white),
+              ),
             ),
           ),
         ],
@@ -171,27 +194,36 @@ class _MetasState extends State<Metas> {
                   initialValue: _nombreMeta,
                   decoration: const InputDecoration(
                     labelText: 'Nombre de la meta',
+                    border: OutlineInputBorder(),
                   ),
                   onSaved: (value) {
                     _nombreMeta = value!;
                   },
                 ),
+                const SizedBox(height: 10),
                 TextFormField(
                   initialValue: _valorObjetivo.toString(),
                   decoration: const InputDecoration(
                     labelText: 'Valor Objetivo',
+                    border: OutlineInputBorder(),
                   ),
                   keyboardType: TextInputType.number,
+                  inputFormatters: [ThousandsSeparatorInputFormatter()],
                   onSaved: (value) {
-                    _valorObjetivo = int.tryParse(value!) ?? 0;
+                    _valorObjetivo =
+                        int.tryParse(value!.replaceAll(RegExp(r'[,.]'), '')) ??
+                            0;
                   },
                   validator: (value) {
-                    if (int.tryParse(value!) == null || int.parse(value) <= 0) {
+                    final parsedValue =
+                        int.tryParse(value!.replaceAll(RegExp(r'[,.]'), ''));
+                    if (parsedValue == null || parsedValue <= 0) {
                       return 'El valor objetivo debe ser mayor a cero';
                     }
                     return null;
                   },
                 ),
+                const SizedBox(height: 10),
                 GestureDetector(
                   onTap: () {
                     _seleccionarFechaLimite(context);
@@ -232,7 +264,7 @@ class _MetasState extends State<Metas> {
                     );
                     alcanciaProvider.agregarMeta(meta);
                     if (userEmail != null) {
-                      guardarMetasEnFirebase(
+                      alcanciaProvider.guardarMetasEnFirebase(
                           alcanciaProvider.metas, userEmail!);
                     }
                   } else {
@@ -241,7 +273,7 @@ class _MetasState extends State<Metas> {
                     _metaEditando!.fechaLimite = _fechaLimite;
                     alcanciaProvider.editarMeta(_metaEditando!);
                     if (userEmail != null) {
-                      guardarMetasEnFirebase(
+                      alcanciaProvider.guardarMetasEnFirebase(
                           alcanciaProvider.metas, userEmail!);
                     }
                   }
@@ -266,27 +298,28 @@ class _MetasState extends State<Metas> {
       firstDate: DateTime.now(),
       lastDate: DateTime(2100),
     );
-
-    if (fechaSeleccionada != null && fechaSeleccionada != _fechaLimite) {
+    if (fechaSeleccionada != null) {
       setState(() {
         _fechaLimite = fechaSeleccionada;
       });
     }
   }
 
+  String formatCurrency(int value) {
+    final formatter = NumberFormat.currency(symbol: '\$', decimalDigits: 0);
+    return formatter.format(value);
+  }
+
   void _mostrarDialogoConfirmacion(
-    BuildContext context,
-    AlcanciaProvider alcanciaProvider,
-    String idMeta,
-  ) {
+      BuildContext context, AlcanciaProvider alcanciaProvider, String metaId) {
     showDialog(
       context: context,
       barrierDismissible: false,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: const Text('Eliminar Meta'),
+          title: const Text('Confirmación'),
           content:
-              const Text('¿Estás seguro de que deseas eliminar esta meta?'),
+              const Text('¿Estás seguro de que quieres eliminar esta meta?'),
           actions: [
             TextButton(
               onPressed: () {
@@ -296,12 +329,13 @@ class _MetasState extends State<Metas> {
             ),
             ElevatedButton(
               onPressed: () {
-                alcanciaProvider.eliminarMeta(idMeta);
+                alcanciaProvider.eliminarMeta(metaId);
                 if (userEmail != null) {
-                  eliminarMetaEnFirebase(idMeta, userEmail!);
+                  alcanciaProvider.eliminarMetaEnFirebase(metaId, userEmail!);
                 }
                 Navigator.of(context).pop();
               },
+              style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
               child: const Text('Eliminar'),
             ),
           ],
@@ -309,38 +343,22 @@ class _MetasState extends State<Metas> {
       },
     );
   }
+}
 
-  Future<void> guardarMetasEnFirebase(
-      List<Meta> metas, String userEmail) async {
-    try {
-      final firestore = FirebaseFirestore.instance;
-      final metasRef =
-          firestore.collection('usuarios').doc(userEmail).collection('metas');
-      final snapshot = await metasRef.get();
-      for (var doc in snapshot.docs) {
-        await doc.reference.delete();
-      }
+class ThousandsSeparatorInputFormatter extends TextInputFormatter {
+  @override
+  TextEditingValue formatEditUpdate(
+      TextEditingValue oldValue, TextEditingValue newValue) {
+    final int selectionIndexFromTheRight =
+        newValue.text.length - newValue.selection.end;
+    final number = int.tryParse(newValue.text.replaceAll(RegExp(r'[,.]'), ''));
+    if (number == null) return newValue;
 
-      for (var meta in metas) {
-        await metasRef.add(meta.toMap());
-      }
-    } catch (e) {
-      print('Error al guardar metas en Firebase: $e');
-    }
-  }
-
-  Future<void> eliminarMetaEnFirebase(String idMeta, String userEmail) async {
-    try {
-      final firestore = FirebaseFirestore.instance;
-      final metaRef = firestore
-          .collection('usuarios')
-          .doc(userEmail)
-          .collection('metas')
-          .doc(idMeta);
-
-      await metaRef.delete();
-    } catch (e) {
-      print('Error al eliminar meta en Firebase: $e');
-    }
+    final newString = NumberFormat.decimalPattern().format(number);
+    return TextEditingValue(
+      text: newString,
+      selection: TextSelection.collapsed(
+          offset: newString.length - selectionIndexFromTheRight),
+    );
   }
 }

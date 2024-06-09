@@ -69,7 +69,7 @@ class _InicioSesionUsuarioState extends State<InicioSesionUsuario> {
                   controller: _emailController,
                   decoration: const InputDecoration(
                     labelText: "Correo electrónico",
-                    labelStyle: const TextStyle(color: Colors.green),
+                    labelStyle: TextStyle(color: Colors.green),
                     prefixIcon: Icon(Icons.email),
                   ),
                   validator: (value) {
@@ -233,7 +233,7 @@ class _InicioSesionUsuarioState extends State<InicioSesionUsuario> {
                       ),
                     );
                   },
-                  child: Text(
+                  child: const Text(
                     '¿Olvidaste tu contraseña?',
                     style: TextStyle(color: Colors.blue),
                   ),

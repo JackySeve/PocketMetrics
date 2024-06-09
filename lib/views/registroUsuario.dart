@@ -125,7 +125,6 @@ class _RegistroUsuarioState extends State<RegistroUsuario> {
                       if (value.length < 8) {
                         return 'La contraseña debe tener al menos 8 caracteres';
                       }
-                      // Puedes agregar más validaciones según tus requisitos de seguridad
                       return null;
                     },
                   ),
@@ -231,24 +230,12 @@ class _RegistroUsuarioState extends State<RegistroUsuario> {
                               // Registro exitoso, podrías navegar a otra pantalla o mostrar un mensaje de éxito.
                               print(
                                   'Usuario registrado con éxito. ID: $userId');
-                              // Envío del correo electrónico de verificación
-                              await FirebaseAuth.instance.sendSignInLinkToEmail(
-                                email: email,
-                                actionCodeSettings: ActionCodeSettings(
-                                  url: 'https://www.ejemplo.com',
-                                  androidInstallApp: true,
-                                  androidMinimumVersion: '1',
-                                  handleCodeInApp: true,
-                                ),
+                              Navigator.pushReplacement(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (context) =>
+                                        const PantallaPrincipal()),
                               );
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                  content: Text(
-                                      'Se ha enviado un correo electrónico de verificación. Por favor, revise su bandeja de entrada.'),
-                                  backgroundColor: Colors.green,
-                                ),
-                              );
-                              // Navegar a otra pantalla o realizar otras acciones después de enviar el correo electrónico de verificación
                             } else {
                               // Registro fallido, podrías mostrar un mensaje de error al usuario.
                               print('Error al registrar usuario.');

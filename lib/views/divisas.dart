@@ -1,9 +1,35 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'package:intl/intl.dart';
 
 import 'widgets/menuDesplegablePrincipal.dart';
+
+class ThousandsSeparatorInputFormatter extends TextInputFormatter {
+  @override
+  TextEditingValue formatEditUpdate(
+      TextEditingValue oldValue, TextEditingValue newValue) {
+    if (newValue.text.isEmpty) {
+      return newValue.copyWith(text: '');
+    }
+
+    final int selectionIndex =
+        newValue.text.length - newValue.selection.extentOffset;
+    final String newString =
+        newValue.text.replaceAll(',', '').replaceAll('.', '');
+    final String formattedString =
+        NumberFormat.decimalPattern('es_CO').format(int.parse(newString));
+
+    return TextEditingValue(
+      text: formattedString,
+      selection: TextSelection.collapsed(
+        offset: formattedString.length - selectionIndex,
+      ),
+    );
+  }
+}
 
 class Divisas extends StatefulWidget {
   const Divisas({super.key});
@@ -18,19 +44,29 @@ class _DivisasState extends State<Divisas> {
   String _monedaOrigen = 'COP';
   String _monedaDestino = 'USD';
 
-  final List<String> _monedas = [
-    'COP',
-    'USD',
-    'EUR',
-    'GBP',
-    'JPY',
-    'CNY',
-    'CAD',
-    'CHF',
-    'AUD',
-    'SEK',
-    'NOK',
+  final List<Map<String, String>> _monedas = [
+    {'code': 'COP', 'name': 'Peso Colombiano'},
+    {'code': 'USD', 'name': 'Dólar Estadounidense'},
+    {'code': 'EUR', 'name': 'Euro'},
+    {'code': 'GBP', 'name': 'Libra Esterlina'},
+    {'code': 'JPY', 'name': 'Yen Japonés'},
+    {'code': 'CNY', 'name': 'Yuan Chino'},
+    {'code': 'CAD', 'name': 'Dólar Canadiense'},
+    {'code': 'CHF', 'name': 'Franco Suizo'},
+    {'code': 'AUD', 'name': 'Dólar Australiano'},
+    {'code': 'SEK', 'name': 'Corona Sueca'},
+    {'code': 'NOK', 'name': 'Corona Noruega'},
+    {'code': 'BRL', 'name': 'Real Brasileño'},
+    {'code': 'MXN', 'name': 'Peso Mexicano'},
+    {'code': 'INR', 'name': 'Rupia India'},
+    {'code': 'RUB', 'name': 'Rublo Ruso'},
+    {'code': 'SGD', 'name': 'Dólar de Singapur'},
+    {'code': 'HKD', 'name': 'Dólar de Hong Kong'},
+    {'code': 'KRW', 'name': 'Won Surcoreano'},
+    {'code': 'ZAR', 'name': 'Rand Sudafricano'},
   ];
+
+  final TextEditingController _valorController = TextEditingController();
 
   Future<void> _convertirMonedas() async {
     if (_monedaOrigen == _monedaDestino) {
@@ -137,13 +173,17 @@ class _DivisasState extends State<Divisas> {
 
   Widget _buildInputField() {
     return TextField(
+      controller: _valorController,
       keyboardType: TextInputType.number,
+      inputFormatters: [ThousandsSeparatorInputFormatter()],
       decoration: const InputDecoration(
         labelText: 'Ingrese un valor',
       ),
       onChanged: (value) {
         setState(() {
-          _valorIngresado = double.tryParse(value) ?? 0;
+          _valorIngresado = double.tryParse(
+                  _valorController.text.replaceAll(RegExp(r'[,.]'), '')) ??
+              0;
         });
       },
     );
@@ -159,8 +199,8 @@ class _DivisasState extends State<Divisas> {
       },
       items: _monedas.map((moneda) {
         return DropdownMenuItem<String>(
-          value: moneda,
-          child: Text(moneda),
+          value: moneda['code']!,
+          child: Text('${moneda['name']} (${moneda['code']})'),
         );
       }).toList(),
     );
@@ -176,8 +216,8 @@ class _DivisasState extends State<Divisas> {
       },
       items: _monedas.map((moneda) {
         return DropdownMenuItem<String>(
-          value: moneda,
-          child: Text(moneda),
+          value: moneda['code']!,
+          child: Text('${moneda['name']} (${moneda['code']})'),
         );
       }).toList(),
     );
@@ -196,9 +236,10 @@ class _DivisasState extends State<Divisas> {
   }
 
   Widget _buildResultText() {
+    final NumberFormat formatter = NumberFormat('#,##0.00', 'en_US');
     return Center(
       child: Text(
-        'Resultado de la Conversión: ${_resultadoConversion.toStringAsFixed(3)} $_monedaDestino',
+        'Resultado de la Conversión: ${formatter.format(_resultadoConversion)} $_monedaDestino',
         style: const TextStyle(
           fontSize: 16,
           fontWeight: FontWeight.bold,

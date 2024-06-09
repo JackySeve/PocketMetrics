@@ -340,18 +340,6 @@ class AlcanciaProvider with ChangeNotifier {
     }
   }
 
-  // Future<void> _guardarMetasEnFirebase() async {
-  //   try {
-  //     final firestore = FirebaseFirestore.instance;
-  //     for (var meta in _metas) {
-  //       await firestore.collection('metas').doc(meta.id).set(meta.toMap());
-  //     }
-  //     print('Metas actualizadas en Firebase');
-  //   } catch (e) {
-  //     print('Error al actualizar metas en Firebase: $e');
-  //   }
-  // }
-
   void editarMeta(Meta meta) async {
     try {
       final metaDocument =
@@ -369,10 +357,14 @@ class AlcanciaProvider with ChangeNotifier {
   void eliminarMeta(String id) {
     _metas.removeWhere((meta) => meta.id == id);
     notifyListeners();
-    guardarMetasEnFirebase(_metas, userEmail!);
+    if (userEmail != null) {
+      eliminarMetaEnFirebase(id, userEmail!);
+    } else {
+      print("Error: userEmail is null. Cannot save metas to Firebase.");
+    }
   }
 
-  void actualizarValoresAhorradosMetas(String email) {
+  void actualizarValoresAhorradosMetas(String email) async {
     int totalAhorrado = this.totalAhorrado;
     for (var meta in _metas) {
       if (totalAhorrado >= meta.valorObjetivo) {
@@ -384,8 +376,7 @@ class AlcanciaProvider with ChangeNotifier {
       }
     }
     notifyListeners();
-    guardarMetasEnFirebase(
-        _metas, email); // Pasar la lista de metas y el correo electrónico
+    await guardarMetasEnFirebase(_metas, email);
   }
 
   void verificarMetasCumplidas() {
@@ -393,10 +384,8 @@ class AlcanciaProvider with ChangeNotifier {
     for (var meta in _metas) {
       if (ahora.isAfter(meta.fechaLimite)) {
         if (meta.valorAhorrado >= meta.valorObjetivo) {
-          // Meta cumplida
           meta.cumplida = true;
         } else {
-          // Meta incumplida
           meta.cumplida = false;
         }
       }
@@ -434,7 +423,7 @@ class AlcanciaProvider with ChangeNotifier {
 
       await firestore
           .collection('usuarios')
-          .doc(email) // Utilizar el correo electrónico como identificador
+          .doc(email)
           .collection('alcancia')
           .doc('datos')
           .set(datosAlcancia);
@@ -448,7 +437,7 @@ class AlcanciaProvider with ChangeNotifier {
       final firestore = FirebaseFirestore.instance;
       final docSnapshot = await firestore
           .collection('usuarios')
-          .doc(email) // Utilizar el correo electrónico como identificador
+          .doc(email)
           .collection('alcancia')
           .doc('datos')
           .get();
@@ -479,8 +468,7 @@ class AlcanciaProvider with ChangeNotifier {
       final firestore = FirebaseFirestore.instance;
       final transaccionesRef = firestore
           .collection('usuarios')
-          .doc(
-              email) // Utilizar el correo electrónico como identificador del documento
+          .doc(email)
           .collection('transacciones');
 
       final snapshot = await transaccionesRef.get();
@@ -503,8 +491,7 @@ class AlcanciaProvider with ChangeNotifier {
       final firestore = FirebaseFirestore.instance;
       final transaccionesRef = firestore
           .collection('usuarios')
-          .doc(
-              email) // Utilizar el correo electrónico como identificador del documento
+          .doc(email)
           .collection('transacciones');
       final snapshot = await transaccionesRef.get();
       final transacciones =
@@ -522,13 +509,15 @@ class AlcanciaProvider with ChangeNotifier {
       final metasRef =
           firestore.collection('usuarios').doc(email).collection('metas');
 
-      final snapshot = await metasRef.get();
-      for (var doc in snapshot.docs) {
-        await doc.reference.delete();
-      }
-
       for (var meta in metas) {
-        await metasRef.add(meta.toMap());
+        if (meta.id == null) {
+          final docRef = await metasRef.add(meta.toMap());
+          meta.id = docRef.id; // Asignar el ID generado por Firestore
+        } else {
+          await metasRef
+              .doc(meta.id)
+              .set(meta.toMap(), SetOptions(merge: true));
+        }
       }
     } catch (e) {
       print('Error al guardar metas en Firebase: $e');
@@ -543,36 +532,48 @@ class AlcanciaProvider with ChangeNotifier {
       final metaSnapshot = await metasRef.get();
 
       _metas = metaSnapshot.docs
-          .map((doc) => Meta.fromMap(doc.data()))
-          .where((meta) => meta != null) // Filtrar metas que sean nulas
+          .map((doc) {
+            final meta = Meta.fromMap(doc.data());
+            meta.id = doc.id; // Asignar el ID del documento a la meta
+            return meta;
+          })
+          .where((meta) => meta != null)
           .toList();
+
       notifyListeners();
     } catch (error) {
       if (error is FirebaseException) {
-        // Handle Firebase-specific errors here
         print('Error cargando metas desde Firebase: ${error.message}');
       } else {
-        // Handle other exceptions here
         print('Error cargando metas: $error');
       }
     }
   }
 
-  Future<UserCredential?> signInWithGoogle() async {
-    // Trigger the authentication flow
-    final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
+  Future<void> eliminarMetaEnFirebase(String idMeta, String userEmail) async {
+    try {
+      final firestore = FirebaseFirestore.instance;
+      final metaRef = firestore
+          .collection('usuarios')
+          .doc(userEmail)
+          .collection('metas')
+          .doc(idMeta);
 
-    // Obtain the auth details from the request
+      await metaRef.delete();
+      print('Meta deleted from Firebase');
+    } catch (e) {
+      print('Error al eliminar meta en Firebase: $e');
+    }
+  }
+
+  Future<UserCredential?> signInWithGoogle() async {
+    final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
     final GoogleSignInAuthentication? googleAuth =
         await googleUser?.authentication;
-
-    // Create a new credential
     final credential = GoogleAuthProvider.credential(
       accessToken: googleAuth?.accessToken,
       idToken: googleAuth?.idToken,
     );
-
-    // Once signed in, return the UserCredential
     final UserCredential userCredential =
         await FirebaseAuth.instance.signInWithCredential(credential);
 
@@ -582,33 +583,45 @@ class AlcanciaProvider with ChangeNotifier {
     return userCredential;
   }
 
+  Future<void> signOut() async {
+    try {
+      await FirebaseAuth.instance.signOut();
+      await GoogleSignIn().signOut();
+      _user = null;
+      notifyListeners();
+    } catch (e) {
+      print('Error al cerrar sesión: $e');
+    }
+  }
+
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+
   Future<String?> registerUser(
       String username, String email, String password) async {
     try {
-      // Utilizamos el método createUserWithEmailAndPassword de FirebaseAuth
-      // para crear un nuevo usuario con el correo electrónico y la contraseña proporcionados.
       UserCredential userCredential =
           await _auth.createUserWithEmailAndPassword(
         email: email,
         password: password,
       );
 
-      // Una vez que el usuario se registra correctamente, podemos obtener su ID único.
       String userId = userCredential.user!.uid;
 
-      // Aquí podrías almacenar información adicional del usuario en Firebase Firestore
-      // o en cualquier otra base de datos que estés utilizando.
+      // Inicializar los valores de monedas y billetes a cero en Firestore
+      await _firestore.collection('users').doc(userId).set({
+        'username': username,
+        'email': email,
+        'monedas': 0,
+        'billetes': 0,
+      });
 
-      // Retornamos el ID del usuario como confirmación del registro exitoso.
       return userId;
     } catch (error) {
-      // Si ocurre algún error durante el registro, lo capturamos y lo mostramos.
       print("Error al registrar usuario: $error");
-      return null; // Retornamos null para indicar que el registro no fue exitoso.
+      return null;
     }
   }
 
-// Método para iniciar sesión con correo electrónico y contraseña
   Future<User?> signInWithEmailPassword(String email, String password) async {
     try {
       UserCredential userCredential = await _auth.signInWithEmailAndPassword(
@@ -617,7 +630,6 @@ class AlcanciaProvider with ChangeNotifier {
       );
       User? user = userCredential.user;
       if (user != null) {
-        // Acceder a las propiedades o métodos del objeto user aquí
         return user;
       } else {
         print('Error: el objeto user es nulo');
@@ -625,7 +637,7 @@ class AlcanciaProvider with ChangeNotifier {
       }
     } catch (error) {
       print('Error al iniciar sesión: $error');
-      return null; // Retornar null en caso de error
+      return null;
     }
   }
 
@@ -633,16 +645,12 @@ class AlcanciaProvider with ChangeNotifier {
     try {
       User? user = FirebaseAuth.instance.currentUser;
       if (user != null) {
-        // Aquí colocas el código para cargar los datos del usuario desde Firebase
         await cargarDatosDesdeFirebase(userEmail!);
         await cargarMetasDesdeFirebase(userEmail!);
         await cargarTransaccionesDesdeFirebase(userEmail!);
-      } else {
-        // El usuario no está autenticado, manejar este caso según sea necesario
       }
     } catch (error) {
       print('Error al cargar los datos del usuario: $error');
-      // Manejar el error según sea necesario
     }
   }
 }
@@ -653,8 +661,6 @@ class Transaccion {
   final DateTime fecha;
 
   Transaccion(this.monto, this.esIngreso, this.fecha);
-
-  get nombre => null;
 
   Map<String, dynamic> toMap() {
     return {

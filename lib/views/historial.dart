@@ -2,11 +2,12 @@ import 'package:alcancia_movil/providers/alcancia_provider.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:intl/intl.dart';
 
 import 'widgets/menuDesplegablePrincipal.dart';
 
 class Historial extends StatelessWidget {
-  const Historial({Key? key});
+  const Historial({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -34,7 +35,7 @@ class Historial extends StatelessWidget {
               final transaccion = transaccionesOrdenadas[index];
               return ListTile(
                 title: Text(
-                  '${transaccion.esIngreso ? 'Ingreso' : 'Egreso'}: ${transaccion.monto}',
+                  '${transaccion.esIngreso ? 'Ingreso' : 'Egreso'}: ${formatCurrency(transaccion.monto)}',
                   style: TextStyle(
                     color: transaccion.esIngreso ? Colors.green : Colors.red,
                   ),
@@ -48,5 +49,10 @@ class Historial extends StatelessWidget {
         },
       ),
     );
+  }
+
+  String formatCurrency(double amount) {
+    final format = NumberFormat.currency(locale: 'es_CO', symbol: '\$');
+    return format.format(amount);
   }
 }

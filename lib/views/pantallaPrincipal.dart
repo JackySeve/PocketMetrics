@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:provider/provider.dart';
+import 'package:intl/intl.dart';
 
 import '../providers/alcancia_provider.dart';
 import 'widgets/menuDesplegablePrincipal.dart';
@@ -8,7 +9,7 @@ import 'alcancia.dart';
 import 'metas.dart';
 
 class PantallaPrincipal extends StatefulWidget {
-  const PantallaPrincipal({Key? key}) : super(key: key);
+  const PantallaPrincipal({super.key});
 
   @override
   _PantallaPrincipalState createState() => _PantallaPrincipalState();
@@ -66,7 +67,7 @@ class _PantallaPrincipalState extends State<PantallaPrincipal> {
         future: _loadData,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return Center(child: CircularProgressIndicator());
+            return const Center(child: CircularProgressIndicator());
           } else if (snapshot.hasError) {
             return Center(child: Text('Error: ${snapshot.error}'));
           } else {
@@ -129,7 +130,7 @@ class _PantallaPrincipalState extends State<PantallaPrincipal> {
         ),
         const SizedBox(height: 30),
         Text(
-          "Total Ahorrado: \$ ${alcanciaProvider.montoTotalAhorrado}",
+          "Total Ahorrado: ${formatCurrency(alcanciaProvider.montoTotalAhorrado)}",
           style: const TextStyle(
             fontSize: 18,
             fontWeight: FontWeight.bold,
@@ -183,6 +184,11 @@ class _PantallaPrincipalState extends State<PantallaPrincipal> {
       ],
     );
   }
+
+  String formatCurrency(num amount) {
+    final format = NumberFormat.currency(locale: 'es_CO', symbol: '\$');
+    return format.format(amount);
+  }
 }
 
 class ImageLogo extends StatelessWidget {
@@ -191,11 +197,11 @@ class ImageLogo extends StatelessWidget {
   final String image;
 
   const ImageLogo({
-    Key? key,
+    super.key,
     required this.width,
     required this.height,
     required this.image,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -212,10 +218,10 @@ class CustomButton extends StatelessWidget {
   final Widget child;
 
   const CustomButton({
-    Key? key,
+    super.key,
     required this.onPressed,
     required this.child,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
