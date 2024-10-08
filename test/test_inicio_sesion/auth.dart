@@ -20,7 +20,7 @@ class Auth {
   }
 
   // Método para crear una cuenta
-  Future<bool> signUpWithEmail(String email, String password) async {
+  Future<bool> signUpWithEmail(String email, String password, String verifyPassword, bool termsAccepted) async {
     try {
       // Similar al inicio de sesión, aquí llamarías a Firebase o un servicio de backend
       if (email.isEmpty || password.isEmpty) {
@@ -32,6 +32,22 @@ class Auth {
     } catch (e) {
       print('Error al crear cuenta: $e');
       return false;
+    }
+  }
+
+  Future<bool> resetPasswordWithEmail(String email) async {
+    // Lógica para restablecer la contraseña
+    if (email.isEmpty) {
+      return false; // El campo de correo está vacío
+    }
+
+    // Aquí puedes agregar la lógica real para el restablecimiento de contraseña
+    try {
+      // Ejemplo con Firebase
+      // await FirebaseAuth.instance.sendPasswordResetEmail(email: email);
+      return true;
+    } catch (e) {
+      return false; // Error al intentar enviar el correo
     }
   }
 }
