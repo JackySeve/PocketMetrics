@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
-import 'paginaBienvenida.dart'; // Importa la página a la que deseas redirigir al cerrar sesión
+import '../home/paginaBienvenida.dart'; // Importa la página a la que deseas redirigir al cerrar sesión
 
 class PantallaCerrarSesion extends StatelessWidget {
   const PantallaCerrarSesion({super.key});

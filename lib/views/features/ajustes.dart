@@ -1,4 +1,4 @@
-import 'package:alcancia_movil/views/inicioSesionUsuario.dart';
+import 'package:alcancia_movil/views/auth/inicioSesionUsuario.dart';
 import 'package:alcancia_movil/views/widgets/menuDesplegablePrincipal.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';

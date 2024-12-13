@@ -1,7 +1,0 @@
-organization=jackyseve
-projectKey=JackySeve_PocketMetrics
-serverUrl=https://sonarcloud.io
-serverVersion=8.0.0.56994
-dashboardUrl=https://sonarcloud.io/dashboard?id=JackySeve_PocketMetrics
-ceTaskId=AZJzm0ocA-HFZq13l-Dy
-ceTaskUrl=https://sonarcloud.io/api/ce/task?id=AZJzm0ocA-HFZq13l-Dy

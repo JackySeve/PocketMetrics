@@ -5,7 +5,7 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:intl/intl.dart';
 
-import 'widgets/menuDesplegablePrincipal.dart';
+import '../widgets/menuDesplegablePrincipal.dart';
 
 class ThousandsSeparatorInputFormatter extends TextInputFormatter {
   @override

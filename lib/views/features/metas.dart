@@ -5,8 +5,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter/services.dart';
 
-import '../providers/alcancia_provider.dart';
-import '../views/widgets/menuDesplegablePrincipal.dart';
+import '../../providers/alcancia_provider.dart';
+import '../widgets/menuDesplegablePrincipal.dart';
 
 class Meta {
   String id;

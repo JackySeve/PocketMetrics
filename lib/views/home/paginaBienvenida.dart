@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 
-import 'inicioSesionUsuario.dart';
+import '../auth/inicioSesionUsuario.dart';
 import 'pantallaPrincipal.dart';
-import 'registroUsuario.dart';
+import '../auth/registroUsuario.dart';
 
 class InicioPrincipal extends StatelessWidget {
   const InicioPrincipal({super.key});

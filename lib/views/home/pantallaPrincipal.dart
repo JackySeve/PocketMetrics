@@ -3,10 +3,10 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 
-import '../providers/alcancia_provider.dart';
-import 'widgets/menuDesplegablePrincipal.dart';
-import 'alcancia.dart';
-import 'metas.dart';
+import '../../providers/alcancia_provider.dart';
+import '../widgets/menuDesplegablePrincipal.dart';
+import '../features/alcancia.dart';
+import '../features/metas.dart';
 
 class PantallaPrincipal extends StatefulWidget {
   const PantallaPrincipal({super.key});

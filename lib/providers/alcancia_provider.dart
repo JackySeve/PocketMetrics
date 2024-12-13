@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'dart:math';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:google_sign_in/google_sign_in.dart';
-import '../views/metas.dart';
+import '../views/features/metas.dart';
 
 class Moneda {
   final int valor;

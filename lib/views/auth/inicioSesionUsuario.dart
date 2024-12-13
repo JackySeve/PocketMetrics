@@ -1,11 +1,11 @@
-import 'package:alcancia_movil/views/reestablecerContrasena.dart';
+import 'package:alcancia_movil/views/auth/reestablecerContrasena.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:provider/provider.dart';
-import '../providers/alcancia_provider.dart';
+import '../../providers/alcancia_provider.dart';
 import 'registroUsuario.dart';
-import 'pantallaPrincipal.dart';
+import '../home/pantallaPrincipal.dart';
 
 class InicioSesionUsuario extends StatefulWidget {
   const InicioSesionUsuario({super.key});

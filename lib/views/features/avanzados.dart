@@ -2,9 +2,9 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:charts_flutter/flutter.dart' as charts;
 import 'package:provider/provider.dart';
-import '../providers/alcancia_provider.dart';
+import '../../providers/alcancia_provider.dart';
 import 'metas.dart';
-import 'widgets/menuDesplegablePrincipal.dart';
+import '../widgets/menuDesplegablePrincipal.dart';
 import 'package:fl_chart/fl_chart.dart';
 
 class Avanzados extends StatefulWidget {

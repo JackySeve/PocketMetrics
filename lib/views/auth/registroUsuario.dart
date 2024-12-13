@@ -4,8 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-import '../providers/alcancia_provider.dart';
-import 'pantallaPrincipal.dart';
+import '../../providers/alcancia_provider.dart';
+import '../home/pantallaPrincipal.dart';
 import 'inicioSesionUsuario.dart';
 
 class RegistroUsuario extends StatefulWidget {

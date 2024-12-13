@@ -3,8 +3,8 @@ import 'package:provider/provider.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:intl/intl.dart'; // Importa el paquete intl
 
-import '../providers/alcancia_provider.dart';
-import 'widgets/menuDesplegablePrincipal.dart';
+import '../../providers/alcancia_provider.dart';
+import '../widgets/menuDesplegablePrincipal.dart';
 
 class Alcancia extends StatelessWidget {
   const Alcancia({super.key});

@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 
-import 'widgets/menuDesplegablePrincipal.dart';
+import '../widgets/menuDesplegablePrincipal.dart';
 
 class Historial extends StatelessWidget {
   const Historial({super.key});
