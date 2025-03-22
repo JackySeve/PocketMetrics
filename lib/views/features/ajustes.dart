@@ -1,5 +1,5 @@
 import 'package:alcancia_movil/views/auth/inicioSesionUsuario.dart';
-import 'package:alcancia_movil/views/widgets/menuDesplegablePrincipal.dart';
+import 'package:alcancia_movil/views/home/menuDesplegablePrincipal.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -24,48 +24,34 @@ class _AjustesState extends State<Ajustes> {
       await FirebaseAuth.instance.currentUser!
           .reauthenticateWithCredential(credential);
       await FirebaseAuth.instance.currentUser!.updatePassword(_newPassword);
-
       _showSnackbar('Contraseña cambiada exitosamente', Colors.green);
     } catch (error) {
       _showSnackbar(
-          'Error al cambiar la contraseña. Por favor, intenta de nuevo.',
-          Colors.red);
+          'Error al cambiar la contraseña. Intenta de nuevo.', Colors.red);
     }
   }
 
   Future<void> _deleteAccount() async {
     try {
       User? user = FirebaseAuth.instance.currentUser;
-
-      // Eliminar todas las subcolecciones y documentos relacionados con el usuario basado en el correo electrónico
       await _deleteUserData(user!.email!);
-
       await user.delete();
-
       _showSnackbar('Cuenta eliminada exitosamente', Colors.green);
-
       Navigator.pushAndRemoveUntil(
         context,
         MaterialPageRoute(builder: (context) => const InicioSesionUsuario()),
         (Route<dynamic> route) => false,
       );
     } catch (error) {
-      _showSnackbar('Error al eliminar la cuenta. Por favor, intenta de nuevo.',
-          Colors.red);
+      _showSnackbar(
+          'Error al eliminar la cuenta. Intenta de nuevo.', Colors.red);
     }
   }
 
   Future<void> _deleteUserData(String email) async {
     final userDocRef =
         FirebaseFirestore.instance.collection('usuarios').doc(email);
-
-    // Eliminar subcolecciones y sus documentos
-    final collections = [
-      'alcancia',
-      'metas',
-      'transacciones'
-    ]; // Añade más subcolecciones si es necesario
-
+    final collections = ['alcancia', 'metas', 'transacciones'];
     for (var collection in collections) {
       final subcollection = userDocRef.collection(collection);
       final snapshot = await subcollection.get();
@@ -73,8 +59,6 @@ class _AjustesState extends State<Ajustes> {
         await doc.reference.delete();
       }
     }
-
-    // Eliminar el documento del usuario
     await userDocRef.delete();
   }
 
@@ -89,51 +73,26 @@ class _AjustesState extends State<Ajustes> {
 
   @override
   Widget build(BuildContext context) {
-    const logo = 'lib/assets/images/logo.png';
-
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Ajustes'),
+        title: const Text('Ajustes',
+            style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black)),
       ),
-      drawer: menuDesplegablePrincipal(
-        logo,
-        context,
-        user: FirebaseAuth.instance.currentUser,
-      ),
-      body: SingleChildScrollView(
+      drawer: MenuDesplegable(
+          logo: 'lib/assets/images/logo.png',
+          user: FirebaseAuth.instance.currentUser),
+      body: Padding(
         padding: const EdgeInsets.all(16),
         child: Center(
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
+              const SizedBox(height: 20),
+              _buildButton(
+                  'Cambiar Contraseña', Colors.blue, _showChangePasswordDialog),
               const SizedBox(height: 16),
-              ElevatedButton(
-                onPressed: () => _showChangePasswordDialog(context),
-                style: ElevatedButton.styleFrom(
-                  foregroundColor: Colors.white,
-                  backgroundColor: Colors.blueAccent,
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 30, vertical: 15),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(30),
-                  ),
-                ),
-                child: const Text('Cambiar Contraseña'),
-              ),
-              const SizedBox(height: 16),
-              ElevatedButton(
-                onPressed: () => _showDeleteAccountDialog(context),
-                style: ElevatedButton.styleFrom(
-                  foregroundColor: Colors.white,
-                  backgroundColor: Colors.redAccent,
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 30, vertical: 15),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(30),
-                  ),
-                ),
-                child: const Text('Eliminar Cuenta'),
-              ),
+              _buildButton(
+                  'Eliminar Cuenta', Colors.red, _showDeleteAccountDialog),
             ],
           ),
         ),
@@ -141,81 +100,89 @@ class _AjustesState extends State<Ajustes> {
     );
   }
 
-  void _showChangePasswordDialog(BuildContext context) {
+  Widget _buildButton(String text, Color color, VoidCallback onPressed) {
+    return ElevatedButton(
+      onPressed: onPressed,
+      style: ElevatedButton.styleFrom(
+        foregroundColor: Colors.white,
+        backgroundColor: color,
+        padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 15),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
+      ),
+      child: Text(text, style: const TextStyle(fontSize: 16)),
+    );
+  }
+
+  void _showChangePasswordDialog() {
     showDialog(
       context: context,
       builder: (context) {
-        return AlertDialog(
-          title: const Text('Cambiar Contraseña'),
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+        return _buildDialog(
+          title: 'Cambiar Contraseña',
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               _buildPasswordField(
-                label: 'Contraseña Actual',
-                onChanged: (value) => setState(() => _currentPassword = value),
-              ),
+                  'Contraseña Actual', (value) => _currentPassword = value),
+              const SizedBox(height: 10),
               _buildPasswordField(
-                label: 'Nueva Contraseña',
-                onChanged: (value) => setState(() => _newPassword = value),
-              ),
+                  'Nueva Contraseña', (value) => _newPassword = value),
             ],
           ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('Cancelar'),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                _changePassword();
-                Navigator.pop(context);
-              },
-              child: const Text('Cambiar'),
-            ),
-          ],
+          onConfirm: () {
+            _changePassword();
+            Navigator.pop(context);
+          },
         );
       },
     );
   }
 
-  void _showDeleteAccountDialog(BuildContext context) {
+  void _showDeleteAccountDialog() {
     showDialog(
       context: context,
       builder: (context) {
-        return AlertDialog(
-          title: const Text('Eliminar Cuenta'),
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+        return _buildDialog(
+          title: 'Eliminar Cuenta',
           content: const Text(
-              '¿Estás seguro de que deseas eliminar tu cuenta? Esta acción no se puede deshacer.'),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('Cancelar'),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                _deleteAccount();
-                Navigator.pop(context);
-              },
-              child: const Text('Eliminar Cuenta'),
-            ),
-          ],
+              '¿Estás seguro de que deseas eliminar tu cuenta? Esta acción no se puede deshacer.',
+              textAlign: TextAlign.center),
+          onConfirm: () {
+            _deleteAccount();
+            Navigator.pop(context);
+          },
         );
       },
     );
   }
 
-  Widget _buildPasswordField(
-      {required String label, required Function(String) onChanged}) {
+  Widget _buildDialog(
+      {required String title,
+      required Widget content,
+      required VoidCallback onConfirm}) {
+    return AlertDialog(
+      title: Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+      content: content,
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: const Text('Cancelar', style: TextStyle(color: Colors.grey)),
+        ),
+        ElevatedButton(
+          onPressed: onConfirm,
+          style: ElevatedButton.styleFrom(backgroundColor: Colors.blue),
+          child: const Text('Confirmar'),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildPasswordField(String label, Function(String) onChanged) {
     return TextField(
       decoration: InputDecoration(
         labelText: label,
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(10),
-        ),
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
       ),
       obscureText: true,
       onChanged: onChanged,

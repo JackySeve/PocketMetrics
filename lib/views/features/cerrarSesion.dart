@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
-import '../home/paginaBienvenida.dart'; // Importa la página a la que deseas redirigir al cerrar sesión
+import '../home/menuDesplegablePrincipal.dart';
+import '../home/paginaBienvenida.dart';
 
 class PantallaCerrarSesion extends StatelessWidget {
   const PantallaCerrarSesion({super.key});
@@ -12,6 +13,9 @@ class PantallaCerrarSesion extends StatelessWidget {
       appBar: AppBar(
         title: const Text('Cerrar Sesión'),
       ),
+      drawer: MenuDesplegable(
+          logo: 'lib/assets/images/logo.png',
+          user: FirebaseAuth.instance.currentUser),
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -39,6 +43,13 @@ class PantallaCerrarSesion extends StatelessWidget {
                   (Route<dynamic> route) => false,
                 );
               },
+              style: ElevatedButton.styleFrom(
+                foregroundColor: Colors.white,
+                backgroundColor: Colors.green,
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10)),
+                elevation: 5,
+              ),
               child: const Text('Cerrar Sesión'),
             ),
           ],

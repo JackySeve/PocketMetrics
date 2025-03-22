@@ -24,6 +24,7 @@ dependencies:
   google_sign_in: ^6.2.1
   intl: ^0.17.0
   flutter_masked_text2: ^0.9.1
+  adaptive_theme: ^3.6.0
 
 dev_dependencies:
   flutter_test:

@@ -4,7 +4,7 @@ import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 
 import '../../providers/alcancia_provider.dart';
-import '../widgets/menuDesplegablePrincipal.dart';
+import 'menuDesplegablePrincipal.dart';
 import '../features/alcancia.dart';
 import '../features/metas.dart';
 
@@ -17,8 +17,6 @@ class PantallaPrincipal extends StatefulWidget {
 
 class _PantallaPrincipalState extends State<PantallaPrincipal> {
   late Future<void> _loadData;
-
-  // Definir el correo electrónico del usuario aquí
   final String userEmail = FirebaseAuth.instance.currentUser?.email ?? '';
 
   @override
@@ -33,156 +31,110 @@ class _PantallaPrincipalState extends State<PantallaPrincipal> {
           Provider.of<AlcanciaProvider>(context, listen: false);
       await alcanciaProvider.verificarFechaMetas();
       if (mounted) {
-        await _descargarDatosDesdeFirebase(alcanciaProvider, userEmail);
+        await alcanciaProvider.cargarDatosDesdeFirebase(userEmail);
         await alcanciaProvider.cargarMetasDesdeFirebase(userEmail);
         await alcanciaProvider.cargarTransaccionesDesdeFirebase(userEmail);
       }
     } catch (error) {
-      // Manejar errores aquí
       print('Error al cargar datos: $error');
-    }
-  }
-
-  Future<void> _descargarDatosDesdeFirebase(
-      AlcanciaProvider alcanciaProvider, String userEmail) async {
-    if (mounted) {
-      await alcanciaProvider.cargarDatosDesdeFirebase(userEmail);
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final alcanciaProvider = Provider.of<AlcanciaProvider>(context);
-
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Inicio'),
-      ),
-      drawer: menuDesplegablePrincipal(
-        'lib/assets/images/logo.png',
-        context,
-        user: FirebaseAuth.instance.currentUser,
-      ),
+      appBar: AppBar(title: const Text('Inicio')),
+      drawer: MenuDesplegable(logo: 'lib/assets/images/logo.png', user: FirebaseAuth.instance.currentUser),
       body: FutureBuilder<void>(
         future: _loadData,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
+            return const Center(child: CustomLoadingAnimation());
           } else if (snapshot.hasError) {
             return Center(child: Text('Error: ${snapshot.error}'));
           } else {
-            return _buildBody(alcanciaProvider);
+            return _buildBody(context);
           }
         },
       ),
     );
   }
 
-  Widget _buildBody(AlcanciaProvider alcanciaProvider) {
-    return Column(
-      children: [
-        const ImageLogo(
-          width: 150,
-          height: 130,
-          image: 'lib/assets/images/logo.png',
-        ),
-        const Text(
-          "PocketMetrics",
-          style: TextStyle(
-            color: Colors.green,
-            fontSize: 30,
-            fontWeight: FontWeight.bold,
+  Widget _buildBody(BuildContext context) {
+    final alcanciaProvider = Provider.of<AlcanciaProvider>(context);
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        return SingleChildScrollView(
+          padding: EdgeInsets.all(constraints.maxWidth * 0.05),
+          child: Column(
+            children: [
+              const ImageLogo(
+                  width: 150, height: 130, image: 'lib/assets/images/logo.png'),
+              const Text(
+                "PocketMetrics",
+                style: TextStyle(
+                    fontSize: 30,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.green),
+              ),
+              const SizedBox(height: 10),
+              const Text(
+                "Tu Analizador de Ahorros en el Bolsillo",
+                style: TextStyle(fontSize: 16),
+              ),
+              const SizedBox(height: 30),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  CustomButton(
+                      onPressed: () => _navigateTo(context, const Alcancia()),
+                      child: const Text('Alcancía')),
+                  const SizedBox(width: 20),
+                  CustomButton(
+                      onPressed: () => _navigateTo(context, const Metas()),
+                      child: const Text('Metas')),
+                ],
+              ),
+              const SizedBox(height: 30),
+              Text(
+                "Total Ahorrado: ${formatCurrency(alcanciaProvider.montoTotalAhorrado)}",
+                style:
+                    const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 20),
+              _buildMetasList(alcanciaProvider)
+            ],
           ),
-        ),
-        const Text(
-          "Tu Analizador de Ahorros en el Bolsillo",
-          style: TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.w100,
-          ),
-        ),
-        const SizedBox(height: 30),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            CustomButton(
-              onPressed: () {
-                Navigator.pop(context);
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => const Alcancia()),
-                );
-              },
-              child: const Text('Alcancía'),
-            ),
-            const SizedBox(width: 20),
-            CustomButton(
-              onPressed: () {
-                Navigator.pop(context);
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => const Metas()),
-                );
-              },
-              child: const Text('Metas'),
-            ),
-          ],
-        ),
-        const SizedBox(height: 30),
-        Text(
-          "Total Ahorrado: ${formatCurrency(alcanciaProvider.montoTotalAhorrado)}",
-          style: const TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        const SizedBox(height: 20),
-        const Text(
-          "Metas",
-          style: TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        const SizedBox(height: 10),
-        Expanded(
-          child: ListView.builder(
-            itemCount: alcanciaProvider.metas.length,
-            itemBuilder: (context, index) {
-              final meta = alcanciaProvider.metas[index];
-              final progress = (meta.valorAhorrado / meta.valorObjetivo) * 100;
-              final icon = meta.cumplida ? Icons.check_circle : Icons.circle;
-              return Card(
-                margin: const EdgeInsets.all(10),
-                child: ListTile(
-                  leading: Icon(icon, color: Colors.green),
-                  title: Text(
-                    meta.nombre,
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                  trailing: Text(
-                    "${progress.toStringAsFixed(0)}%",
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                  subtitle: LinearProgressIndicator(
-                    value: progress / 100,
-                    backgroundColor: Colors.grey,
-                    valueColor:
-                        const AlwaysStoppedAnimation<Color>(Colors.green),
-                  ),
-                ),
-              );
-            },
-          ),
-        ),
-      ],
+        );
+      },
     );
+  }
+
+  Widget _buildMetasList(AlcanciaProvider alcanciaProvider) {
+    return Column(
+      children: alcanciaProvider.metas.map((meta) {
+        final progress = (meta.valorAhorrado / meta.valorObjetivo);
+        return Card(
+          margin: const EdgeInsets.symmetric(vertical: 8),
+          child: ListTile(
+            leading: Icon(meta.cumplida ? Icons.check_circle : Icons.circle,
+                color: Colors.green),
+            title: Text(meta.nombre,
+                style:
+                    const TextStyle(fontSize: 16, fontWeight: FontWeight.w500)),
+            trailing: Text("${(progress * 100).toStringAsFixed(0)}%"),
+            subtitle: LinearProgressIndicator(
+                value: progress,
+                backgroundColor: Colors.grey,
+                valueColor: const AlwaysStoppedAnimation<Color>(Colors.green)),
+          ),
+        );
+      }).toList(),
+    );
+  }
+
+  void _navigateTo(BuildContext context, Widget page) {
+    Navigator.of(context).push(MaterialPageRoute(builder: (context) => page));
   }
 
   String formatCurrency(num amount) {
@@ -191,25 +143,38 @@ class _PantallaPrincipalState extends State<PantallaPrincipal> {
   }
 }
 
+class CustomLoadingAnimation extends StatelessWidget {
+  const CustomLoadingAnimation({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const CircularProgressIndicator(color: Colors.green),
+          const SizedBox(height: 10),
+          const Text("Cargando datos...", style: TextStyle(fontSize: 16)),
+        ],
+      ),
+    );
+  }
+}
+
 class ImageLogo extends StatelessWidget {
   final double width;
   final double height;
   final String image;
 
-  const ImageLogo({
-    super.key,
-    required this.width,
-    required this.height,
-    required this.image,
-  });
+  const ImageLogo(
+      {super.key,
+      required this.width,
+      required this.height,
+      required this.image});
 
   @override
   Widget build(BuildContext context) {
-    return Image.asset(
-      image,
-      width: width,
-      height: height,
-    );
+    return Image.asset(image, width: width, height: height);
   }
 }
 
@@ -217,11 +182,7 @@ class CustomButton extends StatelessWidget {
   final VoidCallback onPressed;
   final Widget child;
 
-  const CustomButton({
-    super.key,
-    required this.onPressed,
-    required this.child,
-  });
+  const CustomButton({super.key, required this.onPressed, required this.child});
 
   @override
   Widget build(BuildContext context) {
@@ -230,9 +191,8 @@ class CustomButton extends StatelessWidget {
       style: ElevatedButton.styleFrom(
         foregroundColor: Colors.white,
         backgroundColor: Colors.green,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(10),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+        elevation: 5,
       ),
       child: child,
     );

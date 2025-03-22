@@ -1,17 +1,24 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:intl/intl.dart'; // Importa el paquete intl
-
+import 'package:intl/intl.dart';
 import '../../providers/alcancia_provider.dart';
-import '../widgets/menuDesplegablePrincipal.dart';
+import '../home/menuDesplegablePrincipal.dart';
 
-class Alcancia extends StatelessWidget {
+class Alcancia extends StatefulWidget {
   const Alcancia({super.key});
 
   @override
+  _AlcanciaState createState() => _AlcanciaState();
+}
+
+class _AlcanciaState extends State<Alcancia> {
+  int _selectedIndex = 0;
+
+  final List<String> _sections = ['Monedas', 'Billetes', 'Otras Divisas'];
+
+  @override
   Widget build(BuildContext context) {
-    const logo = 'lib/assets/images/logo.png';
     final userEmail = FirebaseAuth.instance.currentUser?.email;
 
     return Scaffold(
@@ -19,152 +26,97 @@ class Alcancia extends StatelessWidget {
         centerTitle: true,
         title: const Text('Alcancía'),
       ),
-      drawer: menuDesplegablePrincipal(
-        logo,
-        context,
+      drawer: MenuDesplegable(
+        logo: 'lib/assets/images/logo.png',
         user: FirebaseAuth.instance.currentUser,
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: [
-            _buildSectionTitle('Monedas:'),
-            const SizedBox(height: 10),
-            _buildTableHeader(),
-            Expanded(
-              child: Consumer<AlcanciaProvider>(
-                builder: (context, alcanciaProvider, child) {
-                  return ListView.builder(
-                    itemCount: alcanciaProvider.monedas.length,
-                    itemBuilder: (context, index) {
-                      final moneda = alcanciaProvider.monedas[index];
-                      return _buildMoneyRow(
-                        context,
-                        value: moneda.valor,
-                        quantity: moneda.cantidad,
-                        total: moneda.valor * moneda.cantidad,
-                        onAdd: () {
-                          _addTransaction(
-                            alcanciaProvider,
-                            moneda.valor.toDouble(),
-                            true,
-                            userEmail!,
-                            index,
-                            true,
-                          );
-                        },
-                        onRemove: () {
-                          if (moneda.cantidad > 0) {
-                            _addTransaction(
-                              alcanciaProvider,
-                              moneda.valor.toDouble(),
-                              false,
-                              userEmail!,
-                              index,
-                              true,
+      body: _selectedIndex == 2
+          ? Center(
+              child: Text('Próximamente',
+                  style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)))
+          : Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                children: [
+                  _buildSectionTitle(_sections[_selectedIndex]),
+                  const SizedBox(height: 10),
+                  _buildTableHeader(),
+                  Expanded(
+                    child: Consumer<AlcanciaProvider>(
+                      builder: (context, alcanciaProvider, child) {
+                        return ListView.builder(
+                          itemCount: _getItemCount(alcanciaProvider),
+                          itemBuilder: (context, index) {
+                            final item = _getItem(alcanciaProvider, index);
+                            return _buildMoneyRow(
+                              value: item.valor,
+                              quantity: item.cantidad,
+                              total: item.valor * item.cantidad,
+                              onAdd: () {
+                                _addTransaction(
+                                    alcanciaProvider,
+                                    item.valor.toDouble(),
+                                    true,
+                                    userEmail!,
+                                    index);
+                              },
+                              onRemove: () {
+                                if (item.cantidad > 0) {
+                                  _addTransaction(
+                                      alcanciaProvider,
+                                      item.valor.toDouble(),
+                                      false,
+                                      userEmail!,
+                                      index);
+                                }
+                              },
                             );
-                          }
-                        },
+                          },
+                        );
+                      },
+                    ),
+                  ),
+                  Consumer<AlcanciaProvider>(
+                    builder: (context, alcanciaProvider, child) {
+                      return _buildTotalText(
+                        'Total Ahorrado (${_sections[_selectedIndex]}):',
+                        _getTotal(alcanciaProvider),
                       );
                     },
-                  );
-                },
+                  ),
+                ],
               ),
             ),
-            Consumer<AlcanciaProvider>(
-              builder: (context, alcanciaProvider, child) {
-                return _buildTotalText(
-                  'Total Ahorrado (Monedas):',
-                  alcanciaProvider.totalAhorradoMonedas,
-                );
-              },
-            ),
-            const SizedBox(height: 20),
-            _buildSectionTitle('Billetes:'),
-            const SizedBox(height: 10),
-            _buildTableHeader(),
-            Expanded(
-              child: Consumer<AlcanciaProvider>(
-                builder: (context, alcanciaProvider, child) {
-                  return ListView.builder(
-                    itemCount: alcanciaProvider.billetes.length,
-                    itemBuilder: (context, index) {
-                      final billete = alcanciaProvider.billetes[index];
-                      return _buildMoneyRow(
-                        context,
-                        value: billete.valor,
-                        quantity: billete.cantidad,
-                        total: billete.valor * billete.cantidad,
-                        onAdd: () {
-                          _addTransaction(
-                            alcanciaProvider,
-                            billete.valor.toDouble(),
-                            true,
-                            userEmail!,
-                            index,
-                            false,
-                          );
-                        },
-                        onRemove: () {
-                          if (billete.cantidad > 0) {
-                            _addTransaction(
-                              alcanciaProvider,
-                              billete.valor.toDouble(),
-                              false,
-                              userEmail!,
-                              index,
-                              false,
-                            );
-                          }
-                        },
-                      );
-                    },
-                  );
-                },
-              ),
-            ),
-            Consumer<AlcanciaProvider>(
-              builder: (context, alcanciaProvider, child) {
-                return _buildTotalText(
-                  'Total Ahorrado (Billetes):',
-                  alcanciaProvider.totalAhorradoBilletes,
-                );
-              },
-            ),
-            const SizedBox(height: 20),
-            Consumer<AlcanciaProvider>(
-              builder: (context, alcanciaProvider, child) {
-                return _buildTotalText(
-                  'Total Ahorrado:',
-                  alcanciaProvider.totalAhorrado,
-                  isBold: true,
-                  fontSize: 18,
-                );
-              },
-            ),
-          ],
-        ),
+      bottomNavigationBar: BottomNavigationBar(
+        currentIndex: _selectedIndex,
+        onTap: (index) {
+          setState(() {
+            _selectedIndex = index;
+          });
+        },
+        items: [
+          BottomNavigationBarItem(
+              icon: Icon(Icons.monetization_on), label: 'Monedas'),
+          BottomNavigationBarItem(
+              icon: Icon(Icons.attach_money), label: 'Billetes'),
+          BottomNavigationBarItem(
+              icon: Icon(Icons.currency_exchange), label: 'Otras Divisas'),
+        ],
       ),
     );
   }
 
-  void _addTransaction(
-    AlcanciaProvider provider,
-    double amount,
-    bool isAddition,
-    String userEmail,
-    int index,
-    bool isCoin,
-  ) {
+  void _addTransaction(AlcanciaProvider provider, double amount,
+      bool isAddition, String userEmail, int index) {
     provider.agregarTransaccion(amount, isAddition, userEmail);
-    if (isCoin) {
+    if (_selectedIndex == 0) {
       provider.actualizarCantidadMoneda(
           index,
           isAddition
               ? provider.monedas[index].cantidad + 1
               : provider.monedas[index].cantidad - 1,
           userEmail);
-    } else {
+    } else if (_selectedIndex == 1) {
       provider.actualizarCantidadBillete(
           index,
           isAddition
@@ -172,12 +124,23 @@ class Alcancia extends StatelessWidget {
               : provider.billetes[index].cantidad - 1,
           userEmail);
     }
-    provider.guardarDatosEnFirebase(
-      provider.monedas,
-      provider.billetes,
-      provider.totalAhorrado.toDouble(),
-      userEmail,
-    );
+    provider.guardarDatosEnFirebase(provider.monedas, provider.billetes,
+        provider.totalAhorrado.toDouble(), userEmail);
+  }
+
+  int _getItemCount(AlcanciaProvider provider) {
+    if (_selectedIndex == 0) return provider.monedas.length;
+    return provider.billetes.length;
+  }
+
+  dynamic _getItem(AlcanciaProvider provider, int index) {
+    if (_selectedIndex == 0) return provider.monedas[index];
+    if (_selectedIndex == 1) return provider.billetes[index];
+  }
+
+  int _getTotal(AlcanciaProvider provider) {
+    if (_selectedIndex == 0) return provider.totalAhorradoMonedas;
+    return provider.totalAhorradoBilletes;
   }
 
   Widget _buildSectionTitle(String title) {
@@ -186,7 +149,7 @@ class Alcancia extends StatelessWidget {
       style: const TextStyle(
         fontSize: 18,
         fontWeight: FontWeight.bold,
-        color: Colors.teal,
+        color: Colors.green,
       ),
     );
   }
@@ -203,35 +166,31 @@ class Alcancia extends StatelessWidget {
   }
 
   Widget _buildMoneyRow(
-    BuildContext context, {
-    required int value,
-    required int quantity,
-    required int total,
-    required VoidCallback onAdd,
-    required VoidCallback onRemove,
-  }) {
+      {required int value,
+      required int quantity,
+      required int total,
+      required VoidCallback onAdd,
+      required VoidCallback onRemove}) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
-          Text('${formatCurrency(value)}'),
+          Text('\$${formatCurrency(value)}'),
           Row(
             children: [
               IconButton(
-                icon: const Icon(Icons.add),
-                color: Colors.green,
-                onPressed: onAdd,
-              ),
+                  icon: const Icon(Icons.add),
+                  color: Colors.green,
+                  onPressed: onAdd),
               Text("$quantity"),
               IconButton(
-                icon: const Icon(Icons.remove),
-                color: Colors.red,
-                onPressed: onRemove,
-              ),
+                  icon: const Icon(Icons.remove),
+                  color: Colors.red,
+                  onPressed: onRemove),
             ],
           ),
-          Text("\$ ${formatCurrency(total)}"),
+          Text("\$${formatCurrency(total)}"),
         ],
       ),
     );
@@ -246,7 +205,7 @@ class Alcancia extends StatelessWidget {
     return Text(
       '$label \$ ${formatCurrency(amount)}',
       style: TextStyle(
-        color: Colors.teal,
+        color: Colors.green,
         fontWeight: isBold ? FontWeight.bold : FontWeight.normal,
         fontSize: fontSize,
       ),

@@ -1,4 +1,3 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -6,7 +5,7 @@ import 'package:intl/intl.dart';
 import 'package:flutter/services.dart';
 
 import '../../providers/alcancia_provider.dart';
-import '../widgets/menuDesplegablePrincipal.dart';
+import '../home/menuDesplegablePrincipal.dart';
 
 class Meta {
   String id;
@@ -64,28 +63,47 @@ class _MetasState extends State<Metas> {
   DateTime _fechaLimite = DateTime.now();
   Meta? _metaEditando;
   final userEmail = FirebaseAuth.instance.currentUser?.email;
+  final TextEditingController _searchController = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
     final alcanciaProvider =
         Provider.of<AlcanciaProvider>(context, listen: true);
-    const logo = 'lib/assets/images/logo.png';
+    final metasFiltradas = alcanciaProvider.metas
+        .where((meta) => meta.nombre
+            .toLowerCase()
+            .contains(_searchController.text.toLowerCase()))
+        .toList();
 
     return Scaffold(
       appBar: AppBar(
         title: const Text('Mis metas'),
         centerTitle: true,
       ),
-      drawer: menuDesplegablePrincipal(
-        logo,
-        context,
-        user: FirebaseAuth.instance.currentUser,
-      ),
+      drawer: MenuDesplegable(
+          logo: 'lib/assets/images/logo.png',
+          user: FirebaseAuth.instance.currentUser),
       body: Column(
         children: [
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: TextField(
+              controller: _searchController,
+              decoration: InputDecoration(
+                hintText: 'Buscar meta...',
+                prefixIcon: const Icon(Icons.search),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10.0),
+                ),
+              ),
+              onChanged: (value) {
+                setState(() {});
+              },
+            ),
+          ),
           Expanded(
             child: ListView.builder(
-              itemCount: alcanciaProvider.metas.length,
+              itemCount: metasFiltradas.length,
               itemBuilder: (context, index) {
                 final meta = alcanciaProvider.metas[index];
                 return Card(
@@ -119,7 +137,7 @@ class _MetasState extends State<Metas> {
                           valueColor: AlwaysStoppedAnimation<Color>(
                               meta.valorAhorrado / meta.valorObjetivo >= 1
                                   ? Colors.green
-                                  : Colors.teal),
+                                  : Colors.green),
                         ),
                       ],
                     ),
@@ -158,9 +176,11 @@ class _MetasState extends State<Metas> {
                 _mostrarDialogoMeta(null);
               },
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.teal,
-                padding: const EdgeInsets.symmetric(
-                    vertical: 12.0, horizontal: 18.0),
+                foregroundColor: Colors.white,
+                backgroundColor: Colors.green,
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10)),
+                elevation: 5,
               ),
               child: const Text(
                 'Agregar Meta',

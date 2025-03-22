@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
-
 import '../auth/inicioSesionUsuario.dart';
-import 'pantallaPrincipal.dart';
 import '../auth/registroUsuario.dart';
 
 class InicioPrincipal extends StatelessWidget {
@@ -9,123 +7,150 @@ class InicioPrincipal extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Scaffold(
-      body: SizedBox(
-        child: Center(
-          child: Column(
-            children: [
-              SizedBox(height: 60),
-              ImageLogo(
-                width: 250,
-                height: 230,
-                image: 'lib/assets/images/logo.png',
-              ),
-              Text(
-                "PocketMetrics",
-                style: TextStyle(
-                  color: Colors.green,
-                  fontSize: 50,
-                  fontWeight: FontWeight.bold,
-                  fontFamily: 'Asap',
-                ),
-              ),
-              Text(
-                '¡Bienvenido de nuevo! Es un placer poderte servir',
-                style: TextStyle(
-                    fontFamily: 'Asap',
-                    fontWeight: FontWeight.bold,
-                    fontSize: 18),
-              ),
-              SizedBox(height: 15),
-              iniciarSesionPage(),
-              SizedBox(height: 25),
-              Text(
-                "¿Eres nuevo? Unete e inicia una nueva forma",
-                style: TextStyle(
-                    fontFamily: 'Asap',
-                    fontWeight: FontWeight.bold,
-                    fontSize: 18),
-              ),
-              Text(
-                "de organizar tus metas financieras",
-                style: TextStyle(
-                    fontFamily: 'Asap',
-                    fontWeight: FontWeight.bold,
-                    fontSize: 18),
-              ),
-              SizedBox(height: 15),
-              btnRegistroUsuario(),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
+    final size = MediaQuery.of(context).size;
 
-class iniciarSesionPage extends StatelessWidget {
-  const iniciarSesionPage({
-    super.key,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return InkWell(
-      onTap: () {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => const InicioSesionUsuario()),
-        );
-      },
-      child: Container(
-        width: 250,
-        height: 50,
-        decoration: BoxDecoration(
-          color: Colors.green,
-          borderRadius: BorderRadius.circular(10),
-        ),
-        child: const Center(
-          child: Text(
-            "Iniciar Sesión",
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
+    return Scaffold(
+      body: Stack(
+        children: [
+          SingleChildScrollView(
+            child: Padding(
+              padding: EdgeInsets.symmetric(horizontal: size.width * 0.05),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  SizedBox(height: size.height * 0.1), // Espaciado inicial
+                  ImageLogo(
+                    width: size.width * 0.6,
+                    height: size.height * 0.25,
+                    image: 'lib/assets/images/logo.png',
+                  ),
+                  SizedBox(height: size.height * 0.03),
+                  Text(
+                    "PocketMetrics",
+                    style: TextStyle(
+                      color: Colors.green,
+                      fontSize: size.width * 0.12,
+                      fontWeight: FontWeight.bold,
+                      fontFamily: 'Asap',
+                    ),
+                  ),
+                  SizedBox(height: size.height * 0.02),
+                  Text(
+                    '¡Bienvenido de nuevo! Es un placer poderte servir',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontFamily: 'Asap',
+                      fontWeight: FontWeight.bold,
+                      fontSize: size.width * 0.045,
+                    ),
+                  ),
+                  SizedBox(height: size.height * 0.03),
+                  BotonPrincipal(
+                    texto: "Iniciar Sesión",
+                    onTap: () {
+                      Navigator.pushReplacement(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => const InicioSesionUsuario()),
+                      );
+                    },
+                  ),
+                  SizedBox(height: size.height * 0.03),
+                  Text(
+                    "¿Eres nuevo? Únete e inicia una nueva forma de organizar tus metas financieras",
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontFamily: 'Asap',
+                      fontWeight: FontWeight.bold,
+                      fontSize: size.width * 0.045,
+                    ),
+                  ),
+                  SizedBox(height: size.height * 0.03),
+                  BotonPrincipal(
+                    texto: "Registrarse",
+                    onTap: () {
+                      Navigator.pushReplacement(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => const RegistroUsuario()),
+                      );
+                    },
+                  ),
+                  SizedBox(height: size.height * 0.05), // Espaciado final
+                ],
+              ),
             ),
           ),
-        ),
+          Positioned(
+            bottom: 0,
+            right: 10,
+            child: Text(
+              "Versión: Alpha 0.1.2",
+              style: TextStyle(
+                fontSize: size.width * 0.035,
+                color: Colors.grey,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
 }
 
-class btnRegistroUsuario extends StatelessWidget {
-  const btnRegistroUsuario({
+class ImageLogo extends StatelessWidget {
+  final double width;
+  final double height;
+  final String image;
+
+  const ImageLogo({
     super.key,
+    required this.width,
+    required this.height,
+    required this.image,
   });
 
   @override
   Widget build(BuildContext context) {
+    return Image.asset(
+      image,
+      width: width,
+      height: height,
+      fit: BoxFit.contain,
+    );
+  }
+}
+
+class BotonPrincipal extends StatelessWidget {
+  final String texto;
+  final VoidCallback onTap;
+
+  const BotonPrincipal({
+    super.key,
+    required this.texto,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final size = MediaQuery.of(context).size;
+
     return InkWell(
-      onTap: () {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => const RegistroUsuario()),
-        );
-      },
+      onTap: onTap,
       child: Container(
-        width: 250,
-        height: 50,
+        width: size.width * 0.7,
+        height: size.height * 0.07,
         decoration: BoxDecoration(
           color: Colors.green,
           borderRadius: BorderRadius.circular(10),
         ),
-        child: const Center(
+        child: Center(
           child: Text(
-            "Registrarse",
+            texto,
             style: TextStyle(
               color: Colors.white,
-              fontSize: 18,
+              fontSize: size.width * 0.05,
               fontWeight: FontWeight.bold,
             ),
           ),
