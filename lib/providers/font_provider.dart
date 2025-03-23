@@ -1,3 +1,5 @@
+//Temporalmente en Desuso mientras se hace la segregación del Provider "alcancia_provider"
+
 import 'package:flutter/material.dart';
 
 class FontProvider with ChangeNotifier {

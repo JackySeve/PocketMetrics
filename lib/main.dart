@@ -1,3 +1,4 @@
+import 'package:alcancia_movil/providers/gastos_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:provider/provider.dart';
@@ -15,6 +16,7 @@ Future<void> main() async {
     MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => AlcanciaProvider()),
+        ChangeNotifierProvider(create: (_) => GastosProvider()),
         // Se pueden agregar más providers aquí en el futuro
       ],
       child: MainApp(savedThemeMode: savedThemeMode),

@@ -297,11 +297,13 @@ class AlcanciaProvider with ChangeNotifier {
     _guardarMetaEnFirebase(meta);
   }
 
-  void crearMeta(
-      String nombre, double valorObjetivo, DateTime fechaLimite) async {
+  void crearMeta(String nombre, double valorObjetivo, DateTime fechaLimite,
+      String detalle, CategoriaMeta categoria) async {
     await FirebaseFirestore.instance.collection('metas').add({
       'nombre': nombre,
       'valorObjetivo': valorObjetivo,
+      'detalle': detalle,
+      'categoria': categoria,
       'fechaLimite': fechaLimite,
       'cumplida': false,
     });
@@ -331,6 +333,8 @@ class AlcanciaProvider with ChangeNotifier {
       await firestore.collection('metas').doc(meta.id).set({
         'nombre': meta.nombre,
         'valorObjetivo': meta.valorObjetivo,
+        'detalle': meta.detalle,
+        'categoria': meta.categoria,
         'fechaLimite': meta.fechaLimite.millisecondsSinceEpoch,
         'cumplida': meta.cumplida,
       });
@@ -347,6 +351,8 @@ class AlcanciaProvider with ChangeNotifier {
       await metaDocument.update({
         'nombre': meta.nombre,
         'valorObjetivo': meta.valorObjetivo,
+        'detalle': meta.detalle,
+        'categoria': meta.categoria,
         'fechaLimite': meta.fechaLimite.millisecondsSinceEpoch,
       });
     } catch (e) {

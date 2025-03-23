@@ -3,6 +3,7 @@ import 'package:alcancia_movil/views/features/alcancia.dart';
 import 'package:alcancia_movil/views/features/cerrarSesion.dart';
 import 'package:alcancia_movil/views/features/divisas.dart';
 import 'package:alcancia_movil/views/features/estadisticos.dart';
+import 'package:alcancia_movil/views/features/gastos.dart';
 import 'package:alcancia_movil/views/features/historial.dart';
 import 'package:alcancia_movil/views/features/metas.dart';
 import 'package:alcancia_movil/views/home/pantallaPrincipal.dart';
@@ -55,6 +56,7 @@ class MenuDesplegable extends StatelessWidget {
                   _menuOption(context, Icons.history, "Historial", const Historial()),
                   _menuOption(context, Icons.equalizer, "Estadísticos", const Estadisticos()),
                   _menuOption(context, Icons.flag, "Metas", const Metas()),
+                  _menuOption(context, Icons.money_off, "Gastos", const PantallaGastos()),
                   _menuOption(context, Icons.settings, "Ajustes", const Ajustes()),
                   _menuOption(context, Icons.currency_exchange, "Divisas", const Divisas()),
                   const Divider(),
