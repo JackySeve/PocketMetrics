@@ -1,3 +1,5 @@
+// ignore_for_file: unnecessary_null_comparison
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -102,7 +104,7 @@ class _MetasState extends State<Metas> {
     }).toList();
     return GestureDetector(
         onTap: () {
-          FocusScope.of(context).unfocus();
+          FocusManager.instance.primaryFocus?.unfocus();
         },
         child: Scaffold(
           appBar: AppBar(
@@ -154,7 +156,7 @@ class _MetasState extends State<Metas> {
                 child: ListView.builder(
                   itemCount: metasFiltradas.length,
                   itemBuilder: (context, index) {
-                    final meta = alcanciaProvider.metas[index];
+                    final meta = metasFiltradas[index];
                     return Card(
                       margin: const EdgeInsets.symmetric(
                           vertical: 8.0, horizontal: 16.0),
@@ -181,6 +183,8 @@ class _MetasState extends State<Metas> {
                                 'Valor Ahorrado: ${formatCurrency(meta.valorAhorrado)}'),
                             Text('Detalle: ${meta.detalle}'),
                             Text('Categoría: ${meta.categoria.name}'),
+                            Text(
+                                'Fecha Límite: ${DateFormat('dd/MM/yyyy').format(meta.fechaLimite)}'),
                             const SizedBox(height: 8.0),
                             LinearProgressIndicator(
                               value: meta.valorAhorrado / meta.valorObjetivo,
@@ -344,7 +348,10 @@ class _MetasState extends State<Metas> {
                               border: OutlineInputBorder(),
                             ),
                             child: Text(
-                              _fechaLimite.toString().split(' ')[0],
+                              _fechaLimite != null
+                                  ? DateFormat('dd/MM/yyyy')
+                                      .format(_fechaLimite)
+                                  : 'Seleccionar fecha',
                               style: const TextStyle(fontSize: 16),
                             ),
                           ),

@@ -14,6 +14,8 @@ class Ajustes extends StatefulWidget {
 class _AjustesState extends State<Ajustes> {
   String _currentPassword = '';
   String _newPassword = '';
+  String _newName = '';
+  String _newEmail = '';
 
   Future<void> _changePassword() async {
     try {
@@ -71,6 +73,30 @@ class _AjustesState extends State<Ajustes> {
     );
   }
 
+  // Método para actualizar el nombre y correo
+  Future<void> _updateUserInfo() async {
+    try {
+      User? user = FirebaseAuth.instance.currentUser;
+
+      // Actualizamos el nombre
+      if (_newName.isNotEmpty && _newName != user!.displayName) {
+        await user.updateDisplayName(_newName);
+      }
+
+      // Actualizamos el correo
+      if (_newEmail.isNotEmpty && _newEmail != user!.email) {
+        await user.verifyBeforeUpdateEmail(_newEmail);
+      }
+
+      // Si se actualizaron los datos correctamente
+      await user!.reload();
+      _showSnackbar('Información actualizada exitosamente', Colors.green);
+    } catch (error) {
+      _showSnackbar(
+          'Error al actualizar la información. Intenta de nuevo.', Colors.red);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -93,6 +119,9 @@ class _AjustesState extends State<Ajustes> {
               const SizedBox(height: 16),
               _buildButton(
                   'Eliminar Cuenta', Colors.red, _showDeleteAccountDialog),
+              const SizedBox(height: 16),
+              _buildButton('Editar Información', Colors.orange,
+                  _showEditUserInfoDialog), // Nuevo botón
             ],
           ),
         ),
@@ -113,6 +142,7 @@ class _AjustesState extends State<Ajustes> {
     );
   }
 
+  // Diálogo para cambiar la contraseña
   void _showChangePasswordDialog() {
     showDialog(
       context: context,
@@ -138,6 +168,7 @@ class _AjustesState extends State<Ajustes> {
     );
   }
 
+  // Diálogo para eliminar la cuenta
   void _showDeleteAccountDialog() {
     showDialog(
       context: context,
@@ -149,6 +180,30 @@ class _AjustesState extends State<Ajustes> {
               textAlign: TextAlign.center),
           onConfirm: () {
             _deleteAccount();
+            Navigator.pop(context);
+          },
+        );
+      },
+    );
+  }
+
+  // Diálogo para editar la información
+  void _showEditUserInfoDialog() {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return _buildDialog(
+          title: 'Editar Información',
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              _buildTextField('Nuevo Nombre', (value) => _newName = value),
+              const SizedBox(height: 10),
+              _buildTextField('Nuevo Correo', (value) => _newEmail = value),
+            ],
+          ),
+          onConfirm: () {
+            _updateUserInfo();
             Navigator.pop(context);
           },
         );
@@ -175,6 +230,16 @@ class _AjustesState extends State<Ajustes> {
           child: const Text('Confirmar'),
         ),
       ],
+    );
+  }
+
+  Widget _buildTextField(String label, Function(String) onChanged) {
+    return TextField(
+      decoration: InputDecoration(
+        labelText: label,
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+      ),
+      onChanged: onChanged,
     );
   }
 

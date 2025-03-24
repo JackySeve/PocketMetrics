@@ -603,7 +603,7 @@ class AlcanciaProvider with ChangeNotifier {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
   Future<String?> registerUser(
-      String username, String email, String password) async {
+      String username, String email, String password, String displayName) async {
     try {
       UserCredential userCredential =
           await _auth.createUserWithEmailAndPassword(
@@ -611,15 +611,21 @@ class AlcanciaProvider with ChangeNotifier {
         password: password,
       );
 
+      await userCredential.user!.updateDisplayName(displayName);
       String userId = userCredential.user!.uid;
 
-      // Inicializar los valores de monedas y billetes a cero en Firestore
+      // Guardamos el nombre de usuario y el correo en Firestore
       await _firestore.collection('users').doc(userId).set({
         'username': username,
         'email': email,
         'monedas': 0,
         'billetes': 0,
       });
+
+      // También actualizamos el estado del usuario
+      _userId = userId;
+      _userEmail = email;
+      _userName = username;
 
       return userId;
     } catch (error) {
@@ -636,6 +642,8 @@ class AlcanciaProvider with ChangeNotifier {
       );
       User? user = userCredential.user;
       if (user != null) {
+        // Cargar el nombre de usuario desde Firestore
+        await _loadUserName(user.uid);
         return user;
       } else {
         print('Error: el objeto user es nulo');
@@ -644,6 +652,20 @@ class AlcanciaProvider with ChangeNotifier {
     } catch (error) {
       print('Error al iniciar sesión: $error');
       return null;
+    }
+  }
+
+  Future<void> _loadUserName(String userId) async {
+    try {
+      DocumentSnapshot userDoc =
+          await _firestore.collection('users').doc(userId).get();
+      if (userDoc.exists) {
+        String username = userDoc['username'];
+        _userName = username;
+        notifyListeners(); // Para actualizar el estado en el UI
+      }
+    } catch (e) {
+      print('Error al cargar el nombre de usuario: $e');
     }
   }
 

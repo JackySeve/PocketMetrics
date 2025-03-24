@@ -4,8 +4,7 @@ import 'package:alcancia_movil/views/home/menuDesplegablePrincipal.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:charts_flutter/flutter.dart' as charts;
-import 'package:fl_chart/fl_chart.dart';
+import 'package:fl_chart/fl_chart.dart'; // Cambié aquí para fl_chart
 
 class Estadisticos extends StatefulWidget {
   const Estadisticos({super.key});
@@ -17,8 +16,8 @@ class Estadisticos extends StatefulWidget {
 class _EstadisticosState extends State<Estadisticos> {
   int _selectedIndex = 0;
 
-  List<charts.Series<TransaccionPorDia, String>> _seriesIngresos = [];
-  List<charts.Series<TransaccionPorDia, String>> _seriesEgresos = [];
+  List<BarChartGroupData> _ingresosData = [];
+  List<BarChartGroupData> _egresosData = [];
 
   @override
   void initState() {
@@ -59,30 +58,53 @@ class _EstadisticosState extends State<Estadisticos> {
     }
 
     setState(() {
-      _seriesIngresos = [
-        charts.Series<TransaccionPorDia, String>(
-          id: 'Ingresos',
-          domainFn: (TransaccionPorDia transaccion, _) => transaccion.dia,
-          measureFn: (TransaccionPorDia transaccion, _) => transaccion.monto,
-          data: ingresosPorDia.entries
-              .map((entry) => TransaccionPorDia(entry.key, entry.value))
-              .toList(),
-          colorFn: (_, __) => charts.MaterialPalette.green.shadeDefault,
-        )
-      ];
+      _ingresosData = ingresosPorDia.entries
+          .map((entry) => BarChartGroupData(
+                x: _obtenerIndiceDia(entry.key),
+                barRods: [
+                  BarChartRodData(
+                    toY: entry.value,
+                    color: Colors.green,
+                    width: 20,
+                  ),
+                ],
+              ))
+          .toList();
 
-      _seriesEgresos = [
-        charts.Series<TransaccionPorDia, String>(
-          id: 'Egresos',
-          domainFn: (TransaccionPorDia transaccion, _) => transaccion.dia,
-          measureFn: (TransaccionPorDia transaccion, _) => transaccion.monto,
-          data: egresosPorDia.entries
-              .map((entry) => TransaccionPorDia(entry.key, entry.value))
-              .toList(),
-          colorFn: (_, __) => charts.MaterialPalette.red.shadeDefault,
-        )
-      ];
+      _egresosData = egresosPorDia.entries
+          .map((entry) => BarChartGroupData(
+                x: _obtenerIndiceDia(entry.key),
+                barRods: [
+                  BarChartRodData(
+                    toY: entry.value,
+                    color: Colors.red,
+                    width: 20,
+                  ),
+                ],
+              ))
+          .toList();
     });
+  }
+
+  int _obtenerIndiceDia(String dia) {
+    switch (dia) {
+      case 'Lunes':
+        return 0;
+      case 'Martes':
+        return 1;
+      case 'Miércoles':
+        return 2;
+      case 'Jueves':
+        return 3;
+      case 'Viernes':
+        return 4;
+      case 'Sábado':
+        return 5;
+      case 'Domingo':
+        return 6;
+      default:
+        return 0;
+    }
   }
 
   String _obtenerDiaDeSemana(DateTime fecha) {
@@ -156,14 +178,30 @@ class _EstadisticosState extends State<Estadisticos> {
           style: TextStyle(fontSize: 16.0, fontWeight: FontWeight.bold),
         ),
         const SizedBox(height: 16.0),
-        Expanded(child: charts.BarChart(_seriesIngresos, animate: true)),
+        Expanded(
+          child: BarChart(
+            BarChartData(
+              borderData: FlBorderData(show: false),
+              titlesData: FlTitlesData(show: true),
+              barGroups: _ingresosData,
+            ),
+          ),
+        ),
         const SizedBox(height: 16.0),
         const Text(
           'Histograma de Egresos',
           style: TextStyle(fontSize: 16.0, fontWeight: FontWeight.bold),
         ),
         const SizedBox(height: 16.0),
-        Expanded(child: charts.BarChart(_seriesEgresos, animate: true)),
+        Expanded(
+          child: BarChart(
+            BarChartData(
+              borderData: FlBorderData(show: false),
+              titlesData: FlTitlesData(show: true),
+              barGroups: _egresosData,
+            ),
+          ),
+        ),
       ],
     );
   }
@@ -216,10 +254,11 @@ class _EstadisticosState extends State<Estadisticos> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Estadísticos')),
+      appBar: AppBar(title: const Text('Estadísticas')),
       drawer: MenuDesplegable(
-          logo: 'lib/assets/images/logo.png',
-          user: FirebaseAuth.instance.currentUser),
+        logo: 'lib/assets/images/logo.png',
+        user: FirebaseAuth.instance.currentUser,
+      ),
       body: _buildContent(),
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _selectedIndex,
@@ -230,19 +269,19 @@ class _EstadisticosState extends State<Estadisticos> {
         },
         items: const [
           BottomNavigationBarItem(
-              icon: Icon(Icons.analytics), label: 'Estadísticas'),
+            icon: Icon(Icons.assessment),
+            label: 'Estadísticas',
+          ),
           BottomNavigationBarItem(
-              icon: Icon(Icons.bar_chart), label: 'Gráficas de Ahorro'),
+            icon: Icon(Icons.bar_chart),
+            label: 'Gráfica',
+          ),
           BottomNavigationBarItem(
-              icon: Icon(Icons.pie_chart), label: 'Gráfica de Metas'),
+            icon: Icon(Icons.check_circle_outline),
+            label: 'Metas',
+          ),
         ],
       ),
     );
   }
-}
-
-class TransaccionPorDia {
-  final String dia;
-  final double monto;
-  TransaccionPorDia(this.dia, this.monto);
 }

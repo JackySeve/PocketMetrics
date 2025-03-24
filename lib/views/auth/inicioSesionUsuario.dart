@@ -1,8 +1,6 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:provider/provider.dart';
-import '../../providers/alcancia_provider.dart';
 import '../auth/reestablecerContrasena.dart';
 import 'registroUsuario.dart';
 import '../home/pantallaPrincipal.dart';
@@ -109,8 +107,10 @@ class _InicioSesionUsuarioState extends State<InicioSesionUsuario> {
           password: _passwordController.text,
         );
         if (userCredential.user != null) {
-          await Provider.of<AlcanciaProvider>(context, listen: false)
-              .loadUserData();
+          // Llamamos al método para verificar y actualizar el nombre
+          _checkUserName(userCredential.user!);
+
+          // Redirigir a la pantalla principal
           Navigator.pushReplacement(
               context,
               MaterialPageRoute(
@@ -128,10 +128,22 @@ class _InicioSesionUsuarioState extends State<InicioSesionUsuario> {
 
   void _handleGoogleSignIn() async {
     try {
-      await Provider.of<AlcanciaProvider>(context, listen: false)
-          .signInWithGoogle();
-      Navigator.pushReplacement(context,
-          MaterialPageRoute(builder: (context) => const PantallaPrincipal()));
+      UserCredential userCredential =
+          await FirebaseAuth.instance.signInWithCredential(
+        GoogleAuthProvider.credential(
+          accessToken: "accessToken",
+          idToken: "idToken",
+        ),
+      );
+
+      if (userCredential.user != null) {
+        // Llamamos al método para verificar y actualizar el nombre
+        _checkUserName(userCredential.user!);
+
+        // Redirigir a la pantalla principal
+        Navigator.pushReplacement(context,
+            MaterialPageRoute(builder: (context) => const PantallaPrincipal()));
+      }
     } catch (e) {
       _showSnackBar('Error con Google: $e');
     }
@@ -140,6 +152,20 @@ class _InicioSesionUsuarioState extends State<InicioSesionUsuario> {
   void _showSnackBar(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(message), backgroundColor: Colors.red));
+  }
+
+  void _checkUserName(User user) async {
+    // Verificamos si el displayName es nulo o vacío
+    if (user.displayName == null || user.displayName!.isEmpty) {
+      // Actualizamos el displayName con un nombre predeterminado
+      await user.updateDisplayName('Nombre Predeterminado');
+
+      // Recargamos los datos del usuario para obtener el nuevo displayName
+      await user.reload();
+
+      // Es posible que quieras mostrar un mensaje o hacer alguna acción después de esto
+      print('Nombre actualizado a: ${user.displayName}');
+    }
   }
 
   Widget _buildTextField(

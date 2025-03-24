@@ -1,0 +1,2 @@
+C:/Users/JackTheGhosth/Desktop/Proyectos Personales/PocketMetrics/android/app/.cxx/Debug/221l235g/armeabi-v7a/CMakeFiles/edit_cache.dir
+C:/Users/JackTheGhosth/Desktop/Proyectos Personales/PocketMetrics/android/app/.cxx/Debug/221l235g/armeabi-v7a/CMakeFiles/rebuild_cache.dir

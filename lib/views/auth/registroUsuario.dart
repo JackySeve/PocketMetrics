@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -273,12 +274,37 @@ class _RegistroUsuarioState extends State<RegistroUsuario> {
     );
   }
 
-  void _onRegister() {
+  void _onRegister() async {
     if (_formKey.currentState!.validate()) {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => const PantallaPrincipal()),
-      );
+      try {
+        // Obtén los valores del formulario
+        String email = _emailController.text;
+        String password = _passwordController.text;
+        String name = _controladorName.text;
+
+        // Registrar al usuario con email y password
+        UserCredential userCredential =
+            await FirebaseAuth.instance.createUserWithEmailAndPassword(
+          email: email,
+          password: password,
+        );
+
+        // Actualiza el displayName del usuario con el nombre proporcionado
+        await userCredential.user!.updateDisplayName(name);
+        await userCredential.user!
+            .reload(); // Recargar para actualizar los datos del usuario
+
+        // Navegar a la pantalla principal después del registro exitoso
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const PantallaPrincipal()),
+        );
+      } catch (e) {
+        // Manejo de errores en caso de fallar el registro
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Error al registrar el usuario')),
+        );
+      }
     }
   }
 
