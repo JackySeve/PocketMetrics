@@ -1,0 +1,2 @@
+C:/Users/JackTheGhosth/Desktop/Proyectos Personales/PocketMetrics/android/app/.cxx/RelWithDebInfo/3e6o4w3l/x86/CMakeFiles/edit_cache.dir
+C:/Users/JackTheGhosth/Desktop/Proyectos Personales/PocketMetrics/android/app/.cxx/RelWithDebInfo/3e6o4w3l/x86/CMakeFiles/rebuild_cache.dir
