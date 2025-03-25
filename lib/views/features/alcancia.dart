@@ -1,3 +1,5 @@
+import 'package:alcancia_movil/Models/divisa_model.dart';
+import 'package:alcancia_movil/providers/divisas_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -20,135 +22,187 @@ class _AlcanciaState extends State<Alcancia> {
   @override
   Widget build(BuildContext context) {
     final userEmail = FirebaseAuth.instance.currentUser?.email;
+    final divisasProvider = Provider.of<DivisasProvider>(context);
 
     return Scaffold(
-        appBar: AppBar(
-          centerTitle: true,
-          title: const Text('Alcancía'),
-        ),
-        drawer: MenuDesplegable(
-          logo: 'lib/assets/images/logo.png',
-          user: FirebaseAuth.instance.currentUser,
-        ),
-        body: _selectedIndex == 2
-            ? Center(
-                child: Text('Próximamente',
-                    style:
-                        TextStyle(fontSize: 24, fontWeight: FontWeight.bold)))
-            : Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  children: [
-                    _buildSectionTitle(_sections[_selectedIndex]),
-                    const SizedBox(height: 10),
-                    _buildTableHeader(),
-                    Expanded(
-                      child: Consumer<AlcanciaProvider>(
-                        builder: (context, alcanciaProvider, child) {
-                          return ListView.builder(
-                            itemCount: _getItemCount(alcanciaProvider),
-                            itemBuilder: (context, index) {
-                              final item = _getItem(alcanciaProvider, index);
-                              return _buildMoneyRow(
-                                value: item.valor,
-                                quantity: item.cantidad,
-                                total: item.valor * item.cantidad,
-                                onAdd: () {
-                                  _addTransaction(
-                                      alcanciaProvider,
-                                      item.valor.toDouble(),
-                                      true,
-                                      userEmail!,
-                                      index);
-                                },
-                                onRemove: () {
-                                  if (item.cantidad > 0) {
-                                    _addTransaction(
-                                        alcanciaProvider,
-                                        item.valor.toDouble(),
-                                        false,
-                                        userEmail!,
-                                        index);
-                                  }
-                                },
-                              );
-                            },
-                          );
-                        },
+      appBar: AppBar(
+        centerTitle: true,
+        title: const Text('Alcancía'),
+      ),
+      drawer: MenuDesplegable(
+        logo: 'lib/assets/images/logo.png',
+        user: FirebaseAuth.instance.currentUser,
+      ),
+      body: _selectedIndex == 2
+          ? Column(
+              children: [
+                ListView.builder(
+                  shrinkWrap: true,
+                  physics: NeverScrollableScrollPhysics(),
+                  itemCount: divisasProvider.divisas.length,
+                  itemBuilder: (context, index) {
+                    final divisa = divisasProvider.divisas[index];
+                    return ListTile(
+                      title: Text('${divisa.nombre}'),
+                      subtitle: Text('Cantidad: ${divisa.cantidad}'),
+                      trailing: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          IconButton(
+                            icon: Icon(Icons.remove),
+                            onPressed: () =>
+                                divisasProvider.actualizarCantidadDivisa(
+                                    index, false, userEmail!),
+                          ),
+                          IconButton(
+                            icon: Icon(Icons.add),
+                            onPressed: () =>
+                                divisasProvider.actualizarCantidadDivisa(
+                                    index, true, userEmail!),
+                          ),
+                        ],
                       ),
-                    ),
-                    Consumer<AlcanciaProvider>(
-                      builder: (context, alcanciaProvider, child) {
-                        return _buildTotalText(
-                          'Total Ahorrado (${_sections[_selectedIndex]}):',
-                          _getTotal(alcanciaProvider),
-                        );
-                      },
-                    ),
-                  ],
+                    );
+                  },
                 ),
-              ),
-        bottomNavigationBar: BottomNavigationBar(
-          currentIndex: _selectedIndex,
-          onTap: (index) {
-            setState(() {
-              _selectedIndex = index;
-            });
-          },
-          selectedItemColor: Colors.green, // Color para el ítem seleccionado
-          unselectedItemColor: Colors.grey, // Color para los no seleccionados
-          items: const [
-            BottomNavigationBarItem(
-              icon: Icon(Icons.monetization_on),
-              label: 'Monedas',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.attach_money),
-              label: 'Billetes',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.currency_exchange),
-              label: 'Otras Divisas',
-            ),
-          ],
-        ));
+                ElevatedButton(
+                  onPressed: () => _mostrarDialogoAgregarDivisa(
+                      context, divisasProvider, userEmail!),
+                  child: Text('Agregar Divisa'),
+                ),
+              ],
+            )
+          : _buildMainContent(context, userEmail),
+      bottomNavigationBar: _buildBottomNavigationBar(),
+    );
   }
 
-  void _addTransaction(AlcanciaProvider provider, double amount,
-      bool isAddition, String userEmail, int index) {
-    provider.agregarTransaccion(amount, isAddition, userEmail);
+  Widget _buildMainContent(BuildContext context, String? userEmail) {
+    return Padding(
+      padding: const EdgeInsets.all(16.0),
+      child: Column(
+        children: [
+          _buildSectionTitle(_sections[_selectedIndex]),
+          const SizedBox(height: 10),
+          _buildTableHeader(),
+          Expanded(
+            child: Consumer2<AlcanciaProvider, DivisasProvider>(
+              builder: (context, alcanciaProvider, divisasProvider, child) {
+                return ListView.builder(
+                  itemCount: _getItemCount(alcanciaProvider, divisasProvider),
+                  itemBuilder: (context, index) {
+                    final item =
+                        _getItem(alcanciaProvider, divisasProvider, index);
+                    return _buildMoneyRow(
+                      value: item.valor,
+                      quantity: item.cantidad,
+                      total: item.valor * item.cantidad,
+                      onAdd: () {
+                        _addTransaction(alcanciaProvider, divisasProvider,
+                            item.valor.toDouble(), true, userEmail!, index);
+                      },
+                      onRemove: () {
+                        if (item.cantidad > 0) {
+                          _addTransaction(alcanciaProvider, divisasProvider,
+                              item.valor.toDouble(), false, userEmail!, index);
+                        }
+                      },
+                    );
+                  },
+                );
+              },
+            ),
+          ),
+          Consumer<AlcanciaProvider>(
+            builder: (context, alcanciaProvider, child) {
+              return _buildTotalText(
+                'Total Ahorrado (${_sections[_selectedIndex]}):',
+                _getTotal(alcanciaProvider),
+              );
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildBottomNavigationBar() {
+    return BottomNavigationBar(
+      currentIndex: _selectedIndex,
+      onTap: (index) {
+        setState(() {
+          _selectedIndex = index;
+        });
+      },
+      selectedItemColor: Colors.green,
+      unselectedItemColor: Colors.grey,
+      items: const [
+        BottomNavigationBarItem(
+          icon: Icon(Icons.monetization_on),
+          label: 'Monedas',
+        ),
+        BottomNavigationBarItem(
+          icon: Icon(Icons.attach_money),
+          label: 'Billetes',
+        ),
+        BottomNavigationBarItem(
+          icon: Icon(Icons.currency_exchange),
+          label: 'Otras Divisas',
+        ),
+      ],
+    );
+  }
+
+  void _addTransaction(
+      AlcanciaProvider alcanciaProvider,
+      DivisasProvider divisasProvider,
+      double amount,
+      bool isAddition,
+      String userEmail,
+      int index) {
     if (_selectedIndex == 0) {
-      provider.actualizarCantidadMoneda(
+      alcanciaProvider.actualizarCantidadMoneda(
           index,
           isAddition
-              ? provider.monedas[index].cantidad + 1
-              : provider.monedas[index].cantidad - 1,
+              ? alcanciaProvider.monedas[index].cantidad + 1
+              : alcanciaProvider.monedas[index].cantidad - 1,
           userEmail);
     } else if (_selectedIndex == 1) {
-      provider.actualizarCantidadBillete(
+      alcanciaProvider.actualizarCantidadBillete(
           index,
           isAddition
-              ? provider.billetes[index].cantidad + 1
-              : provider.billetes[index].cantidad - 1,
+              ? alcanciaProvider.billetes[index].cantidad + 1
+              : alcanciaProvider.billetes[index].cantidad - 1,
           userEmail);
+    } else {
+      divisasProvider.actualizarCantidadDivisa(index, isAddition, userEmail);
     }
-    provider.guardarDatosEnFirebase(provider.monedas, provider.billetes,
-        provider.totalAhorrado.toDouble(), userEmail);
+
+    alcanciaProvider.guardarDatosEnFirebase(
+        alcanciaProvider.monedas,
+        alcanciaProvider.billetes,
+        alcanciaProvider.totalAhorrado.toDouble(),
+        userEmail);
   }
 
-  int _getItemCount(AlcanciaProvider provider) {
-    if (_selectedIndex == 0) return provider.monedas.length;
-    return provider.billetes.length;
+  int _getItemCount(
+      AlcanciaProvider alcanciaProvider, DivisasProvider divisasProvider) {
+    if (_selectedIndex == 0) return alcanciaProvider.monedas.length;
+    if (_selectedIndex == 1) return alcanciaProvider.billetes.length;
+    return divisasProvider.divisas.length;
   }
 
-  dynamic _getItem(AlcanciaProvider provider, int index) {
-    if (_selectedIndex == 0) return provider.monedas[index];
-    return provider.billetes[index];
+  dynamic _getItem(AlcanciaProvider alcanciaProvider,
+      DivisasProvider divisasProvider, int index) {
+    if (_selectedIndex == 0) return alcanciaProvider.monedas[index];
+    if (_selectedIndex == 1) return alcanciaProvider.billetes[index];
+    return divisasProvider.divisas[index];
   }
 
-  int _getTotal(AlcanciaProvider provider) {
-    if (_selectedIndex == 0) return provider.totalAhorradoMonedas;
-    return provider.totalAhorradoBilletes;
+  int _getTotal(AlcanciaProvider alcanciaProvider) {
+    if (_selectedIndex == 0) return alcanciaProvider.totalAhorradoMonedas;
+    if (_selectedIndex == 1) return alcanciaProvider.totalAhorradoBilletes;
+    return 0;
   }
 
   Widget _buildSectionTitle(String title) {
@@ -226,5 +280,53 @@ class _AlcanciaState extends State<Alcancia> {
   String formatCurrency(int amount) {
     final formatter = NumberFormat('#,###', 'es_ES');
     return formatter.format(amount);
+  }
+
+  void _mostrarDialogoAgregarDivisa(
+      BuildContext context, DivisasProvider provider, String userEmail) {
+    TextEditingController nombreController = TextEditingController();
+    TextEditingController cantidadController = TextEditingController();
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('Agregar Divisa'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+              controller: nombreController,
+              decoration: InputDecoration(labelText: 'Nombre de la Divisa'),
+            ),
+            TextField(
+              controller: cantidadController,
+              decoration: InputDecoration(labelText: 'Cantidad'),
+              keyboardType: TextInputType.number,
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text('Cancelar'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              final nombre = nombreController.text;
+              final cantidad = int.tryParse(cantidadController.text) ?? 0;
+
+              if (nombre.isNotEmpty && cantidad > 0) {
+                provider.agregarDivisa(
+                  DivisaModel(nombre: nombre, valor: 1, cantidad: cantidad),
+                  userEmail,
+                );
+                Navigator.pop(context);
+              }
+            },
+            child: Text('Guardar'),
+          ),
+        ],
+      ),
+    );
   }
 }

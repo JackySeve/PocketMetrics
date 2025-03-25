@@ -1,3 +1,4 @@
+import 'package:alcancia_movil/providers/divisas_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:provider/provider.dart';
@@ -23,6 +24,11 @@ class _PantallaPrincipalState extends State<PantallaPrincipal> {
   void initState() {
     super.initState();
     _loadData = _cargarDatos();
+    final userEmail = FirebaseAuth.instance.currentUser?.email;
+    if (userEmail != null) {
+      Provider.of<DivisasProvider>(context, listen: false)
+          .cargarDivisasDesdeFirebase(userEmail);
+    }
   }
 
   Future<void> _cargarDatos() async {
@@ -44,7 +50,9 @@ class _PantallaPrincipalState extends State<PantallaPrincipal> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('Inicio')),
-      drawer: MenuDesplegable(logo: 'lib/assets/images/logo.png', user: FirebaseAuth.instance.currentUser),
+      drawer: MenuDesplegable(
+          logo: 'lib/assets/images/logo.png',
+          user: FirebaseAuth.instance.currentUser),
       body: FutureBuilder<void>(
         future: _loadData,
         builder: (context, snapshot) {
