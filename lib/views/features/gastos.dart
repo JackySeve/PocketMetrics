@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../home/menuDesplegablePrincipal.dart';
+import 'package:flutter/services.dart';
 
 class PantallaGastos extends StatefulWidget {
   const PantallaGastos({super.key});
@@ -86,7 +87,8 @@ class _PantallaGastosState extends State<PantallaGastos> {
             ),
           ),
           Padding(
-            padding: EdgeInsets.only(bottom: MediaQuery.of(context).padding.bottom + 16.0),
+            padding: EdgeInsets.only(
+                bottom: MediaQuery.of(context).padding.bottom + 16.0),
             child: ElevatedButton(
               onPressed: () => _mostrarDialogoGasto(
                   context, gastosProvider, userEmail, null),
@@ -139,6 +141,7 @@ class _PantallaGastosState extends State<PantallaGastos> {
                 controller: _valorController,
                 keyboardType: TextInputType.number,
                 decoration: const InputDecoration(labelText: 'Valor'),
+                inputFormatters: [ThousandsSeparatorInputFormatter()],
               ),
               GestureDetector(
                 onTap: () async {
@@ -193,6 +196,24 @@ class _PantallaGastosState extends State<PantallaGastos> {
           ],
         );
       },
+    );
+  }
+}
+
+class ThousandsSeparatorInputFormatter extends TextInputFormatter {
+  @override
+  TextEditingValue formatEditUpdate(
+      TextEditingValue oldValue, TextEditingValue newValue) {
+    final int selectionIndexFromTheRight =
+        newValue.text.length - newValue.selection.end;
+    final number = int.tryParse(newValue.text.replaceAll(RegExp(r'[,.]'), ''));
+    if (number == null) return newValue;
+
+    final newString = NumberFormat.decimalPattern().format(number);
+    return TextEditingValue(
+      text: newString,
+      selection: TextSelection.collapsed(
+          offset: newString.length - selectionIndexFromTheRight),
     );
   }
 }

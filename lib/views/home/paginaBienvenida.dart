@@ -22,7 +22,7 @@ class _InicioPrincipalState extends State<InicioPrincipal> {
   Future<void> _cargarVersion() async {
     PackageInfo packageInfo = await PackageInfo.fromPlatform();
     setState(() {
-      appVersion = "Versión: ${packageInfo.version}+${packageInfo.buildNumber}";
+      appVersion = "Versión: ${packageInfo.version}";
     });
   }
 
