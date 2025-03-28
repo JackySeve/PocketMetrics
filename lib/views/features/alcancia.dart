@@ -1,6 +1,7 @@
 import 'package:alcancia_movil/Models/divisa_model.dart';
 import 'package:alcancia_movil/providers/divisas_provider.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:intl/intl.dart';
@@ -44,7 +45,8 @@ class _AlcanciaState extends State<Alcancia> {
                     final divisa = divisasProvider.divisas[index];
                     return ListTile(
                       title: Text('${divisa.nombre}'),
-                      subtitle: Text('Cantidad: ${divisa.cantidad}'),
+                      subtitle:
+                          Text('Cantidad: ${formatCurrency(divisa.cantidad)}'),
                       trailing: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
@@ -60,6 +62,11 @@ class _AlcanciaState extends State<Alcancia> {
                                 divisasProvider.actualizarCantidadDivisa(
                                     index, true, userEmail!),
                           ),
+                          IconButton(
+                            icon: Icon(Icons.delete, color: Colors.red),
+                            onPressed: () => _mostrarDialogoEliminarDivisa(
+                                context, divisasProvider, index, userEmail!),
+                          ),
                         ],
                       ),
                     );
@@ -68,12 +75,47 @@ class _AlcanciaState extends State<Alcancia> {
                 ElevatedButton(
                   onPressed: () => _mostrarDialogoAgregarDivisa(
                       context, divisasProvider, userEmail!),
-                  child: Text('Agregar Divisa'),
+                  style: ElevatedButton.styleFrom(
+                    foregroundColor: Colors.white,
+                    backgroundColor: Colors.green,
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10)),
+                    elevation: 5,
+                  ),
+                  child: const Text(
+                    'Agregar Divisa',
+                    style: TextStyle(fontSize: 16.0, color: Colors.white),
+                  ),
                 ),
               ],
             )
           : _buildMainContent(context, userEmail),
       bottomNavigationBar: _buildBottomNavigationBar(),
+    );
+  }
+
+  void _mostrarDialogoEliminarDivisa(BuildContext context,
+      DivisasProvider provider, int index, String userEmail) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('Eliminar Divisa'),
+        content: Text('¿Estás seguro de que deseas eliminar esta divisa?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text('Cancelar'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              provider.eliminarDivisa(index, userEmail);
+              Navigator.pop(context);
+            },
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+            child: Text('Eliminar', style: TextStyle(color: Colors.white)),
+          ),
+        ],
+      ),
     );
   }
 
@@ -160,6 +202,9 @@ class _AlcanciaState extends State<Alcancia> {
       bool isAddition,
       String userEmail,
       int index) {
+    Provider.of<AlcanciaProvider>(context, listen: false)
+        .agregarTransaccion(amount, isAddition, userEmail);
+
     if (_selectedIndex == 0) {
       alcanciaProvider.actualizarCantidadMoneda(
           index,
@@ -302,6 +347,7 @@ class _AlcanciaState extends State<Alcancia> {
               controller: cantidadController,
               decoration: InputDecoration(labelText: 'Cantidad'),
               keyboardType: TextInputType.number,
+              inputFormatters: [ThousandsSeparatorInputFormatter()],
             ),
           ],
         ),
@@ -327,6 +373,24 @@ class _AlcanciaState extends State<Alcancia> {
           ),
         ],
       ),
+    );
+  }
+}
+
+class ThousandsSeparatorInputFormatter extends TextInputFormatter {
+  @override
+  TextEditingValue formatEditUpdate(
+      TextEditingValue oldValue, TextEditingValue newValue) {
+    final int selectionIndexFromTheRight =
+        newValue.text.length - newValue.selection.end;
+    final number = int.tryParse(newValue.text.replaceAll(RegExp(r'[,.]'), ''));
+    if (number == null) return newValue;
+
+    final newString = NumberFormat.decimalPattern().format(number);
+    return TextEditingValue(
+      text: newString,
+      selection: TextSelection.collapsed(
+          offset: newString.length - selectionIndexFromTheRight),
     );
   }
 }

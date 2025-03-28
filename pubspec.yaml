@@ -1,7 +1,7 @@
 name: alcancia_movil
 description: "A new Flutter project."
 publish_to: 'none'
-version: 0.1.0
+version: 1.0.2
 
 environment:
   sdk: '>=3.2.6 <4.0.0'
@@ -25,6 +25,7 @@ dependencies:
   intl: ^0.17.0
   flutter_masked_text2: ^0.9.1
   adaptive_theme: ^3.6.0
+  package_info_plus: ^8.3.0
 
 dev_dependencies:
   flutter_test:

@@ -1,9 +1,30 @@
 import 'package:flutter/material.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import '../auth/inicioSesionUsuario.dart';
 import '../auth/registroUsuario.dart';
 
-class InicioPrincipal extends StatelessWidget {
+class InicioPrincipal extends StatefulWidget {
   const InicioPrincipal({super.key});
+
+  @override
+  _InicioPrincipalState createState() => _InicioPrincipalState();
+}
+
+class _InicioPrincipalState extends State<InicioPrincipal> {
+  String appVersion = "Cargando...";
+
+  @override
+  void initState() {
+    super.initState();
+    _cargarVersion();
+  }
+
+  Future<void> _cargarVersion() async {
+    PackageInfo packageInfo = await PackageInfo.fromPlatform();
+    setState(() {
+      appVersion = "Versión: ${packageInfo.version}+${packageInfo.buildNumber}";
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -18,7 +39,7 @@ class InicioPrincipal extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  SizedBox(height: size.height * 0.1), // Espaciado inicial
+                  SizedBox(height: size.height * 0.1),
                   ImageLogo(
                     width: size.width * 0.6,
                     height: size.height * 0.25,
@@ -76,7 +97,7 @@ class InicioPrincipal extends StatelessWidget {
                       );
                     },
                   ),
-                  SizedBox(height: size.height * 0.05), // Espaciado final
+                  SizedBox(height: size.height * 0.05),
                 ],
               ),
             ),
@@ -85,7 +106,7 @@ class InicioPrincipal extends StatelessWidget {
             bottom: 0,
             right: 10,
             child: Text(
-              "Versión: Alpha 0.1.2",
+              appVersion,
               style: TextStyle(
                 fontSize: size.width * 0.035,
                 color: Colors.grey,

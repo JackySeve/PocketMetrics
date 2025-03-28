@@ -18,7 +18,6 @@ class _PantallaGastosState extends State<PantallaGastos> {
   final TextEditingController _descripcionController = TextEditingController();
   final TextEditingController _valorController = TextEditingController();
   DateTime _fechaSeleccionada = DateTime.now();
-
   @override
   void initState() {
     super.initState();
@@ -62,13 +61,24 @@ class _PantallaGastosState extends State<PantallaGastos> {
                             'Valor: ${NumberFormat.currency(symbol: '\$', decimalDigits: 0).format(gasto.valor)}'),
                       ],
                     ),
-                    trailing: IconButton(
-                      icon: const Icon(Icons.delete, color: Colors.red),
-                      onPressed: () {
-                        if (userEmail != null) {
-                          gastosProvider.eliminarGasto(gasto.id, userEmail);
-                        }
-                      },
+                    trailing: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        IconButton(
+                          icon: const Icon(Icons.edit, color: Colors.blue),
+                          onPressed: () => _mostrarDialogoGasto(
+                              context, gastosProvider, userEmail, gasto),
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.delete, color: Colors.red),
+                          onPressed: () {
+                            if (userEmail != null) {
+                              gastosProvider.eliminarGasto(
+                                  gasto.id, userEmail, context);
+                            }
+                          },
+                        ),
+                      ],
                     ),
                   ),
                 );
@@ -76,10 +86,10 @@ class _PantallaGastosState extends State<PantallaGastos> {
             ),
           ),
           Padding(
-            padding: const EdgeInsets.all(16.0),
+            padding: EdgeInsets.only(bottom: MediaQuery.of(context).padding.bottom + 16.0),
             child: ElevatedButton(
-              onPressed: () =>
-                  _mostrarDialogoGasto(context, gastosProvider, userEmail),
+              onPressed: () => _mostrarDialogoGasto(
+                  context, gastosProvider, userEmail, null),
               style: ElevatedButton.styleFrom(
                 foregroundColor: Colors.white,
                 backgroundColor: Colors.green,
@@ -95,13 +105,25 @@ class _PantallaGastosState extends State<PantallaGastos> {
     );
   }
 
-  void _mostrarDialogoGasto(
-      BuildContext context, GastosProvider gastosProvider, String? userEmail) {
+  void _mostrarDialogoGasto(BuildContext context, GastosProvider gastosProvider,
+      String? userEmail, Gasto? gastoEditando) {
+    if (gastoEditando != null) {
+      _nombreController.text = gastoEditando.nombre;
+      _descripcionController.text = gastoEditando.descripcion;
+      _valorController.text = gastoEditando.valor.toString();
+      _fechaSeleccionada = gastoEditando.fecha;
+    } else {
+      _nombreController.clear();
+      _descripcionController.clear();
+      _valorController.clear();
+      _fechaSeleccionada = DateTime.now();
+    }
+
     showDialog(
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: const Text('Agregar Gasto'),
+          title: Text(gastoEditando == null ? 'Agregar Gasto' : 'Editar Gasto'),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -141,13 +163,6 @@ class _PantallaGastosState extends State<PantallaGastos> {
           actions: [
             TextButton(
                 onPressed: () => Navigator.pop(context),
-                style: ElevatedButton.styleFrom(
-                  foregroundColor: Colors.white,
-                  backgroundColor: Colors.green,
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10)),
-                  elevation: 5,
-                ),
                 child: const Text('Cancelar')),
             ElevatedButton(
               onPressed: () {
@@ -156,27 +171,24 @@ class _PantallaGastosState extends State<PantallaGastos> {
                     _valorController.text.isNotEmpty &&
                     userEmail != null) {
                   final nuevoGasto = Gasto(
-                    id: DateTime.now().millisecondsSinceEpoch.toString(),
+                    id: gastoEditando?.id ??
+                        DateTime.now().millisecondsSinceEpoch.toString(),
                     nombre: _nombreController.text,
                     descripcion: _descripcionController.text,
                     fecha: _fechaSeleccionada,
                     valor: int.parse(_valorController.text),
                   );
 
-                  gastosProvider.agregarGasto(nuevoGasto, userEmail);
+                  if (gastoEditando == null) {
+                    gastosProvider.agregarGasto(nuevoGasto, userEmail);
+                  } else {
+                    gastosProvider.editarGasto(nuevoGasto, userEmail);
+                  }
+
                   Navigator.pop(context);
                 }
               },
-              style: ElevatedButton.styleFrom(
-                foregroundColor: Colors.white,
-                backgroundColor: Colors.green,
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10)),
-                elevation: 5,
-              ),
-              child: const Text(
-                'Guardar',
-              ),
+              child: const Text('Guardar'),
             ),
           ],
         );

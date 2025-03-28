@@ -75,7 +75,7 @@ class _DivisasState extends State<Divisas> {
     }
 
     final String url =
-        'https://v6.exchangerate-api.com/v6/YOUR_API_KEY/latest/$_monedaOrigen';
+        'https://v6.exchangerate-api.com/v6/ea7117013cc4bee655fba7ec/latest/$_monedaOrigen';
     try {
       final http.Response response = await http.get(Uri.parse(url));
       if (response.statusCode == 200) {
@@ -112,31 +112,36 @@ class _DivisasState extends State<Divisas> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Conversor de Divisas')),
-      drawer: MenuDesplegable(
-        logo: 'lib/assets/images/logo.png',
-        user: FirebaseAuth.instance.currentUser,
-      ),
-      body: LayoutBuilder(
-        builder: (context, constraints) {
-          return SingleChildScrollView(
-            padding: const EdgeInsets.all(16.0),
-            child: ConstrainedBox(
-              constraints: BoxConstraints(
-                maxWidth: constraints.maxWidth > 600 ? 500 : double.infinity,
+    return GestureDetector(
+      onTap: () {
+        FocusManager.instance.primaryFocus?.unfocus();
+      },
+      child: Scaffold(
+        appBar: AppBar(title: const Text('Conversor de Divisas')),
+        drawer: MenuDesplegable(
+          logo: 'lib/assets/images/logo.png',
+          user: FirebaseAuth.instance.currentUser,
+        ),
+        body: LayoutBuilder(
+          builder: (context, constraints) {
+            return SingleChildScrollView(
+              padding: const EdgeInsets.all(16.0),
+              child: ConstrainedBox(
+                constraints: BoxConstraints(
+                  maxWidth: constraints.maxWidth > 600 ? 500 : double.infinity,
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    _buildConversionCard(),
+                    const Divider(),
+                    _buildResultText(),
+                  ],
+                ),
               ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  _buildConversionCard(),
-                  const Divider(),
-                  _buildResultText(),
-                ],
-              ),
-            ),
-          );
-        },
+            );
+          },
+        ),
       ),
     );
   }

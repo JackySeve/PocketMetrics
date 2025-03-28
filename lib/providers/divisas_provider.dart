@@ -63,4 +63,10 @@ class DivisasProvider extends ChangeNotifier {
     }
     notifyListeners();
   }
+
+  void eliminarDivisa(int index, String userEmail) {
+    divisas.removeAt(index);
+    notifyListeners();
+    guardarDivisasEnFirebase(userEmail);
+  }
 }

@@ -22,7 +22,26 @@ class _EstadisticosState extends State<Estadisticos> {
   @override
   void initState() {
     super.initState();
+    final provider = Provider.of<AlcanciaProvider>(context, listen: false);
+    provider.addListener(_actualizarDatos);
     _agruparTransaccionesPorDia();
+  }
+
+  void _actualizarDatos() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        setState(() {
+          _agruparTransaccionesPorDia();
+        });
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    final provider = Provider.of<AlcanciaProvider>(context, listen: false);
+    provider.removeListener(_actualizarDatos);
+    super.dispose();
   }
 
   void _agruparTransaccionesPorDia() {
@@ -57,32 +76,37 @@ class _EstadisticosState extends State<Estadisticos> {
       }
     }
 
-    setState(() {
-      _ingresosData = ingresosPorDia.entries
-          .map((entry) => BarChartGroupData(
-                x: _obtenerIndiceDia(entry.key),
-                barRods: [
-                  BarChartRodData(
-                    toY: entry.value,
-                    color: Colors.green,
-                    width: 20,
-                  ),
-                ],
-              ))
-          .toList();
+    /// 🚀 **Ejecución después de que Flutter termine el frame actual**
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        setState(() {
+          _ingresosData = ingresosPorDia.entries
+              .map((entry) => BarChartGroupData(
+                    x: _obtenerIndiceDia(entry.key),
+                    barRods: [
+                      BarChartRodData(
+                        toY: entry.value,
+                        color: Colors.green,
+                        width: 20,
+                      ),
+                    ],
+                  ))
+              .toList();
 
-      _egresosData = egresosPorDia.entries
-          .map((entry) => BarChartGroupData(
-                x: _obtenerIndiceDia(entry.key),
-                barRods: [
-                  BarChartRodData(
-                    toY: entry.value,
-                    color: Colors.red,
-                    width: 20,
-                  ),
-                ],
-              ))
-          .toList();
+          _egresosData = egresosPorDia.entries
+              .map((entry) => BarChartGroupData(
+                    x: _obtenerIndiceDia(entry.key),
+                    barRods: [
+                      BarChartRodData(
+                        toY: entry.value,
+                        color: Colors.red,
+                        width: 20,
+                      ),
+                    ],
+                  ))
+              .toList();
+        });
+      }
     });
   }
 
@@ -103,7 +127,7 @@ class _EstadisticosState extends State<Estadisticos> {
       case 'Domingo':
         return 6;
       default:
-        return 0;
+        return 7;
     }
   }
 
@@ -182,7 +206,29 @@ class _EstadisticosState extends State<Estadisticos> {
           child: BarChart(
             BarChartData(
               borderData: FlBorderData(show: false),
-              titlesData: FlTitlesData(show: true),
+              titlesData: FlTitlesData(
+                bottomTitles: AxisTitles(
+                  sideTitles: SideTitles(
+                    showTitles: true,
+                    getTitlesWidget: (value, meta) {
+                      List<String> dias = [
+                        'Lun',
+                        'Mar',
+                        'Mié',
+                        'Jue',
+                        'Vie',
+                        'Sáb',
+                        'Dom'
+                      ];
+                      return Text(
+                        dias[value.toInt()],
+                        style: const TextStyle(
+                            fontSize: 12, fontWeight: FontWeight.bold),
+                      );
+                    },
+                  ),
+                ),
+              ),
               barGroups: _ingresosData,
             ),
           ),
@@ -197,7 +243,29 @@ class _EstadisticosState extends State<Estadisticos> {
           child: BarChart(
             BarChartData(
               borderData: FlBorderData(show: false),
-              titlesData: FlTitlesData(show: true),
+              titlesData: FlTitlesData(
+                bottomTitles: AxisTitles(
+                  sideTitles: SideTitles(
+                    showTitles: true,
+                    getTitlesWidget: (value, meta) {
+                      List<String> dias = [
+                        'Lun',
+                        'Mar',
+                        'Mié',
+                        'Jue',
+                        'Vie',
+                        'Sáb',
+                        'Dom'
+                      ];
+                      return Text(
+                        dias[value.toInt()],
+                        style: const TextStyle(
+                            fontSize: 12, fontWeight: FontWeight.bold),
+                      );
+                    },
+                  ),
+                ),
+              ),
               barGroups: _egresosData,
             ),
           ),
@@ -259,7 +327,12 @@ class _EstadisticosState extends State<Estadisticos> {
         logo: 'lib/assets/images/logo.png',
         user: FirebaseAuth.instance.currentUser,
       ),
-      body: _buildContent(),
+      body: Consumer<AlcanciaProvider>(
+        builder: (context, provider, child) {
+          _agruparTransaccionesPorDia(); // Llamamos cada vez que el provider cambia
+          return _buildContent();
+        },
+      ),
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _selectedIndex,
         onTap: (index) {
@@ -267,6 +340,8 @@ class _EstadisticosState extends State<Estadisticos> {
             _selectedIndex = index;
           });
         },
+        selectedItemColor: Colors.green,
+        unselectedItemColor: Colors.grey,
         items: const [
           BottomNavigationBarItem(
             icon: Icon(Icons.assessment),

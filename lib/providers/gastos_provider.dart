@@ -35,7 +35,11 @@ class GastosProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> eliminarGasto(String id, String userEmail) async {
+  Future<void> eliminarGasto(
+      String id, String userEmail, BuildContext context) async {
+    bool confirmar = await _confirmarEliminacion(context);
+    if (!confirmar) return;
+
     await _firestore
         .collection('usuarios')
         .doc(userEmail)
@@ -45,5 +49,42 @@ class GastosProvider with ChangeNotifier {
 
     _gastos.removeWhere((gasto) => gasto.id == id);
     notifyListeners();
+  }
+
+  Future<void> editarGasto(Gasto gasto, String userEmail) async {
+    await _firestore
+        .collection('usuarios')
+        .doc(userEmail)
+        .collection('gastos')
+        .doc(gasto.id)
+        .update(gasto.toMap());
+
+    int index = _gastos.indexWhere((g) => g.id == gasto.id);
+    if (index != -1) {
+      _gastos[index] = gasto;
+      notifyListeners();
+    }
+  }
+
+  Future<bool> _confirmarEliminacion(BuildContext context) async {
+    return await showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: Text('Confirmar eliminación'),
+            content: Text('¿Estás seguro de que deseas eliminar este gasto?'),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(false),
+                child: Text('Cancelar'),
+              ),
+              ElevatedButton(
+                onPressed: () => Navigator.of(context).pop(true),
+                style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+                child: Text('Eliminar', style: TextStyle(color: Colors.white)),
+              ),
+            ],
+          ),
+        ) ??
+        false;
   }
 }

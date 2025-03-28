@@ -225,7 +225,8 @@ class _MetasState extends State<Metas> {
                 ),
               ),
               Padding(
-                padding: const EdgeInsets.all(16.0),
+                padding: EdgeInsets.only(
+                    bottom: MediaQuery.of(context).padding.bottom + 16.0),
                 child: ElevatedButton(
                   onPressed: () {
                     _mostrarDialogoMeta(null);
@@ -270,7 +271,6 @@ class _MetasState extends State<Metas> {
                 children: [
                   Row(
                     children: [
-                      // Nombre de la meta
                       Expanded(
                         child: TextFormField(
                           initialValue: _nombreMeta,
@@ -284,7 +284,6 @@ class _MetasState extends State<Metas> {
                         ),
                       ),
                       const SizedBox(width: 10),
-                      // Valor objetivo
                       Expanded(
                         child: TextFormField(
                           initialValue: _valorObjetivo.toString(),
@@ -314,7 +313,6 @@ class _MetasState extends State<Metas> {
                     ],
                   ),
                   const SizedBox(height: 10),
-                  // Categoría y Fecha Límite
                   Row(
                     children: [
                       Expanded(
@@ -360,7 +358,6 @@ class _MetasState extends State<Metas> {
                     ],
                   ),
                   const SizedBox(height: 10),
-                  // Detalles (en un ExpansionTile para ahorrar espacio)
                   ExpansionTile(
                     title: const Text("Detalles adicionales"),
                     children: [
@@ -494,7 +491,7 @@ class _MetasState extends State<Metas> {
                 Navigator.of(context).pop();
               },
               style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-              child: const Text('Eliminar'),
+              child: Text('Eliminar', style: TextStyle(color: Colors.white)),
             ),
           ],
         );

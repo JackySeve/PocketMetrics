@@ -1,8 +1,10 @@
+import 'package:alcancia_movil/providers/alcancia_provider.dart';
 import 'package:alcancia_movil/views/auth/inicioSesionUsuario.dart';
 import 'package:alcancia_movil/views/home/menuDesplegablePrincipal.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:provider/provider.dart';
 
 class Ajustes extends StatefulWidget {
   const Ajustes({super.key});
@@ -16,6 +18,7 @@ class _AjustesState extends State<Ajustes> {
   String _newPassword = '';
   String _newName = '';
   String _newEmail = '';
+  final String userEmail = FirebaseAuth.instance.currentUser?.email ?? '';
 
   Future<void> _changePassword() async {
     try {
@@ -36,9 +39,23 @@ class _AjustesState extends State<Ajustes> {
   Future<void> _deleteAccount() async {
     try {
       User? user = FirebaseAuth.instance.currentUser;
-      await _deleteUserData(user!.email!);
+      if (user == null) {
+        _showSnackbar('Error: No hay usuario autenticado.', Colors.red);
+        return;
+      }
+
+      String userEmail =
+          user.email!; // Guardamos el correo para eliminar de Firestore
+
+      // 🔴 PASO 1: Eliminar los datos en Firestore antes de eliminar la cuenta
+      await _deleteUserData(userEmail);
+
+      // 🔴 PASO 2: Eliminar la cuenta en Firebase Authentication
       await user.delete();
+
       _showSnackbar('Cuenta eliminada exitosamente', Colors.green);
+
+      // 🔴 PASO 3: Redirigir a la pantalla de inicio de sesión
       Navigator.pushAndRemoveUntil(
         context,
         MaterialPageRoute(builder: (context) => const InicioSesionUsuario()),
@@ -46,22 +63,30 @@ class _AjustesState extends State<Ajustes> {
       );
     } catch (error) {
       _showSnackbar(
-          'Error al eliminar la cuenta. Intenta de nuevo.', Colors.red);
+          'Error al eliminar la cuenta: ${error.toString()}', Colors.red);
     }
   }
 
   Future<void> _deleteUserData(String email) async {
-    final userDocRef =
-        FirebaseFirestore.instance.collection('usuarios').doc(email);
-    final collections = ['alcancia', 'metas', 'transacciones'];
-    for (var collection in collections) {
-      final subcollection = userDocRef.collection(collection);
-      final snapshot = await subcollection.get();
-      for (var doc in snapshot.docs) {
-        await doc.reference.delete();
+    try {
+      final userDocRef =
+          FirebaseFirestore.instance.collection('usuarios').doc(email);
+      final collections = ['alcancia', 'metas', 'transacciones'];
+
+      // 🔴 Eliminar todas las subcolecciones primero
+      for (var collection in collections) {
+        var subcollection = await userDocRef.collection(collection).get();
+        for (var doc in subcollection.docs) {
+          await doc.reference.delete();
+        }
       }
+
+      // 🔴 Luego eliminar el documento principal del usuario
+      await userDocRef.delete();
+    } catch (error) {
+      _showSnackbar(
+          'Error al eliminar datos de usuario en Firestore.', Colors.red);
     }
-    await userDocRef.delete();
   }
 
   void _showSnackbar(String message, Color backgroundColor) {
@@ -73,27 +98,42 @@ class _AjustesState extends State<Ajustes> {
     );
   }
 
-  // Método para actualizar el nombre y correo
   Future<void> _updateUserInfo() async {
     try {
       User? user = FirebaseAuth.instance.currentUser;
+      if (user == null) {
+        _showSnackbar('Error: Usuario no autenticado.', Colors.red);
+        return;
+      }
 
-      // Actualizamos el nombre
-      if (_newName.isNotEmpty && _newName != user!.displayName) {
+      List<String> updatedFields = [];
+
+      // Actualizar nombre
+      if (_newName.isNotEmpty && _newName != user.displayName) {
         await user.updateDisplayName(_newName);
+        updatedFields.add('nombre');
       }
 
-      // Actualizamos el correo
-      if (_newEmail.isNotEmpty && _newEmail != user!.email) {
+      // Si el usuario quiere cambiar su correo, necesita reautenticarse
+      if (_newEmail.isNotEmpty && _newEmail != user.email) {
         await user.verifyBeforeUpdateEmail(_newEmail);
+        updatedFields.add('correo');
       }
 
-      // Si se actualizaron los datos correctamente
-      await user!.reload();
-      _showSnackbar('Información actualizada exitosamente', Colors.green);
-    } catch (error) {
+      // Verificamos si hubo cambios
+      if (updatedFields.isEmpty) {
+        _showSnackbar('No hiciste cambios en tu información.', Colors.orange);
+        return;
+      }
+
+      // Recargar la información del usuario
+      await user.reload();
+
       _showSnackbar(
-          'Error al actualizar la información. Intenta de nuevo.', Colors.red);
+          'Información actualizada: ${updatedFields.join(', ')}', Colors.green);
+    } catch (error) {
+      _showSnackbar('Error al actualizar la información: ${error.toString()}',
+          Colors.red);
     }
   }
 
@@ -187,6 +227,21 @@ class _AjustesState extends State<Ajustes> {
     );
   }
 
+    Future<void> _cargarDatos() async {
+    try {
+      final alcanciaProvider =
+          Provider.of<AlcanciaProvider>(context, listen: false);
+      await alcanciaProvider.verificarFechaMetas();
+      if (mounted) {
+        await alcanciaProvider.cargarDatosDesdeFirebase(userEmail);
+        await alcanciaProvider.cargarMetasDesdeFirebase(userEmail);
+        await alcanciaProvider.cargarTransaccionesDesdeFirebase(userEmail);
+      }
+    } catch (error) {
+      print('Error al cargar datos: $error');
+    }
+  }
+
   // Diálogo para editar la información
   void _showEditUserInfoDialog() {
     showDialog(
@@ -205,6 +260,7 @@ class _AjustesState extends State<Ajustes> {
           onConfirm: () {
             _updateUserInfo();
             Navigator.pop(context);
+            _cargarDatos();
           },
         );
       },

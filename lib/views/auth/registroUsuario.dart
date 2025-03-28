@@ -85,10 +85,19 @@ class _RegistroUsuarioState extends State<RegistroUsuario> {
                     label: "Correo",
                     icon: Icons.mail,
                     validator: (value) {
-                      if (value!.isEmpty) return 'Ingrese su correo';
-                      if (!RegExp(r'^[^@]+@[^@]+\.[^@]+\$').hasMatch(value)) {
-                        return 'Ingrese un correo válido';
+                      if (value == null || value.isEmpty) {
+                        return 'Ingrese su correo';
                       }
+
+                      // Expresión regular para validar correos electrónicos
+                      String pattern =
+                          r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$';
+                      RegExp regex = RegExp(pattern);
+
+                      if (!regex.hasMatch(value)) {
+                        return 'Formato de correo inválido';
+                      }
+
                       return null;
                     },
                   ),
