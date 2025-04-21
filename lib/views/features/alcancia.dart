@@ -1,3 +1,5 @@
+// ignore_for_file: library_private_types_in_public_api
+
 import 'package:alcancia_movil/Models/divisa_model.dart';
 import 'package:alcancia_movil/providers/divisas_provider.dart';
 import 'package:flutter/material.dart';
@@ -44,7 +46,7 @@ class _AlcanciaState extends State<Alcancia> {
                   itemBuilder: (context, index) {
                     final divisa = divisasProvider.divisas[index];
                     return ListTile(
-                      title: Text('${divisa.nombre}'),
+                      title: Text(divisa.nombre),
                       subtitle:
                           Text('Cantidad: ${formatCurrency(divisa.cantidad)}'),
                       trailing: Row(
@@ -52,15 +54,23 @@ class _AlcanciaState extends State<Alcancia> {
                         children: [
                           IconButton(
                             icon: Icon(Icons.remove),
-                            onPressed: () =>
-                                divisasProvider.actualizarCantidadDivisa(
-                                    index, false, userEmail!),
+                            onPressed: () => _mostrarDialogoModificarCantidad(
+                              context,
+                              divisasProvider,
+                              index,
+                              userEmail!,
+                              false,
+                            ),
                           ),
                           IconButton(
                             icon: Icon(Icons.add),
-                            onPressed: () =>
-                                divisasProvider.actualizarCantidadDivisa(
-                                    index, true, userEmail!),
+                            onPressed: () => _mostrarDialogoModificarCantidad(
+                              context,
+                              divisasProvider,
+                              index,
+                              userEmail!,
+                              true,
+                            ),
                           ),
                           IconButton(
                             icon: Icon(Icons.delete, color: Colors.red),
@@ -119,6 +129,55 @@ class _AlcanciaState extends State<Alcancia> {
     );
   }
 
+  void _mostrarDialogoModificarCantidad(BuildContext context,
+      DivisasProvider provider, int index, String userEmail, bool isAddition) {
+    TextEditingController cantidadController = TextEditingController();
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(isAddition ? 'Agregar Cantidad' : 'Restar Cantidad'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+              controller: cantidadController,
+              decoration: InputDecoration(labelText: 'Cantidad'),
+              keyboardType: TextInputType.number,
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text('Cancelar'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              final cantidad = int.tryParse(cantidadController.text) ?? 0;
+
+              if (cantidad > 0) {
+                provider.actualizarCantidadDivisa(
+                  index,
+                  isAddition,
+                  userEmail,
+                  cantidad,
+                );
+                Navigator.pop(context);
+              } else {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                      content: Text('Por favor, ingresa una cantidad válida.')),
+                );
+              }
+            },
+            child: Text('Guardar'),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildMainContent(BuildContext context, String? userEmail) {
     return Padding(
       padding: const EdgeInsets.all(16.0),
@@ -140,13 +199,43 @@ class _AlcanciaState extends State<Alcancia> {
                       quantity: item.cantidad,
                       total: item.valor * item.cantidad,
                       onAdd: () {
-                        _addTransaction(alcanciaProvider, divisasProvider,
-                            item.valor.toDouble(), true, userEmail!, index);
+                        if (_selectedIndex == 2) {
+                          _mostrarDialogoModificarCantidad(
+                            context,
+                            divisasProvider,
+                            index,
+                            userEmail!,
+                            true,
+                          );
+                        } else {
+                          _addTransaction(
+                            alcanciaProvider,
+                            divisasProvider,
+                            item.valor.toDouble(),
+                            true,
+                            userEmail!,
+                            index
+                          );
+                        }
                       },
                       onRemove: () {
-                        if (item.cantidad > 0) {
-                          _addTransaction(alcanciaProvider, divisasProvider,
-                              item.valor.toDouble(), false, userEmail!, index);
+                        if (_selectedIndex == 2) {
+                          _mostrarDialogoModificarCantidad(
+                            context,
+                            divisasProvider,
+                            index,
+                            userEmail!,
+                            false,
+                          );
+                        } else if (item.cantidad > 0) {
+                          _addTransaction(
+                            alcanciaProvider,
+                            divisasProvider,
+                            item.valor.toDouble(),
+                            false,
+                            userEmail!,
+                            index
+                          );
                         }
                       },
                     );
@@ -219,10 +308,8 @@ class _AlcanciaState extends State<Alcancia> {
               ? alcanciaProvider.billetes[index].cantidad + 1
               : alcanciaProvider.billetes[index].cantidad - 1,
           userEmail);
-    } else {
-      divisasProvider.actualizarCantidadDivisa(index, isAddition, userEmail);
     }
-
+    // Guarda los datos actualizados en Firebase (si corresponde)
     alcanciaProvider.guardarDatosEnFirebase(
         alcanciaProvider.monedas,
         alcanciaProvider.billetes,
@@ -359,14 +446,23 @@ class _AlcanciaState extends State<Alcancia> {
           ElevatedButton(
             onPressed: () {
               final nombre = nombreController.text;
-              final cantidad = int.tryParse(cantidadController.text) ?? 0;
+              final cantidad = int.tryParse(cantidadController.text
+                      .replaceAll(RegExp(r'[,.]'), '')) ??
+                  0;
 
               if (nombre.isNotEmpty && cantidad > 0) {
+                // Agregar la divisa solo si la cantidad es válida
                 provider.agregarDivisa(
                   DivisaModel(nombre: nombre, valor: 1, cantidad: cantidad),
                   userEmail,
                 );
                 Navigator.pop(context);
+              } else {
+                // Mostrar un mensaje si la cantidad no es válida
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                      content: Text('Por favor, ingresa una cantidad válida.')),
+                );
               }
             },
             child: Text('Guardar'),

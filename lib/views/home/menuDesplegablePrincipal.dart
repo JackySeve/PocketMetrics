@@ -1,15 +1,19 @@
+// ignore_for_file: file_names
+
+import 'package:alcancia_movil/views/features/ahorroBanco.dart';
 import 'package:alcancia_movil/views/features/ajustes.dart';
 import 'package:alcancia_movil/views/features/alcancia.dart';
 import 'package:alcancia_movil/views/features/cerrarSesion.dart';
 import 'package:alcancia_movil/views/features/divisas.dart';
 import 'package:alcancia_movil/views/features/estadisticos.dart';
+import 'package:alcancia_movil/views/features/financiamientos.dart';
 import 'package:alcancia_movil/views/features/gastos.dart';
 import 'package:alcancia_movil/views/features/historial.dart';
 import 'package:alcancia_movil/views/features/metas.dart';
 import 'package:alcancia_movil/views/home/pantallaPrincipal.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 class MenuDesplegable extends StatelessWidget {
   final String logo;
@@ -43,7 +47,7 @@ class MenuDesplegable extends StatelessWidget {
                     Text(
                       'Bienvenido, ${user!.displayName ?? user!.email}',
                       textAlign: TextAlign.center,
-                      style: const TextStyle(color: Colors.black, fontSize: 12, fontWeight: FontWeight.w500),
+                      style: const TextStyle(color: Colors.black, fontSize: 14, fontWeight: FontWeight.w500),
                     ),
                 ],
               ),
@@ -51,16 +55,18 @@ class MenuDesplegable extends StatelessWidget {
             Expanded(
               child: ListView(
                 children: [
-                  _menuOption(context, Icons.home, "Inicio", const PantallaPrincipal()),
-                  _menuOption(context, Icons.account_balance, "Alcancía", const Alcancia()),
-                  _menuOption(context, Icons.history, "Historial", const Historial()),
+                  _menuOption(context, FontAwesomeIcons.house, "Inicio", const PantallaPrincipal()),
+                  _menuOption(context, FontAwesomeIcons.piggyBank, "Alcancía", const Alcancia()),
+                  _menuOption(context, FontAwesomeIcons.clockRotateLeft, "Historial", const Historial()),
                   _menuOption(context, Icons.equalizer, "Estadísticos", const Estadisticos()),
-                  _menuOption(context, Icons.flag, "Metas", const Metas()),
-                  _menuOption(context, Icons.money_off, "Gastos", const PantallaGastos()),
-                  _menuOption(context, Icons.settings, "Ajustes", const Ajustes()),
+                  _menuOption(context, FontAwesomeIcons.flagCheckered, "Metas", const Metas()),
+                  _menuOption(context, FontAwesomeIcons.buildingUser, "Financiamiento", const FinanciamientoScreen()),
+                  _menuOption(context, FontAwesomeIcons.buildingColumns, "Ahorros en Banco", const BankSavingsScreen()),
+                  _menuOption(context, FontAwesomeIcons.moneyBills, "Gastos", const PantallaGastos()),
                   _menuOption(context, Icons.currency_exchange, "Divisas", const Divisas()),
+                  _menuOption(context, FontAwesomeIcons.gear, "Ajustes", const Ajustes()),
                   const Divider(),
-                  _menuOption(context, Icons.exit_to_app, "Cerrar Sesión", const PantallaCerrarSesion()),
+                  _menuOption(context, Icons.logout, "Cerrar Sesión", const PantallaCerrarSesion()),
                 ],
               ),
             ),
@@ -72,7 +78,7 @@ class MenuDesplegable extends StatelessWidget {
 
   Widget _menuOption(BuildContext context, IconData icon, String title, Widget destination) {
     return ListTile(
-      leading: Icon(icon, color: Colors.green, size: 28),
+      leading: Icon(icon, color: Colors.green, size: 30),
       title: Text(
         title,
         style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),

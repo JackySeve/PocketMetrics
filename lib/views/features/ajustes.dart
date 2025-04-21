@@ -1,3 +1,5 @@
+// ignore_for_file: use_build_context_synchronously, avoid_print, library_private_types_in_public_api
+
 import 'package:alcancia_movil/providers/alcancia_provider.dart';
 import 'package:alcancia_movil/views/auth/inicioSesionUsuario.dart';
 import 'package:alcancia_movil/views/home/menuDesplegablePrincipal.dart';
@@ -151,9 +153,18 @@ class _AjustesState extends State<Ajustes> {
         padding: const EdgeInsets.all(16),
         child: Center(
           child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisAlignment: MainAxisAlignment.start,
             children: [
+              const SizedBox(height: 10),
+
+              Image.asset(
+                'lib/assets/images/logo.png',
+                height: 150,
+                width: 150,
+              ),
+
               const SizedBox(height: 20),
+
               _buildButton(
                   'Cambiar Contraseña', Colors.blue, _showChangePasswordDialog),
               const SizedBox(height: 16),
@@ -213,7 +224,7 @@ class _AjustesState extends State<Ajustes> {
     showDialog(
       context: context,
       builder: (context) {
-        return _buildDialog(
+        return _buildDialogDelete(
           title: 'Eliminar Cuenta',
           content: const Text(
               '¿Estás seguro de que deseas eliminar tu cuenta? Esta acción no se puede deshacer.',
@@ -227,7 +238,7 @@ class _AjustesState extends State<Ajustes> {
     );
   }
 
-    Future<void> _cargarDatos() async {
+  Future<void> _cargarDatos() async {
     try {
       final alcanciaProvider =
           Provider.of<AlcanciaProvider>(context, listen: false);
@@ -276,15 +287,67 @@ class _AjustesState extends State<Ajustes> {
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
       content: content,
       actions: [
-        TextButton(
-          onPressed: () => Navigator.pop(context),
-          child: const Text('Cancelar', style: TextStyle(color: Colors.grey)),
-        ),
-        ElevatedButton(
-          onPressed: onConfirm,
-          style: ElevatedButton.styleFrom(backgroundColor: Colors.blue),
-          child: const Text('Confirmar'),
-        ),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            ElevatedButton(
+              onPressed: () => Navigator.pop(context),
+              style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
+              child:
+                  const Text('Cancelar', style: TextStyle(color: Colors.white)),
+            ),
+            const SizedBox(width: 10),
+            ElevatedButton(
+              onPressed: onConfirm,
+              style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+              child: const Text('Confirmar',
+                  style: TextStyle(color: Colors.white)),
+            ),
+          ],
+        )
+      ],
+    );
+  }
+
+  Widget _buildDialogDelete(
+      {required String title,
+      required Widget content,
+      required VoidCallback onConfirm}) {
+    return AlertDialog(
+      title: Row(
+        children: [
+          Image.asset(
+            'lib/assets/images/sad_logo.png',
+            height: 150,
+            width: 150,
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+              child: Text(title,
+                  style: const TextStyle(fontWeight: FontWeight.bold))),
+        ],
+      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+      content: content,
+      actions: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            ElevatedButton(
+              onPressed: () => Navigator.pop(context),
+              style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
+              child:
+                  const Text('Cancelar', style: TextStyle(color: Colors.white)),
+            ),
+            const SizedBox(width: 10),
+            ElevatedButton(
+              onPressed: onConfirm,
+              style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+              child: const Text('Confirmar',
+                  style: TextStyle(color: Colors.white)),
+            ),
+          ],
+        )
       ],
     );
   }

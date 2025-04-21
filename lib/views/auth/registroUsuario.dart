@@ -1,4 +1,5 @@
-import 'package:firebase_auth/firebase_auth.dart';
+// ignore_for_file: use_build_context_synchronously, library_private_types_in_public_api
+
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -279,43 +280,44 @@ class _RegistroUsuarioState extends State<RegistroUsuario> {
       style: const TextStyle(
           decoration: TextDecoration.underline, color: Colors.green),
       recognizer: TapGestureRecognizer()
-        ..onTap = () => _launchURL("https://example.com"),
+        ..onTap = () => _launchURL("https://computrabajo.com"),
     );
   }
 
-  void _onRegister() async {
-    if (_formKey.currentState!.validate()) {
-      try {
-        // Obtén los valores del formulario
-        String email = _emailController.text;
-        String password = _passwordController.text;
-        String name = _controladorName.text;
+void _onRegister() async {
+  if (_formKey.currentState!.validate()) {
+    try {
+      final email = _emailController.text.trim();
+      final password = _passwordController.text.trim();
+      final name = _controladorName.text.trim();
 
-        // Registrar al usuario con email y password
-        UserCredential userCredential =
-            await FirebaseAuth.instance.createUserWithEmailAndPassword(
-          email: email,
-          password: password,
-        );
+      // Crear instancia del provider
+      final alcanciaProvider = AlcanciaProvider();
 
-        // Actualiza el displayName del usuario con el nombre proporcionado
-        await userCredential.user!.updateDisplayName(name);
-        await userCredential.user!
-            .reload(); // Recargar para actualizar los datos del usuario
+      // Registrar usuario
+      final userId = await alcanciaProvider.registerUser(name, email, password, name);
 
-        // Navegar a la pantalla principal después del registro exitoso
+      if (userId != null) {
+        // Registro exitoso, redirigir a la pantalla principal
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (context) => const PantallaPrincipal()),
         );
-      } catch (e) {
-        // Manejo de errores en caso de fallar el registro
+      } else {
+        // Mostrar error si el registro falló
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Error al registrar el usuario')),
         );
       }
+    } catch (e) {
+      // Error inesperado
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Ha ocurrido un error inesperado')),
+      );
     }
   }
+}
+
 
   void _launchURL(String url) async {
     Uri uri = Uri.parse(url);

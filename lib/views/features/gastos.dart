@@ -1,3 +1,5 @@
+// ignore_for_file: library_private_types_in_public_api
+
 import 'package:alcancia_movil/models/gastos_model.dart';
 import 'package:alcancia_movil/providers/gastos_provider.dart';
 import 'package:flutter/material.dart';
@@ -66,7 +68,7 @@ class _PantallaGastosState extends State<PantallaGastos> {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         IconButton(
-                          icon: const Icon(Icons.edit, color: Colors.blue),
+                          icon: const Icon(Icons.edit, color: Colors.green),
                           onPressed: () => _mostrarDialogoGasto(
                               context, gastosProvider, userEmail, gasto),
                         ),
@@ -166,7 +168,8 @@ class _PantallaGastosState extends State<PantallaGastos> {
           actions: [
             TextButton(
                 onPressed: () => Navigator.pop(context),
-                child: const Text('Cancelar')),
+                style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
+                child: const Text('Cancelar', style: TextStyle(color: Colors.white))),
             ElevatedButton(
               onPressed: () {
                 if (_nombreController.text.isNotEmpty &&
@@ -179,7 +182,8 @@ class _PantallaGastosState extends State<PantallaGastos> {
                     nombre: _nombreController.text,
                     descripcion: _descripcionController.text,
                     fecha: _fechaSeleccionada,
-                    valor: int.parse(_valorController.text),
+                    valor: int.parse(
+                        _valorController.text.replaceAll(RegExp(r'[,.]'), '')),
                   );
 
                   if (gastoEditando == null) {
@@ -191,7 +195,8 @@ class _PantallaGastosState extends State<PantallaGastos> {
                   Navigator.pop(context);
                 }
               },
-              child: const Text('Guardar'),
+              style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+              child: const Text('Guardar', style: TextStyle(color: Colors.white),),
             ),
           ],
         );

@@ -1,3 +1,5 @@
+// ignore_for_file: file_names, library_private_types_in_public_api, avoid_print
+
 import 'package:alcancia_movil/providers/divisas_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -132,9 +134,16 @@ class _PantallaPrincipalState extends State<PantallaPrincipal> {
                     const TextStyle(fontSize: 16, fontWeight: FontWeight.w500)),
             trailing: Text("${(progress * 100).toStringAsFixed(0)}%"),
             subtitle: LinearProgressIndicator(
-                value: progress,
-                backgroundColor: Colors.grey,
-                valueColor: const AlwaysStoppedAnimation<Color>(Colors.green)),
+              value: meta.valorAhorrado / meta.valorObjetivo,
+              backgroundColor: Colors.grey[400],
+              valueColor: AlwaysStoppedAnimation<Color>(
+                meta.valorAhorrado / meta.valorObjetivo >= 1
+                    ? Colors.green
+                    : meta.valorAhorrado / meta.valorObjetivo >= 0.5
+                        ? Colors.orange
+                        : Colors.red,
+              ),
+            ),
           ),
         );
       }).toList(),

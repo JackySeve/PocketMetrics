@@ -126,6 +126,8 @@ class AlcanciaProvider with ChangeNotifier {
     }
   }
 
+  int totalAhorradoMeta = 0;
+
   int get totalAhorrado {
     int total = 0;
     for (var moneda in _monedas) {
@@ -186,105 +188,49 @@ class AlcanciaProvider with ChangeNotifier {
   }
 
   double calcularMedia() {
-    double total = 0;
-    int count = 0;
-    for (var moneda in _monedas) {
-      total += moneda.valor * moneda.cantidad;
-      count += moneda.cantidad;
-    }
-    for (var billete in _billetes) {
-      total += billete.valor * billete.cantidad;
-      count += billete.cantidad;
-    }
-    return total / count;
-  }
+    List<Transaccion> ingresos =
+        _transacciones.where((t) => t.esIngreso).toList();
+    if (ingresos.isEmpty) return 0.0;
 
-  double calcularMediana() {
-    List<double> valores = [];
-    for (var moneda in _monedas) {
-      for (int i = 0; i < moneda.cantidad; i++) {
-        valores.add(moneda.valor.toDouble());
-      }
-    }
-    for (var billete in _billetes) {
-      for (int i = 0; i < billete.cantidad; i++) {
-        valores.add(billete.valor.toDouble());
-      }
-    }
-    valores.sort();
-    int n = valores.length;
-    if (n == 0) {
-      return 0.0;
-    } else if (n % 2 == 0) {
-      return (valores[n ~/ 2 - 1] + valores[n ~/ 2]) / 2;
-    } else {
-      return valores[n ~/ 2];
-    }
-  }
-
-  double calcularModa() {
-    Map<double, int> frecuencias = {};
-    for (var moneda in _monedas) {
-      frecuencias[moneda.valor.toDouble()] =
-          (frecuencias[moneda.valor.toDouble()] ?? 0) + moneda.cantidad;
-    }
-    for (var billete in _billetes) {
-      frecuencias[billete.valor.toDouble()] =
-          (frecuencias[billete.valor.toDouble()] ?? 0) + billete.cantidad;
-    }
-    double moda = 0;
-    int maxFrecuencia = 0;
-    frecuencias.forEach((valor, frecuencia) {
-      if (frecuencia > maxFrecuencia) {
-        maxFrecuencia = frecuencia;
-        moda = valor;
-      }
-    });
-    return moda;
+    double suma = ingresos.fold(0.0, (total, t) => total + t.monto);
+    return suma / ingresos.length;
   }
 
   double calcularDesviacionEstandar() {
+    List<Transaccion> ingresos =
+        _transacciones.where((t) => t.esIngreso).toList();
+    if (ingresos.isEmpty) return 0.0;
+
     double media = calcularMedia();
-    double suma = 0;
-    int count = 0;
-    for (var moneda in _monedas) {
-      suma += pow(moneda.valor - media, 2) * moneda.cantidad;
-      count += moneda.cantidad;
-    }
-    for (var billete in _billetes) {
-      suma += pow(billete.valor - media, 2) * billete.cantidad;
-      count += billete.cantidad;
-    }
-    return sqrt(suma / count);
+    double suma =
+        ingresos.fold(0.0, (total, t) => total + pow(t.monto - media, 2));
+    return sqrt(suma / ingresos.length);
   }
 
-  double calcularRangoIntercuartil() {
-    List<double> valores = [];
-    for (var moneda in _monedas) {
-      for (int i = 0; i < moneda.cantidad; i++) {
-        valores.add(moneda.valor.toDouble());
-      }
-    }
-    for (var billete in _billetes) {
-      for (int i = 0; i < billete.cantidad; i++) {
-        valores.add(billete.valor.toDouble());
-      }
-    }
-    valores.sort();
-    int n = valores.length;
-    if (n == 0) {
-      return 0.0;
-    } else {
-      int q1 = (n + 1) ~/ 4;
-      int q3 = 3 * (n + 1) ~/ 4;
-      return valores[q3 - 1] - valores[q1 - 1];
-    }
+  double calcularMediaEgresos() {
+    List<Transaccion> egresos =
+        _transacciones.where((t) => !t.esIngreso).toList();
+    if (egresos.isEmpty) return 0.0;
+
+    double suma = egresos.fold(0.0, (total, t) => total + t.monto);
+    return suma / egresos.length;
   }
 
-  double calcularCoeficienteVariacion() {
-    double media = calcularMedia();
-    double desviacionEstandar = calcularDesviacionEstandar();
-    return desviacionEstandar / media;
+  double calcularDesviacionEstandarEgresos() {
+    List<Transaccion> egresos =
+        _transacciones.where((t) => !t.esIngreso).toList();
+    if (egresos.isEmpty) return 0.0;
+
+    double media = calcularMediaEgresos();
+    double suma =
+        egresos.fold(0.0, (total, t) => total + pow(t.monto - media, 2));
+    return sqrt(suma / egresos.length);
+  }
+
+  // Método para borrar el historial
+  void borrarHistorial() {
+    transacciones.clear(); // Borra todas las transacciones
+    notifyListeners(); // Notifica a los widgets para que se actualicen
   }
 
   List<Meta> _metas = [];
@@ -371,13 +317,13 @@ class AlcanciaProvider with ChangeNotifier {
   }
 
   void actualizarValoresAhorradosMetas(String email) async {
-    int totalAhorrado = this.totalAhorrado;
+    int totalAhorradoMeta = this.totalAhorradoMeta;
     for (var meta in _metas) {
-      if (totalAhorrado >= meta.valorObjetivo) {
+      if (totalAhorradoMeta >= meta.valorObjetivo) {
         meta.valorAhorrado = meta.valorObjetivo;
         meta.cumplida = true;
       } else {
-        meta.valorAhorrado = totalAhorrado;
+        meta.valorAhorrado = totalAhorradoMeta;
         meta.cumplida = false;
       }
     }
@@ -602,8 +548,8 @@ class AlcanciaProvider with ChangeNotifier {
 
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
-  Future<String?> registerUser(
-      String username, String email, String password, String displayName) async {
+  Future<String?> registerUser(String username, String email, String password,
+      String displayName) async {
     try {
       UserCredential userCredential =
           await _auth.createUserWithEmailAndPassword(

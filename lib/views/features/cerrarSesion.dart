@@ -1,3 +1,5 @@
+// ignore_for_file: use_build_context_synchronously, file_names
+
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
@@ -20,6 +22,11 @@ class PantallaCerrarSesion extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
+            Image.asset(
+              'lib/assets/images/sad_logo.png',
+              height: 150,
+              width: 150,
+            ),
             const Text(
               '¿Estás seguro de que deseas cerrar sesión?',
               textAlign: TextAlign.center,
@@ -36,12 +43,15 @@ class PantallaCerrarSesion extends StatelessWidget {
                 await googleSignIn.signOut();
 
                 // Navegar a la pantalla de bienvenida
-                Navigator.pushAndRemoveUntil(
-                  context,
-                  MaterialPageRoute(
-                      builder: (context) => const InicioPrincipal()),
-                  (Route<dynamic> route) => false,
-                );
+                if (context.mounted) {
+                  // Navegar a la pantalla de bienvenida
+                  Navigator.pushAndRemoveUntil(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => const InicioPrincipal()),
+                    (Route<dynamic> route) => false,
+                  );
+                }
               },
               style: ElevatedButton.styleFrom(
                 foregroundColor: Colors.white,

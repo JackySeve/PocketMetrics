@@ -1,8 +1,11 @@
+// ignore_for_file: library_private_types_in_public_api
+
 import 'package:alcancia_movil/providers/alcancia_provider.dart';
 import 'package:alcancia_movil/views/features/metas.dart';
 import 'package:alcancia_movil/views/home/menuDesplegablePrincipal.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:fl_chart/fl_chart.dart'; // Cambié aquí para fl_chart
 
@@ -179,17 +182,58 @@ class _EstadisticosState extends State<Estadisticos> {
     }
   }
 
+  String formatCurrency(double value) {
+    final formatter = NumberFormat.currency(symbol: '', decimalDigits: 0);
+    return formatter.format(value);
+  }
+
   Widget _buildEstadisticas() {
     final alcanciaProvider = Provider.of<AlcanciaProvider>(context);
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          _estadisticoItem('Promedio de Transacciones',
-              alcanciaProvider.calcularMedia().toStringAsFixed(2)),
-          _estadisticoItem('Variabilidad de Transacciones',
-              alcanciaProvider.calcularDesviacionEstandar().toStringAsFixed(2)),
+          Image.asset(
+            'lib/assets/images/logo.png',
+            height: 150,
+            width: 150,
+          ),
+          // Título para Ingresos
+          _buildSectionTitle('Estadísticas de Ingresos'),
+          // Estadísticas de Ingresos
+          _estadisticoItem('Promedio de los Ingresos',
+              formatCurrency(alcanciaProvider.calcularMedia())),
+          _estadisticoItem('Variabilidad de los Ingresos',
+              formatCurrency(alcanciaProvider.calcularDesviacionEstandar())),
+
+          // Espacio entre secciones
+          const SizedBox(height: 20),
+
+          // Título para Egresos
+          _buildSectionTitle('Estadísticas de Egresos'),
+          // Estadísticas de Egresos
+          _estadisticoItem('Promedio de los Egresos',
+              formatCurrency(alcanciaProvider.calcularMediaEgresos())),
+          _estadisticoItem(
+              'Variabilidad de los Egresos',
+              formatCurrency(
+                  alcanciaProvider.calcularDesviacionEstandarEgresos())),
         ],
+      ),
+    );
+  }
+
+  Widget _buildSectionTitle(String title) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8.0),
+      child: Text(
+        title,
+        style: const TextStyle(
+          fontSize: 20,
+          fontWeight: FontWeight.bold,
+          color: Colors.green,
+          letterSpacing: 1.2,
+        ),
       ),
     );
   }
@@ -198,7 +242,7 @@ class _EstadisticosState extends State<Estadisticos> {
     return Column(
       children: [
         const Text(
-          'Histograma de Ingresos',
+          'Frecuencia de Ingresos',
           style: TextStyle(fontSize: 16.0, fontWeight: FontWeight.bold),
         ),
         const SizedBox(height: 16.0),
@@ -235,7 +279,7 @@ class _EstadisticosState extends State<Estadisticos> {
         ),
         const SizedBox(height: 16.0),
         const Text(
-          'Histograma de Egresos',
+          'Frecuencia de Egresos',
           style: TextStyle(fontSize: 16.0, fontWeight: FontWeight.bold),
         ),
         const SizedBox(height: 16.0),
@@ -276,27 +320,64 @@ class _EstadisticosState extends State<Estadisticos> {
 
   Widget _buildGraficaMetas() {
     int totalMetas = _metasCumplidas().length + _metasIncumplidas().length;
+
     return totalMetas > 0
-        ? PieChart(
-            PieChartData(
-              centerSpaceRadius: 0,
-              sections: [
-                PieChartSectionData(
-                    value: _metasCumplidas().length.toDouble(),
+        ? Column(
+            children: [
+              Image.asset(
+                'lib/assets/images/logo.png',
+                height: 150,
+                width: 150,
+              ),
+              // Título descriptivo
+              const Padding(
+                padding: EdgeInsets.all(8.0),
+                child: Text(
+                  'Cumplimiento Total de Metas',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
                     color: Colors.green,
-                    title:
-                        '${((_metasCumplidas().length / totalMetas) * 100).toStringAsFixed(2)}%',
-                    radius: 100),
-                PieChartSectionData(
-                    value: _metasIncumplidas().length.toDouble(),
-                    color: Colors.red,
-                    title:
-                        '${((_metasIncumplidas().length / totalMetas) * 100).toStringAsFixed(2)}%',
-                    radius: 100),
-              ],
-            ),
+                  ),
+                ),
+              ),
+
+              // Limitar la altura del gráfico
+              SizedBox(
+                height: 360, // Ajusta el tamaño según lo necesario
+                child: PieChart(
+                  PieChartData(
+                    centerSpaceRadius: 0,
+                    sections: [
+                      PieChartSectionData(
+                        value: _metasCumplidas().length.toDouble(),
+                        color: Colors.green,
+                        title:
+                            '${((_metasCumplidas().length / totalMetas) * 100).toStringAsFixed(2)}% Cumplidas',
+                        radius: 160,
+                      ),
+                      PieChartSectionData(
+                        value: _metasIncumplidas().length.toDouble(),
+                        color: Colors.red,
+                        title:
+                            '${((_metasIncumplidas().length / totalMetas) * 100).toStringAsFixed(2)}% Incumplidas',
+                        radius: 160,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
           )
-        : const Center(child: Text('No hay metas aún'));
+        : const Center(
+            child: Text(
+              'No has establecido metas aún. ¡Empieza a planificar!',
+              style: TextStyle(
+                  fontSize: 16,
+                  fontStyle: FontStyle.italic,
+                  fontWeight: FontWeight.bold),
+            ),
+          );
   }
 
   Widget _estadisticoItem(String label, String value) {
@@ -308,11 +389,14 @@ class _EstadisticosState extends State<Estadisticos> {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text(label,
-                style:
-                    const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-            Text(value,
-                style: const TextStyle(fontSize: 16, color: Colors.blueGrey)),
+            Text(
+              label,
+              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            ),
+            Text(
+              '\$ $value',
+              style: const TextStyle(fontSize: 16, color: Colors.blueGrey),
+            ),
           ],
         ),
       ),

@@ -1,3 +1,5 @@
+// ignore_for_file: avoid_types_as_parameter_names, avoid_print
+
 import 'package:alcancia_movil/Models/divisa_model.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -10,13 +12,19 @@ class DivisasProvider extends ChangeNotifier {
       divisas.fold(0, (sum, item) => sum + (item.valor * item.cantidad));
 
   /// 🔹 Agrega o resta cantidad de una divisa
-  void actualizarCantidadDivisa(int index, bool isAddition, String userEmail) {
+  void actualizarCantidadDivisa(
+      int index, bool isAddition, String userEmail, int cantidad) {
     if (index >= 0 && index < divisas.length) {
       if (isAddition) {
-        divisas[index].cantidad += 1;
+        divisas[index].cantidad +=
+            cantidad; // Se agrega la cantidad especificada
       } else {
-        if (divisas[index].cantidad > 0) {
-          divisas[index].cantidad -= 1;
+        if (divisas[index].cantidad >= cantidad) {
+          divisas[index].cantidad -=
+              cantidad; // Se resta la cantidad especificada
+        } else {
+          // Evitar restar más de lo que se tiene
+          divisas[index].cantidad = 0;
         }
       }
       notifyListeners();

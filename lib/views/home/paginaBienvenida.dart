@@ -1,3 +1,5 @@
+// ignore_for_file: library_private_types_in_public_api, file_names
+
 import 'package:flutter/material.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import '../auth/inicioSesionUsuario.dart';
@@ -50,7 +52,7 @@ class _InicioPrincipalState extends State<InicioPrincipal> {
                     "PocketMetrics",
                     style: TextStyle(
                       color: Colors.green,
-                      fontSize: size.width * 0.12,
+                      fontSize: size.width * 0.10,
                       fontWeight: FontWeight.bold,
                       fontFamily: 'Asap',
                     ),
@@ -62,10 +64,10 @@ class _InicioPrincipalState extends State<InicioPrincipal> {
                     style: TextStyle(
                       fontFamily: 'Asap',
                       fontWeight: FontWeight.bold,
-                      fontSize: size.width * 0.045,
+                      fontSize: size.width * 0.043,
                     ),
                   ),
-                  SizedBox(height: size.height * 0.03),
+                  SizedBox(height: size.height * 0.02),
                   BotonPrincipal(
                     texto: "Iniciar Sesión",
                     onTap: () {
@@ -76,14 +78,14 @@ class _InicioPrincipalState extends State<InicioPrincipal> {
                       );
                     },
                   ),
-                  SizedBox(height: size.height * 0.03),
+                  SizedBox(height: size.height * 0.02),
                   Text(
-                    "¿Eres nuevo? Únete e inicia una nueva forma de organizar tus metas financieras",
+                    "¿Eres nuevo? Únete e inicia una nueva forma de planear tus metas y organizar tus ahorros",
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       fontFamily: 'Asap',
                       fontWeight: FontWeight.bold,
-                      fontSize: size.width * 0.045,
+                      fontSize: size.width * 0.043,
                     ),
                   ),
                   SizedBox(height: size.height * 0.03),
@@ -109,7 +111,7 @@ class _InicioPrincipalState extends State<InicioPrincipal> {
               appVersion,
               style: TextStyle(
                 fontSize: size.width * 0.035,
-                color: Colors.grey,
+                color: Colors.black54,
                 fontWeight: FontWeight.bold,
               ),
             ),
@@ -161,7 +163,7 @@ class BotonPrincipal extends StatelessWidget {
       onTap: onTap,
       child: Container(
         width: size.width * 0.7,
-        height: size.height * 0.07,
+        height: size.height * 0.055,
         decoration: BoxDecoration(
           color: Colors.green,
           borderRadius: BorderRadius.circular(10),

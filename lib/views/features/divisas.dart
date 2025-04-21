@@ -1,3 +1,5 @@
+// ignore_for_file: library_private_types_in_public_api
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -110,6 +112,13 @@ class _DivisasState extends State<Divisas> {
     );
   }
 
+  // Este método reinicia el valor de la conversión cuando se cambia la moneda
+  void _resetConversion() {
+    setState(() {
+      _resultadoConversion = 0;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
@@ -154,10 +163,16 @@ class _DivisasState extends State<Divisas> {
           children: [
             _buildInputField(),
             _buildDropdown(_monedaOrigen, (value) {
-              setState(() => _monedaOrigen = value!);
+              setState(() {
+                _monedaOrigen = value!;
+                _resetConversion(); // Reiniciar conversión al cambiar la moneda
+              });
             }),
             _buildDropdown(_monedaDestino, (value) {
-              setState(() => _monedaDestino = value!);
+              setState(() {
+                _monedaDestino = value!;
+                _resetConversion(); // Reiniciar conversión al cambiar la moneda
+              });
             }),
             _buildConvertButton(),
           ],
@@ -177,6 +192,7 @@ class _DivisasState extends State<Divisas> {
           _valorIngresado = double.tryParse(
                   _valorController.text.replaceAll(RegExp(r'[,.]'), '')) ??
               0;
+          _resetConversion(); // Reiniciar conversión cuando el valor cambie
         });
       },
     );
@@ -212,7 +228,9 @@ class _DivisasState extends State<Divisas> {
     final NumberFormat formatter = NumberFormat('#,##0.00', 'en_US');
     return Center(
       child: Text(
-        'Resultado: ${formatter.format(_resultadoConversion)} $_monedaDestino',
+        _resultadoConversion == 0
+            ? 'Seleccione las monedas y ingrese un valor'
+            : 'Resultado: ${formatter.format(_resultadoConversion)} $_monedaDestino',
         style: const TextStyle(
           fontSize: 16,
           fontWeight: FontWeight.bold,

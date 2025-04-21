@@ -75,7 +75,8 @@ class GastosProvider with ChangeNotifier {
             actions: [
               TextButton(
                 onPressed: () => Navigator.of(context).pop(false),
-                child: Text('Cancelar'),
+                style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
+                child: Text('Cancelar', style: TextStyle(color: Colors.white)),
               ),
               ElevatedButton(
                 onPressed: () => Navigator.of(context).pop(true),
