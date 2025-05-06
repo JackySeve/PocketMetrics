@@ -1,3 +1,5 @@
+// ignore_for_file: avoid_print
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../Models/logro_model.dart';
 import '../data/logros_iniciales.dart'; // Asegúrate de tener esta lista bien definida

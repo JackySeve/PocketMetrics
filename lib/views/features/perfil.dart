@@ -157,6 +157,12 @@ class _PerfilScreenState extends State<PerfilScreen> {
     );
   }
 
+  final Map<String, IconData> iconosPorNombre = {
+    'savings': Icons.savings,
+    'school': Icons.star,
+    'swap_horiz': Icons.swap_horiz,
+  };
+
   Widget _buildInfoItem(String label, String value) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 12.0),
@@ -187,9 +193,9 @@ class _PerfilScreenState extends State<PerfilScreen> {
       ),
       itemBuilder: (context, index) {
         final logro = _logros[index];
+        final icono = iconosPorNombre[logro.icono] ?? Icons.check_circle_outline;
         final icon = Icon(
-          IconData(int.tryParse(logro.icono) ?? 0xe14c,
-              fontFamily: 'MaterialIcons'),
+          icono,
           size: 40,
           color: logro.completado ? Colors.green : Colors.grey,
         );
