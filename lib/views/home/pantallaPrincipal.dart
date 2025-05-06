@@ -53,8 +53,9 @@ class _PantallaPrincipalState extends State<PantallaPrincipal> {
     return Scaffold(
       appBar: AppBar(title: const Text('Inicio')),
       drawer: MenuDesplegable(
-          logo: 'lib/assets/images/logo.png',
-          user: FirebaseAuth.instance.currentUser),
+        logo: 'lib/assets/images/logo.png',
+        user: FirebaseAuth.instance.currentUser,
+      ),
       body: FutureBuilder<void>(
         future: _loadData,
         builder: (context, snapshot) {
@@ -63,7 +64,8 @@ class _PantallaPrincipalState extends State<PantallaPrincipal> {
           } else if (snapshot.hasError) {
             return Center(child: Text('Error: ${snapshot.error}'));
           } else {
-            return _buildBody(context);
+            return _buildBody(
+                context); // Ya no está envuelto en SingleChildScrollView
           }
         },
       ),
@@ -72,81 +74,83 @@ class _PantallaPrincipalState extends State<PantallaPrincipal> {
 
   Widget _buildBody(BuildContext context) {
     final alcanciaProvider = Provider.of<AlcanciaProvider>(context);
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        return SingleChildScrollView(
-          padding: EdgeInsets.all(constraints.maxWidth * 0.05),
-          child: Column(
-            children: [
-              const ImageLogo(
-                  width: 150, height: 130, image: 'lib/assets/images/logo.png'),
-              const Text(
-                "PocketMetrics",
-                style: TextStyle(
-                    fontSize: 30,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.green),
-              ),
-              const SizedBox(height: 10),
-              const Text(
-                "Tu Analizador de Ahorros en el Bolsillo",
-                style: TextStyle(fontSize: 16),
-              ),
-              const SizedBox(height: 30),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  CustomButton(
-                      onPressed: () => _navigateTo(context, const Alcancia()),
-                      child: const Text('Alcancía')),
-                  const SizedBox(width: 20),
-                  CustomButton(
-                      onPressed: () => _navigateTo(context, const Metas()),
-                      child: const Text('Metas')),
-                ],
-              ),
-              const SizedBox(height: 30),
-              Text(
-                "Total Ahorrado: ${formatCurrency(alcanciaProvider.montoTotalAhorrado)}",
-                style:
-                    const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 20),
-              _buildMetasList(alcanciaProvider)
-            ],
-          ),
-        );
-      },
-    );
-  }
 
-  Widget _buildMetasList(AlcanciaProvider alcanciaProvider) {
     return Column(
-      children: alcanciaProvider.metas.map((meta) {
-        final progress = (meta.valorAhorrado / meta.valorObjetivo);
-        return Card(
-          margin: const EdgeInsets.symmetric(vertical: 8),
-          child: ListTile(
-            leading: Icon(meta.cumplida ? Icons.check_circle : Icons.circle,
-                color: Colors.green),
-            title: Text(meta.nombre,
-                style:
-                    const TextStyle(fontSize: 16, fontWeight: FontWeight.w500)),
-            trailing: Text("${(progress * 100).toStringAsFixed(0)}%"),
-            subtitle: LinearProgressIndicator(
-              value: meta.valorAhorrado / meta.valorObjetivo,
-              backgroundColor: Colors.grey[400],
-              valueColor: AlwaysStoppedAnimation<Color>(
-                meta.valorAhorrado / meta.valorObjetivo >= 1
-                    ? Colors.green
-                    : meta.valorAhorrado / meta.valorObjetivo >= 0.5
-                        ? Colors.orange
-                        : Colors.red,
-              ),
+      children: [
+        const ImageLogo(
+            width: 150, height: 130, image: 'lib/assets/images/logo.png'),
+        const Text(
+          "PocketMetrics",
+          style: TextStyle(
+              fontSize: 30, fontWeight: FontWeight.bold, color: Colors.green),
+        ),
+        const SizedBox(height: 10),
+        const Text(
+          "Tu Analizador de Ahorros en el Bolsillo",
+          style: TextStyle(fontSize: 16),
+        ),
+        const SizedBox(height: 30),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            CustomButton(
+              onPressed: () => _navigateTo(context, const Alcancia()),
+              child: const Text('Alcancía'),
             ),
+            const SizedBox(width: 20),
+            CustomButton(
+              onPressed: () => _navigateTo(context, const Metas()),
+              child: const Text('Metas'),
+            ),
+          ],
+        ),
+        const SizedBox(height: 30),
+        Text(
+          "Total Ahorrado: ${formatCurrency(alcanciaProvider.montoTotalAhorrado)}",
+          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+        ),
+        const SizedBox(height: 20),
+        Expanded(
+          child: ListView.builder(
+            padding: const EdgeInsets.symmetric(horizontal: 16.0),
+            itemCount: alcanciaProvider.metas.length,
+            itemBuilder: (context, index) {
+              final meta = alcanciaProvider.metas[index];
+              final progress = meta.valorObjetivo == 0
+                  ? 0.0
+                  : meta.valorAhorrado / meta.valorObjetivo;
+              return Card(
+                margin: const EdgeInsets.symmetric(vertical: 8),
+                child: ListTile(
+                  leading: Icon(
+                    meta.cumplida ? Icons.check_circle : Icons.circle,
+                    color: Colors.green,
+                  ),
+                  title: Text(
+                    meta.nombre,
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  trailing: Text("${(progress * 100).toStringAsFixed(0)}%"),
+                  subtitle: LinearProgressIndicator(
+                    value: progress,
+                    backgroundColor: Colors.grey[400],
+                    valueColor: AlwaysStoppedAnimation<Color>(
+                      progress >= 1
+                          ? Colors.green
+                          : progress >= 0.5
+                              ? Colors.orange
+                              : Colors.red,
+                    ),
+                  ),
+                ),
+              );
+            },
           ),
-        );
-      }).toList(),
+        ),
+      ],
     );
   }
 
@@ -155,7 +159,7 @@ class _PantallaPrincipalState extends State<PantallaPrincipal> {
   }
 
   String formatCurrency(num amount) {
-    final format = NumberFormat.currency(locale: 'es_CO', symbol: '\$');
+    final format = NumberFormat.currency(locale: 'es_CO', symbol: '\$', decimalDigits: 0);
     return format.format(amount);
   }
 }

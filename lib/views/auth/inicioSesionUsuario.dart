@@ -3,7 +3,8 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import '../auth/reestablecerContrasena.dart';
+import 'package:google_sign_in/google_sign_in.dart';
+import 'reestablecerContrasena.dart';
 import 'registroUsuario.dart';
 import '../home/pantallaPrincipal.dart';
 
@@ -14,7 +15,8 @@ class InicioSesionUsuario extends StatefulWidget {
   _InicioSesionUsuarioState createState() => _InicioSesionUsuarioState();
 }
 
-class _InicioSesionUsuarioState extends State<InicioSesionUsuario> {
+class _InicioSesionUsuarioState extends State<InicioSesionUsuario>
+    with SingleTickerProviderStateMixin {
   bool _obscureText = true;
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
@@ -24,74 +26,111 @@ class _InicioSesionUsuarioState extends State<InicioSesionUsuario> {
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
-    return Scaffold(
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: EdgeInsets.symmetric(horizontal: size.width * 0.08),
-          child: Form(
-            key: _formKey,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                SizedBox(height: size.height * 0.01),
-                Image.asset(
-                  'lib/assets/images/logo.png',
-                  height: size.height * 0.2,
-                  fit: BoxFit.contain,
-                ),
-                SizedBox(height: size.height * 0.03),
-                Text("PocketMetrics", style: _titleStyle(size)),
-                Text("Iniciar Sesión", style: _subtitleStyle(size)),
-                const SizedBox(height: 10),
-                const Text("¡Hola! Es bueno verte de nuevo",
-                    style:
-                        TextStyle(fontFamily: 'Asap', color: Colors.black54)),
-                SizedBox(height: size.height * 0.03),
-                _buildTextField(
-                    _emailController, "Correo electrónico", Icons.email),
-                SizedBox(height: size.height * 0.02),
-                _buildTextField(_passwordController, "Contraseña", Icons.lock,
-                    isPassword: true),
-                SizedBox(height: size.height * 0.04),
-                _isLoading
-                    ? const CircularProgressIndicator()
-                    : _buildButton("Iniciar Sesión", _handleSignIn),
-                SizedBox(height: size.height * 0.02),
-                _buildButton("Google", _handleGoogleSignIn),
-                SizedBox(height: size.height * 0.02),
-                TextButton(
-                  onPressed: () => Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (context) => ForgotPasswordScreen())),
-                  child: const Text('¿Olvidaste tu contraseña?',
-                      style: TextStyle(color: Colors.green)),
-                ),
-                SizedBox(height: size.height * 0.03),
-                Text.rich(
-                  TextSpan(
-                    text: "¿Aún no estás registrado? ",
-                    style: const TextStyle(fontSize: 16, color: Colors.black54),
-                    children: [
-                      TextSpan(
-                        text: "Regístrate",
-                        style: const TextStyle(
-                            fontSize: 16,
+    return GestureDetector(
+      onTap: () => FocusScope.of(context).unfocus(),
+      child: Scaffold(
+        body: Container(
+          width: double.infinity,
+          height: double.infinity,
+          decoration: BoxDecoration(
+            image: DecorationImage(
+              image: AssetImage("lib/assets/images/welcome_background.png"),
+              fit: BoxFit.cover,
+              colorFilter: ColorFilter.mode(
+                Colors.white.withAlpha((0.55 * 255).toInt()),
+                BlendMode.lighten,
+              ),
+            ),
+          ),
+          child: SingleChildScrollView(
+            child: Padding(
+              padding: EdgeInsets.symmetric(horizontal: size.width * 0.08),
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    SizedBox(height: size.height * 0.05),
+                    Image.asset(
+                      'lib/assets/images/logo.png',
+                      height: size.height * 0.2,
+                      fit: BoxFit.contain,
+                    ),
+                    SizedBox(height: size.height * 0.03),
+                    Text("PocketMetrics", style: _titleStyle(size)),
+                    Text("Iniciar Sesión", style: _subtitleStyle(size)),
+                    const SizedBox(height: 10),
+                    const Text(
+                      "¡Hola! Es bueno verte de nuevo",
+                      style: TextStyle(fontFamily: 'Asap', color: Colors.black54),
+                    ),
+                    SizedBox(height: size.height * 0.03),
+                    _buildTextField(
+                        _emailController, "Correo electrónico", Icons.email),
+                    SizedBox(height: size.height * 0.02),
+                    _buildTextField(_passwordController, "Contraseña", Icons.lock,
+                        isPassword: true),
+                    SizedBox(height: size.height * 0.04),
+                    _isLoading
+                        ? const CircularProgressIndicator()
+                        : _buildButton("Iniciar Sesión", _handleSignIn),
+                    SizedBox(height: size.height * 0.025),
+                    Text("──────────  Accede rápido con  ──────────",
+                        style: TextStyle(
                             fontWeight: FontWeight.bold,
-                            color: Colors.green),
-                        recognizer: TapGestureRecognizer()
-                          ..onTap = () => Navigator.pushReplacement(
-                                context,
-                                MaterialPageRoute(
-                                    builder: (context) =>
-                                        const RegistroUsuario()),
-                              ),
+                            color: Colors.grey.shade600)),
+                    SizedBox(height: size.height * 0.015),
+                    ElevatedButton.icon(
+                      onPressed: _handleGoogleSignIn,
+                      icon: Image.asset('lib/assets/images/icons/google_icon.png',
+                          height: 24),
+                      label: const Text("Continuar con Google"),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.white,
+                        foregroundColor: Colors.black,
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12)),
+                        side: const BorderSide(color: Colors.grey),
+                        minimumSize: const Size(double.infinity, 50),
                       ),
-                    ],
-                  ),
+                    ),
+                    SizedBox(height: size.height * 0.02),
+                    TextButton(
+                      onPressed: () => Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => ForgotPasswordScreen())),
+                      child: const Text('¿Olvidaste tu contraseña?',
+                          style: TextStyle(color: Colors.green)),
+                    ),
+                    SizedBox(height: size.height * 0.02),
+                    Text.rich(
+                      TextSpan(
+                        text: "¿Aún no estás registrado? ",
+                        style:
+                            const TextStyle(fontSize: 16, color: Colors.black54),
+                        children: [
+                          TextSpan(
+                            text: "Regístrate",
+                            style: const TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.green),
+                            recognizer: TapGestureRecognizer()
+                              ..onTap = () => Navigator.pushReplacement(
+                                    context,
+                                    MaterialPageRoute(
+                                        builder: (context) =>
+                                            const RegistroUsuario()),
+                                  ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    SizedBox(height: size.height * 0.05),
+                  ],
                 ),
-                SizedBox(height: size.height * 0.05),
-              ],
+              ),
             ),
           ),
         ),
@@ -109,14 +148,9 @@ class _InicioSesionUsuarioState extends State<InicioSesionUsuario> {
           password: _passwordController.text,
         );
         if (userCredential.user != null) {
-          // Llamamos al método para verificar y actualizar el nombre
           _checkUserName(userCredential.user!);
-
-          // Redirigir a la pantalla principal
-          Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(
-                  builder: (context) => const PantallaPrincipal()));
+          Navigator.pushReplacement(context,
+              MaterialPageRoute(builder: (context) => const PantallaPrincipal()));
         } else {
           _showSnackBar('Credenciales incorrectas');
         }
@@ -130,21 +164,34 @@ class _InicioSesionUsuarioState extends State<InicioSesionUsuario> {
 
   void _handleGoogleSignIn() async {
     try {
-      UserCredential userCredential =
-          await FirebaseAuth.instance.signInWithCredential(
-        GoogleAuthProvider.credential(
-          accessToken: "accessToken",
-          idToken: "idToken",
-        ),
+      final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
+      if (googleUser == null) {
+        _showSnackBar('El usuario canceló el inicio de sesión');
+        return;
+      }
+
+      final GoogleSignInAuthentication googleAuth =
+          await googleUser.authentication;
+
+      if (googleAuth.idToken == null || googleAuth.accessToken == null) {
+        _showSnackBar('Error al obtener los tokens de Google');
+        return;
+      }
+
+      final credential = GoogleAuthProvider.credential(
+        accessToken: googleAuth.accessToken,
+        idToken: googleAuth.idToken,
       );
 
-      if (userCredential.user != null) {
-        // Llamamos al método para verificar y actualizar el nombre
-        _checkUserName(userCredential.user!);
+      UserCredential userCredential =
+          await FirebaseAuth.instance.signInWithCredential(credential);
 
-        // Redirigir a la pantalla principal
-        Navigator.pushReplacement(context,
-            MaterialPageRoute(builder: (context) => const PantallaPrincipal()));
+      if (userCredential.user != null) {
+        _checkUserName(userCredential.user!);
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const PantallaPrincipal()),
+        );
       }
     } catch (e) {
       _showSnackBar('Error con Google: $e');
@@ -157,12 +204,8 @@ class _InicioSesionUsuarioState extends State<InicioSesionUsuario> {
   }
 
   void _checkUserName(User user) async {
-    // Verificamos si el displayName es nulo o vacío
     if (user.displayName == null || user.displayName!.isEmpty) {
-      // Actualizamos el displayName con un nombre predeterminado
       await user.updateDisplayName('Nombre Predeterminado');
-
-      // Recargamos los datos del usuario para obtener el nuevo displayName
       await user.reload();
     }
   }
@@ -178,18 +221,18 @@ class _InicioSesionUsuarioState extends State<InicioSesionUsuario> {
         prefixIcon: Icon(icon),
         suffixIcon: isPassword
             ? IconButton(
-                icon: Icon(
-                    _obscureText ? Icons.visibility_off : Icons.visibility),
+                icon:
+                    Icon(_obscureText ? Icons.visibility_off : Icons.visibility),
                 onPressed: () => setState(() => _obscureText = !_obscureText),
               )
             : null,
         enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(10),
-          borderSide: BorderSide(color: Colors.green, width: 2),
+          borderRadius: BorderRadius.circular(15),
+          borderSide: const BorderSide(color: Colors.green, width: 2),
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(10),
-          borderSide: BorderSide(color: Colors.green, width: 2),
+          borderRadius: BorderRadius.circular(15),
+          borderSide: const BorderSide(color: Colors.green, width: 2),
         ),
       ),
       validator: (value) =>
@@ -203,7 +246,7 @@ class _InicioSesionUsuarioState extends State<InicioSesionUsuario> {
       style: ElevatedButton.styleFrom(
           backgroundColor: Colors.green,
           shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
           minimumSize: const Size(double.infinity, 50)),
       child: Text(text,
           style: const TextStyle(

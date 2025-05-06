@@ -2,6 +2,7 @@
 
 import 'package:alcancia_movil/Models/divisa_model.dart';
 import 'package:alcancia_movil/providers/divisas_provider.dart';
+import 'package:alcancia_movil/services/nivel_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
@@ -21,6 +22,15 @@ class _AlcanciaState extends State<Alcancia> {
   int _selectedIndex = 0;
 
   final List<String> _sections = ['Monedas', 'Billetes', 'Otras Divisas'];
+
+  late final XPService xpService;
+
+  @override
+  void initState() {
+    super.initState();
+    final uid = FirebaseAuth.instance.currentUser?.uid;
+    if (uid != null) xpService = XPService(userId: uid);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -52,30 +62,28 @@ class _AlcanciaState extends State<Alcancia> {
                       trailing: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
+                          // Botón único de editar cantidad:
                           IconButton(
-                            icon: Icon(Icons.remove),
+                            icon: Icon(Icons.attach_money, color: Colors.green),
+                            tooltip: 'Editar cantidad',
                             onPressed: () => _mostrarDialogoModificarCantidad(
                               context,
                               divisasProvider,
                               index,
                               userEmail!,
-                              false,
+                              null, // le pasamos null para indicar edición “completa”
                             ),
                           ),
-                          IconButton(
-                            icon: Icon(Icons.add),
-                            onPressed: () => _mostrarDialogoModificarCantidad(
-                              context,
-                              divisasProvider,
-                              index,
-                              userEmail!,
-                              true,
-                            ),
-                          ),
+                          // Y el botón de eliminar:
                           IconButton(
                             icon: Icon(Icons.delete, color: Colors.red),
+                            tooltip: 'Eliminar divisa',
                             onPressed: () => _mostrarDialogoEliminarDivisa(
-                                context, divisasProvider, index, userEmail!),
+                              context,
+                              divisasProvider,
+                              index,
+                              userEmail!,
+                            ),
                           ),
                         ],
                       ),
@@ -130,22 +138,19 @@ class _AlcanciaState extends State<Alcancia> {
   }
 
   void _mostrarDialogoModificarCantidad(BuildContext context,
-      DivisasProvider provider, int index, String userEmail, bool isAddition) {
-    TextEditingController cantidadController = TextEditingController();
+      DivisasProvider provider, int index, String userEmail, bool? isAddition) {
+    final cantidadController = TextEditingController(
+      text: provider.divisas[index].cantidad.toString(),
+    );
 
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: Text(isAddition ? 'Agregar Cantidad' : 'Restar Cantidad'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextField(
-              controller: cantidadController,
-              decoration: InputDecoration(labelText: 'Cantidad'),
-              keyboardType: TextInputType.number,
-            ),
-          ],
+      builder: (_) => AlertDialog(
+        title: Text('Editar Cantidad'),
+        content: TextField(
+          controller: cantidadController,
+          decoration: InputDecoration(labelText: 'Cantidad'),
+          keyboardType: TextInputType.number,
         ),
         actions: [
           TextButton(
@@ -154,20 +159,25 @@ class _AlcanciaState extends State<Alcancia> {
           ),
           ElevatedButton(
             onPressed: () {
-              final cantidad = int.tryParse(cantidadController.text) ?? 0;
-
-              if (cantidad > 0) {
-                provider.actualizarCantidadDivisa(
-                  index,
-                  isAddition,
-                  userEmail,
-                  cantidad,
-                );
+              final nuevaCantidad = int.tryParse(cantidadController.text) ?? 0;
+              if (nuevaCantidad > 0) {
+                if (isAddition == true) {
+                  // Sigue usando tu método existente para suma
+                  provider.actualizarCantidadDivisa(
+                      index, true, userEmail, nuevaCantidad);
+                } else if (isAddition == false) {
+                  // ...y para resta
+                  provider.actualizarCantidadDivisa(
+                      index, false, userEmail, nuevaCantidad);
+                } else {
+                  // Modo edición completa: llamamos al nuevo método
+                  provider.editarCantidadDivisa(
+                      index, nuevaCantidad, userEmail);
+                }
                 Navigator.pop(context);
               } else {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                      content: Text('Por favor, ingresa una cantidad válida.')),
+                  SnackBar(content: Text('Ingresa una cantidad válida.')),
                 );
               }
             },
@@ -208,14 +218,8 @@ class _AlcanciaState extends State<Alcancia> {
                             true,
                           );
                         } else {
-                          _addTransaction(
-                            alcanciaProvider,
-                            divisasProvider,
-                            item.valor.toDouble(),
-                            true,
-                            userEmail!,
-                            index
-                          );
+                          _addTransaction(alcanciaProvider, divisasProvider,
+                              item.valor.toDouble(), true, userEmail!, index);
                         }
                       },
                       onRemove: () {
@@ -228,14 +232,8 @@ class _AlcanciaState extends State<Alcancia> {
                             false,
                           );
                         } else if (item.cantidad > 0) {
-                          _addTransaction(
-                            alcanciaProvider,
-                            divisasProvider,
-                            item.valor.toDouble(),
-                            false,
-                            userEmail!,
-                            index
-                          );
+                          _addTransaction(alcanciaProvider, divisasProvider,
+                              item.valor.toDouble(), false, userEmail!, index);
                         }
                       },
                     );
@@ -277,23 +275,20 @@ class _AlcanciaState extends State<Alcancia> {
           label: 'Billetes',
         ),
         BottomNavigationBarItem(
-          icon: Icon(Icons.currency_exchange),
+          icon: Icon(Icons.account_balance),
           label: 'Otras Divisas',
         ),
       ],
     );
   }
 
-  void _addTransaction(
+  Future<void> _addTransaction(
       AlcanciaProvider alcanciaProvider,
       DivisasProvider divisasProvider,
       double amount,
       bool isAddition,
       String userEmail,
-      int index) {
-    Provider.of<AlcanciaProvider>(context, listen: false)
-        .agregarTransaccion(amount, isAddition, userEmail);
-
+      int index) async {
     if (_selectedIndex == 0) {
       alcanciaProvider.actualizarCantidadMoneda(
           index,
@@ -315,6 +310,23 @@ class _AlcanciaState extends State<Alcancia> {
         alcanciaProvider.billetes,
         alcanciaProvider.totalAhorrado.toDouble(),
         userEmail);
+
+    if (isAddition == true && _selectedIndex != 2) {
+      Provider.of<AlcanciaProvider>(context, listen: false)
+          .agregarTransaccion(amount, true, userEmail);
+
+      try {
+        final dinero = <int, int>{};
+        final int valor = amount.toInt();
+        dinero[valor] = 1;
+
+        await xpService.registrarAhorro(dinero);
+      } catch (e) {
+        debugPrint('Error actualizando XP: $e');
+      }
+    }
+
+    setState(() {});
   }
 
   int _getItemCount(
@@ -373,7 +385,7 @@ class _AlcanciaState extends State<Alcancia> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
-          Text('\$${formatCurrency(value)}'),
+          Text(formatCurrency(value)),
           Row(
             children: [
               IconButton(
@@ -387,7 +399,7 @@ class _AlcanciaState extends State<Alcancia> {
                   onPressed: onAdd),
             ],
           ),
-          Text("\$${formatCurrency(total)}"),
+          Text(formatCurrency(total)),
         ],
       ),
     );
@@ -400,7 +412,7 @@ class _AlcanciaState extends State<Alcancia> {
     double fontSize = 18,
   }) {
     return Text(
-      '$label \$ ${formatCurrency(amount)}',
+      '$label ${formatCurrency(amount)}',
       style: TextStyle(
         color: Colors.green,
         fontWeight: isBold ? FontWeight.bold : FontWeight.normal,
@@ -409,9 +421,10 @@ class _AlcanciaState extends State<Alcancia> {
     );
   }
 
-  String formatCurrency(int amount) {
-    final formatter = NumberFormat('#,###', 'es_ES');
-    return formatter.format(amount);
+  String formatCurrency(num amount) {
+    final format =
+        NumberFormat.currency(locale: 'es_CO', symbol: '\$', decimalDigits: 0);
+    return format.format(amount);
   }
 
   void _mostrarDialogoAgregarDivisa(
@@ -479,10 +492,12 @@ class ThousandsSeparatorInputFormatter extends TextInputFormatter {
       TextEditingValue oldValue, TextEditingValue newValue) {
     final int selectionIndexFromTheRight =
         newValue.text.length - newValue.selection.end;
-    final number = int.tryParse(newValue.text.replaceAll(RegExp(r'[,.]'), ''));
+
+    final number = int.tryParse(newValue.text.replaceAll(RegExp(r'[.,]'), ''));
     if (number == null) return newValue;
 
-    final newString = NumberFormat.decimalPattern().format(number);
+    final newString = NumberFormat.decimalPattern('es_CO').format(number);
+
     return TextEditingValue(
       text: newString,
       selection: TextSelection.collapsed(

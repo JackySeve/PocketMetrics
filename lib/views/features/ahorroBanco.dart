@@ -105,7 +105,7 @@ class _BankSavingsScreenState extends State<BankSavingsScreen> {
                   child: ListTile(
                     title: Text(saving.bankName),
                     subtitle: Text(
-                        '${saving.accountType} - \$${formatCurrency(saving.amount)}'),
+                        '${saving.accountType} - ${formatCurrency(saving.amount)}'),
                     trailing: Text(
                         '${saving.lastUpdated.day} de $nombreMes de ${saving.lastUpdated.year}'),
                     onTap: () {
@@ -137,9 +137,10 @@ class _BankSavingsScreenState extends State<BankSavingsScreen> {
     );
   }
 
-  String formatCurrency(double value) {
-    final formatter = NumberFormat.currency(symbol: '\$', decimalDigits: 0);
-    return formatter.format(value);
+  String formatCurrency(num amount) {
+    final format =
+        NumberFormat.currency(locale: 'es_CO', symbol: '\$', decimalDigits: 0);
+    return format.format(amount);
   }
 
   String obtenerNombreMes(int numeroMes) {

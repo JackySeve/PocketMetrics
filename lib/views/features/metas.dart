@@ -1,5 +1,6 @@
-// ignore_for_file: unnecessary_null_comparison, library_private_types_in_public_api, constant_identifier_names, no_leading_underscores_for_local_identifiers
+// ignore_for_file: unnecessary_null_comparison, library_private_types_in_public_api, constant_identifier_names, no_leading_underscores_for_local_identifiers, use_build_context_synchronously
 
+import 'package:alcancia_movil/services/nivel_service.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -97,7 +98,14 @@ class _MetasState extends State<Metas> {
   CategoriaMeta _categoriaMetaSeleccionada = CategoriaMeta.Otro;
   TipoOrdenMeta _tipoOrdenSeleccionado = TipoOrdenMeta.avanceYNombre;
 
-// Reorganizando el build para una mejor visualización y organización de metas
+  late XPService xpService;
+
+  @override
+  void initState() {
+    super.initState();
+    final uid = FirebaseAuth.instance.currentUser?.uid;
+    if (uid != null) xpService = XPService(userId: uid);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -285,7 +293,7 @@ class _MetasState extends State<Metas> {
                             Text('Detalle: ${meta.detalle}'),
                             Text('Categoría: ${meta.categoria.name}'),
                             Text(
-                                'Fecha Límite: ${DateFormat('dd/MM/yyyy').format(meta.fechaLimite)}'),
+                                'Fecha Límite: ${_fechaLimite.day} de ${obtenerNombreMes(_fechaLimite.month)} de ${_fechaLimite.year}'),
                             const SizedBox(height: 8),
                             LinearProgressIndicator(
                               value: meta.valorAhorrado / meta.valorObjetivo,
@@ -548,10 +556,12 @@ class _MetasState extends State<Metas> {
     Function(int) onValorActualizado,
   ) {
     final TextEditingController controller = TextEditingController(
-      text: meta.valorAhorrado.toStringAsFixed(2),
+      text: NumberFormat.decimalPattern('es_CO').format(meta.valorAhorrado),
     );
 
     final _formKey = GlobalKey<FormState>();
+    final wasCumplida = meta.cumplida;
+    int _valorObjetivo = 0;
 
     showDialog(
       context: context,
@@ -563,18 +573,24 @@ class _MetasState extends State<Metas> {
             child: TextFormField(
               controller: controller,
               keyboardType:
-                  const TextInputType.numberWithOptions(decimal: true),
+                  const TextInputType.numberWithOptions(decimal: false),
               decoration: const InputDecoration(
                 labelText: 'Nuevo valor ahorrado',
                 border: OutlineInputBorder(),
               ),
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'El valor no puede estar vacío';
+              inputFormatters: [ThousandsSeparatorInputFormatter()],
+              onSaved: (value) {
+                final cleaned = value!.replaceAll(RegExp(r'[.,]'), '');
+                final parsed = int.tryParse(cleaned);
+                if (parsed != null) {
+                  _valorObjetivo = parsed;
                 }
-                final number = double.tryParse(value.replaceAll(',', '.'));
-                if (number == null || number < 0) {
-                  return 'Ingresa un número válido';
+              },
+              validator: (value) {
+                final cleaned = value!.replaceAll(RegExp(r'[.,]'), '');
+                final parsed = int.tryParse(cleaned);
+                if (parsed == null || parsed <= 0) {
+                  return 'Debe ser mayor a cero';
                 }
                 return null;
               },
@@ -587,21 +603,29 @@ class _MetasState extends State<Metas> {
             ),
             ElevatedButton(
               child: const Text('Guardar'),
-              onPressed: () {
+              onPressed: () async {
                 if (_formKey.currentState!.validate()) {
-                  final nuevoValor =
-                      int.parse(controller.text.replaceAll(',', '.'));
+                  _formKey.currentState!.save();
 
                   final alcanciaProvider =
                       Provider.of<AlcanciaProvider>(context, listen: false);
 
-                  // Aquí se actualiza directamente el valor
-                  meta.valorAhorrado = nuevoValor;
-                  onValorActualizado(nuevoValor);
+                  meta.valorAhorrado = _valorObjetivo;
+                  onValorActualizado(_valorObjetivo);
 
                   if (userEmail != null) {
                     alcanciaProvider.guardarMetasEnFirebase(
                         alcanciaProvider.metas, userEmail!);
+                  }
+
+                  if (meta.cumplida && !wasCumplida) {
+                    final xpReward = xpService.calcularXP(meta.valorObjetivo);
+                    await xpService.registrarAhorro({meta.valorObjetivo: 1});
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                          content:
+                              Text('¡Meta cumplida! Ganaste $xpReward XP')),
+                    );
                   }
 
                   Navigator.of(context).pop();
@@ -633,9 +657,10 @@ class _MetasState extends State<Metas> {
     }
   }
 
-  String formatCurrency(int value) {
-    final formatter = NumberFormat.currency(symbol: '\$', decimalDigits: 0);
-    return formatter.format(value);
+  String formatCurrency(num amount) {
+    final format =
+        NumberFormat.currency(locale: 'es_CO', symbol: '\$', decimalDigits: 0);
+    return format.format(amount);
   }
 
   void _mostrarDialogoConfirmacion(
@@ -671,6 +696,29 @@ class _MetasState extends State<Metas> {
       },
     );
   }
+
+  String obtenerNombreMes(int numeroMes) {
+    const meses = [
+      'Enero',
+      'Febrero',
+      'Marzo',
+      'Abril',
+      'Mayo',
+      'Junio',
+      'Julio',
+      'Agosto',
+      'Septiembre',
+      'Octubre',
+      'Noviembre',
+      'Diciembre'
+    ];
+
+    if (numeroMes >= 1 && numeroMes <= 12) {
+      return meses[numeroMes - 1];
+    } else {
+      return 'Mes inválido';
+    }
+  }
 }
 
 class ThousandsSeparatorInputFormatter extends TextInputFormatter {
@@ -679,10 +727,12 @@ class ThousandsSeparatorInputFormatter extends TextInputFormatter {
       TextEditingValue oldValue, TextEditingValue newValue) {
     final int selectionIndexFromTheRight =
         newValue.text.length - newValue.selection.end;
-    final number = int.tryParse(newValue.text.replaceAll(RegExp(r'[,.]'), ''));
+
+    final number = int.tryParse(newValue.text.replaceAll(RegExp(r'[.,]'), ''));
     if (number == null) return newValue;
 
-    final newString = NumberFormat.decimalPattern().format(number);
+    final newString = NumberFormat.decimalPattern('es_CO').format(number);
+
     return TextEditingValue(
       text: newString,
       selection: TextSelection.collapsed(

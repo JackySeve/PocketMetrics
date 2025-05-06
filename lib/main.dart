@@ -1,20 +1,28 @@
-import 'package:alcancia_movil/providers/bank_savings_provider.dart';
-import 'package:alcancia_movil/providers/divisas_provider.dart';
-import 'package:alcancia_movil/providers/financiamiento_provider.dart';
-import 'package:alcancia_movil/providers/gastos_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:provider/provider.dart';
 import 'package:adaptive_theme/adaptive_theme.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:alcancia_movil/views/home/paginaBienvenida.dart';
 import 'package:alcancia_movil/providers/alcancia_provider.dart';
-import 'firebase_options.dart';
+import 'package:alcancia_movil/providers/bank_savings_provider.dart';
+import 'package:alcancia_movil/providers/divisas_provider.dart';
+import 'package:alcancia_movil/providers/financiamiento_provider.dart';
+import 'package:alcancia_movil/providers/gastos_provider.dart';
+
+final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
+    FlutterLocalNotificationsPlugin();
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   final savedThemeMode = await AdaptiveTheme.getThemeMode();
-  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
-  
+
+  if (Firebase.apps.isEmpty) {
+    await Firebase.initializeApp();
+  }
+
+  await _initializeNotifications();
+
   runApp(
     MultiProvider(
       providers: [
@@ -23,11 +31,21 @@ Future<void> main() async {
         ChangeNotifierProvider(create: (_) => DivisasProvider()),
         ChangeNotifierProvider(create: (_) => BankSavingsProvider()),
         ChangeNotifierProvider(create: (_) => FinanciamientoProvider()),
-        // Se pueden agregar más providers aquí en el futuro
       ],
       child: MainApp(savedThemeMode: savedThemeMode),
     ),
   );
+}
+
+Future<void> _initializeNotifications() async {
+  const AndroidInitializationSettings initializationSettingsAndroid =
+      AndroidInitializationSettings('@mipmap/ic_launcher');
+
+  const InitializationSettings initializationSettings = InitializationSettings(
+    android: initializationSettingsAndroid,
+  );
+
+  await flutterLocalNotificationsPlugin.initialize(initializationSettings);
 }
 
 class MainApp extends StatelessWidget {
@@ -56,7 +74,7 @@ class MainApp extends StatelessWidget {
         initialRoute: "inicio",
         routes: {
           "inicio": (context) => const InicioPrincipal(),
-          // Aquí se pueden agregar más rutas si es necesario
+          // Puedes agregar más rutas aquí
         },
       ),
     );

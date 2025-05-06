@@ -22,11 +22,20 @@ class _EstadisticosState extends State<Estadisticos> {
   List<BarChartGroupData> _ingresosData = [];
   List<BarChartGroupData> _egresosData = [];
 
+  late AlcanciaProvider _provider;
+
   @override
   void initState() {
     super.initState();
-    final provider = Provider.of<AlcanciaProvider>(context, listen: false);
-    provider.addListener(_actualizarDatos);
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+
+    _provider = Provider.of<AlcanciaProvider>(context, listen: false);
+    _provider.addListener(_actualizarDatos);
+
     _agruparTransaccionesPorDia();
   }
 
@@ -42,8 +51,7 @@ class _EstadisticosState extends State<Estadisticos> {
 
   @override
   void dispose() {
-    final provider = Provider.of<AlcanciaProvider>(context, listen: false);
-    provider.removeListener(_actualizarDatos);
+    _provider.removeListener(_actualizarDatos);
     super.dispose();
   }
 
@@ -182,9 +190,10 @@ class _EstadisticosState extends State<Estadisticos> {
     }
   }
 
-  String formatCurrency(double value) {
-    final formatter = NumberFormat.currency(symbol: '', decimalDigits: 0);
-    return formatter.format(value);
+  String formatCurrency(num amount) {
+    final format =
+        NumberFormat.currency(locale: 'es_CO', symbol: '\$', decimalDigits: 0);
+    return format.format(amount);
   }
 
   Widget _buildEstadisticas() {
@@ -329,22 +338,47 @@ class _EstadisticosState extends State<Estadisticos> {
                 height: 150,
                 width: 150,
               ),
-              // Título descriptivo
-              const Padding(
-                padding: EdgeInsets.all(8.0),
-                child: Text(
-                  'Cumplimiento Total de Metas',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.green,
-                  ),
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Text(
+                      'Cumplimiento Total de Metas',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.green,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    IconButton(
+                      icon: const Icon(Icons.help_outline, color: Colors.grey),
+                      onPressed: () {
+                        showDialog(
+                          context: context,
+                          builder: (context) => AlertDialog(
+                            title: const Text('¿Qué muestra esta gráfica?'),
+                            content: const Text(
+                              'La gráfica de pastel muestra el porcentaje de metas financieras '
+                              'que has logrado cumplir en comparación con las que aún no has alcanzado. '
+                              'Esto te ayuda a visualizar tu progreso general y mantenerte motivado.',
+                            ),
+                            actions: [
+                              TextButton(
+                                onPressed: () => Navigator.of(context).pop(),
+                                child: const Text('Cerrar'),
+                              ),
+                            ],
+                          ),
+                        );
+                      },
+                    )
+                  ],
                 ),
               ),
-
-              // Limitar la altura del gráfico
               SizedBox(
-                height: 360, // Ajusta el tamaño según lo necesario
+                height: 360,
                 child: PieChart(
                   PieChartData(
                     centerSpaceRadius: 0,
@@ -394,7 +428,7 @@ class _EstadisticosState extends State<Estadisticos> {
               style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
             ),
             Text(
-              '\$ $value',
+              value,
               style: const TextStyle(fontSize: 16, color: Colors.blueGrey),
             ),
           ],

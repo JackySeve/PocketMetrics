@@ -32,156 +32,171 @@ class _RegistroUsuarioState extends State<RegistroUsuario> {
     final height = size.height;
     final width = size.width;
 
-    return Scaffold(
-      body: ChangeNotifierProvider(
-        create: (context) => AlcanciaProvider(),
-        child: Center(
-          child: SingleChildScrollView(
-            padding: EdgeInsets.symmetric(
-              horizontal: width * 0.05,
-              vertical: height * 0.02,
+    return GestureDetector(
+      onTap: () => FocusScope.of(context).unfocus(),
+      child: Scaffold(
+        backgroundColor: Colors.white,
+        body: Container(
+          decoration: BoxDecoration(
+            image: DecorationImage(
+              image: AssetImage("lib/assets/images/welcome_background.png"),
+              fit: BoxFit.cover,
+              colorFilter: ColorFilter.mode(
+                Colors.white.withAlpha((0.55 * 255).toInt()),
+                BlendMode.lighten,
+              ),
             ),
-            child: Form(
-              key: _formKey,
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  Image.asset(
-                    'lib/assets/images/logo.png',
-                    height: height * 0.15,
-                    fit: BoxFit.contain,
-                  ),
-                  const Text(
-                    "PocketMetrics",
-                    style: TextStyle(
-                      color: Colors.green,
-                      fontSize: 28,
-                      fontWeight: FontWeight.bold,
-                      fontFamily: 'Asap',
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  const Text(
-                    "Regístrate",
-                    style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-                  ),
-                  const SizedBox(height: 8),
-                  const Text(
-                    "¡Bienvenido y espero llegues para quedarte!",
-                    textAlign: TextAlign.center,
-                    style: TextStyle(fontSize: 16, color: Colors.grey),
-                  ),
-                  const SizedBox(height: 24),
-                  _buildTextField(
-                    controller: _controladorName,
-                    label: "Usuario",
-                    icon: Icons.person,
-                    validator: (value) =>
-                        value!.isEmpty ? 'Ingrese su usuario' : null,
-                  ),
-                  const SizedBox(height: 16),
-                  _buildTextField(
-                    controller: _emailController,
-                    label: "Correo",
-                    icon: Icons.mail,
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Ingrese su correo';
-                      }
-
-                      // Expresión regular para validar correos electrónicos
-                      String pattern =
-                          r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$';
-                      RegExp regex = RegExp(pattern);
-
-                      if (!regex.hasMatch(value)) {
-                        return 'Formato de correo inválido';
-                      }
-
-                      return null;
-                    },
-                  ),
-                  const SizedBox(height: 16),
-                  _buildPasswordField(
-                    controller: _passwordController,
-                    label: "Contraseña",
-                    obscureText: _obscureText,
-                    toggleVisibility: () => setState(() {
-                      _obscureText = !_obscureText;
-                    }),
-                    validator: (value) {
-                      if (value!.length < 8) {
-                        return 'Debe tener al menos 8 caracteres';
-                      }
-                      return null;
-                    },
-                  ),
-                  const SizedBox(height: 16),
-                  _buildPasswordField(
-                    controller: _confirmPasswordController,
-                    label: "Verificar contraseña",
-                    obscureText: _obscureTextCheck,
-                    toggleVisibility: () => setState(() {
-                      _obscureTextCheck = !_obscureTextCheck;
-                    }),
-                    validator: (value) => value != _passwordController.text
-                        ? 'Las contraseñas no coinciden'
-                        : null,
-                  ),
-                  const SizedBox(height: 16),
-                  Row(
+          ),
+          child: ChangeNotifierProvider(
+            create: (context) => AlcanciaProvider(),
+            child: Center(
+              child: SingleChildScrollView(
+                padding: EdgeInsets.symmetric(
+                  horizontal: width * 0.06,
+                  vertical: height * 0.03,
+                ),
+                child: Form(
+                  key: _formKey,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
-                      Checkbox(
-                        value: _isChecked,
-                        onChanged: (value) =>
-                            setState(() => _isChecked = value!),
+                      Image.asset(
+                        'lib/assets/images/logo.png',
+                        height: height * 0.15,
+                        fit: BoxFit.contain,
                       ),
-                      Expanded(
-                        child: Text.rich(
-                          TextSpan(
-                            text: "Acepto ",
-                            children: [
-                              _buildLink("Términos y Condiciones"),
-                              const TextSpan(text: " y "),
-                              _buildLink("Política de Privacidad"),
-                            ],
+                      const SizedBox(height: 12),
+                      const Text(
+                        "PocketMetrics",
+                        style: TextStyle(
+                          color: Colors.green,
+                          fontSize: 32,
+                          fontWeight: FontWeight.bold,
+                          fontFamily: 'Asap',
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      const Text(
+                        "Regístrate",
+                        style: TextStyle(
+                            fontSize: 24, fontWeight: FontWeight.bold),
+                      ),
+                      const SizedBox(height: 8),
+                      const Text(
+                        "¡Bienvenido! Estamos emocionados de tenerte aquí.",
+                        textAlign: TextAlign.center,
+                        style: TextStyle(fontSize: 16, color: Colors.black54),
+                      ),
+                      const SizedBox(height: 28),
+                      _buildTextField(
+                        controller: _controladorName,
+                        label: "Usuario",
+                        icon: Icons.person,
+                        validator: (value) =>
+                            value!.isEmpty ? 'Ingrese su usuario' : null,
+                      ),
+                      const SizedBox(height: 16),
+                      _buildTextField(
+                        controller: _emailController,
+                        label: "Correo",
+                        icon: Icons.mail,
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Ingrese su correo';
+                          }
+                          String pattern =
+                              r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}\$';
+                          if (!RegExp(pattern).hasMatch(value)) {
+                            return 'Formato de correo inválido';
+                          }
+                          return null;
+                        },
+                      ),
+                      const SizedBox(height: 16),
+                      _buildPasswordField(
+                        controller: _passwordController,
+                        label: "Contraseña",
+                        obscureText: _obscureText,
+                        toggleVisibility: () => setState(() {
+                          _obscureText = !_obscureText;
+                        }),
+                        validator: (value) {
+                          if (value!.length < 8) {
+                            return 'Debe tener al menos 8 caracteres';
+                          }
+                          return null;
+                        },
+                      ),
+                      const SizedBox(height: 16),
+                      _buildPasswordField(
+                        controller: _confirmPasswordController,
+                        label: "Verificar contraseña",
+                        obscureText: _obscureTextCheck,
+                        toggleVisibility: () => setState(() {
+                          _obscureTextCheck = !_obscureTextCheck;
+                        }),
+                        validator: (value) => value != _passwordController.text
+                            ? 'Las contraseñas no coinciden'
+                            : null,
+                      ),
+                      const SizedBox(height: 20),
+                      Row(
+                        children: [
+                          Checkbox(
+                            value: _isChecked,
+                            onChanged: (value) =>
+                                setState(() => _isChecked = value!),
+                            activeColor: Colors.green,
                           ),
+                          Expanded(
+                            child: Text.rich(
+                              TextSpan(
+                                text: "Acepto ",
+                                style: const TextStyle(color: Colors.black87),
+                                children: [
+                                  _buildLink("Términos y Condiciones"),
+                                  const TextSpan(text: " y "),
+                                  _buildLink("Política de Privacidad"),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 16),
+                      _buildButton(
+                        text: "Registrarse",
+                        onPressed: _isChecked ? _onRegister : () {},
+                        context: context,
+                      ),
+                      const SizedBox(height: 20),
+                      Text.rich(
+                        TextSpan(
+                          text: "¿Ya tienes una cuenta? ",
+                          style: const TextStyle(
+                              fontSize: 16, color: Colors.black54),
+                          children: [
+                            TextSpan(
+                              text: "Inicia Sesión",
+                              style: const TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.green),
+                              recognizer: TapGestureRecognizer()
+                                ..onTap = () => Navigator.pushReplacement(
+                                      context,
+                                      MaterialPageRoute(
+                                          builder: (context) =>
+                                              const InicioSesionUsuario()),
+                                    ),
+                            ),
+                          ],
                         ),
                       ),
                     ],
                   ),
-                  const SizedBox(height: 16),
-                  _buildButton(
-                    text: "Registrarse",
-                    onPressed: _isChecked ? _onRegister : () {},
-                    context: context,
-                  ),
-                  const SizedBox(height: 16),
-                  Text.rich(
-                    TextSpan(
-                      text: "¿Ya tienes una cuenta? ",
-                      style:
-                          const TextStyle(fontSize: 16, color: Colors.black54),
-                      children: [
-                        TextSpan(
-                          text: "Inicia Sesión",
-                          style: const TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.green),
-                          recognizer: TapGestureRecognizer()
-                            ..onTap = () => Navigator.pushReplacement(
-                                  context,
-                                  MaterialPageRoute(
-                                      builder: (context) =>
-                                          const InicioSesionUsuario()),
-                                ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
+                ),
               ),
             ),
           ),
@@ -280,49 +295,47 @@ class _RegistroUsuarioState extends State<RegistroUsuario> {
       style: const TextStyle(
           decoration: TextDecoration.underline, color: Colors.green),
       recognizer: TapGestureRecognizer()
-        ..onTap = () => _launchURL("https://computrabajo.com"),
+        ..onTap = () => _launchURL(
+            "https://cache.dominos.com/olo/6_53_4/assets/build/market/PE/_en/pdf/national_menu.pdf"),
     );
   }
 
-void _onRegister() async {
-  if (_formKey.currentState!.validate()) {
-    try {
-      final email = _emailController.text.trim();
-      final password = _passwordController.text.trim();
-      final name = _controladorName.text.trim();
+  void _onRegister() async {
+    if (_formKey.currentState!.validate()) {
+      try {
+        final email = _emailController.text.trim();
+        final password = _passwordController.text.trim();
+        final name = _controladorName.text.trim();
 
-      // Crear instancia del provider
-      final alcanciaProvider = AlcanciaProvider();
+        final alcanciaProvider = AlcanciaProvider();
 
-      // Registrar usuario
-      final userId = await alcanciaProvider.registerUser(name, email, password, name);
+        final userId =
+            await alcanciaProvider.registerUser(name, email, password, name);
 
-      if (userId != null) {
-        // Registro exitoso, redirigir a la pantalla principal
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => const PantallaPrincipal()),
-        );
-      } else {
-        // Mostrar error si el registro falló
+        if (userId != null) {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => const PantallaPrincipal()),
+          );
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Error al registrar el usuario')),
+          );
+        }
+      } catch (e) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Error al registrar el usuario')),
+          const SnackBar(content: Text('Ha ocurrido un error inesperado')),
         );
       }
-    } catch (e) {
-      // Error inesperado
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Ha ocurrido un error inesperado')),
-      );
     }
   }
-}
 
-
-  void _launchURL(String url) async {
-    Uri uri = Uri.parse(url);
-    if (await canLaunchUrl(uri)) {
-      await launchUrl(uri, mode: LaunchMode.externalApplication);
+  Future<void> _launchURL(String url) async {
+    final uri = Uri.parse(url);
+    if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('No se pudo abrir \$url')),
+      );
     }
   }
 }

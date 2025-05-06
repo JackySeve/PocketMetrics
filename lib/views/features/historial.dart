@@ -77,7 +77,7 @@ class _HistorialState extends State<Historial> {
                         ),
                       ),
                       subtitle: Text(
-                        transaccion.fecha.toString(),
+                        '${transaccion.fecha.day} de ${obtenerNombreMes(transaccion.fecha.month)} de ${transaccion.fecha.year} a las ${transaccion.fecha.hour}:${transaccion.fecha.minute}',
                       ),
                     );
                   },
@@ -119,8 +119,32 @@ class _HistorialState extends State<Historial> {
   }
 
   // Método para formatear la moneda
-  String formatCurrency(double amount) {
-    final format = NumberFormat.currency(locale: 'es_CO', symbol: '\$');
+  String formatCurrency(num amount) {
+    final format =
+        NumberFormat.currency(locale: 'es_CO', symbol: '\$', decimalDigits: 0);
     return format.format(amount);
+  }
+
+  String obtenerNombreMes(int numeroMes) {
+    const meses = [
+      'Enero',
+      'Febrero',
+      'Marzo',
+      'Abril',
+      'Mayo',
+      'Junio',
+      'Julio',
+      'Agosto',
+      'Septiembre',
+      'Octubre',
+      'Noviembre',
+      'Diciembre'
+    ];
+
+    if (numeroMes >= 1 && numeroMes <= 12) {
+      return meses[numeroMes - 1];
+    } else {
+      return 'Mes inválido';
+    }
   }
 }

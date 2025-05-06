@@ -2,7 +2,7 @@
   "project_info": {
     "project_number": "64964084126",
     "project_id": "pocketmetrics",
-    "storage_bucket": "pocketmetrics.appspot.com"
+    "storage_bucket": "pocketmetrics.firebasestorage.app"
   },
   "client": [
     {

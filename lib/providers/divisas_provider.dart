@@ -77,4 +77,13 @@ class DivisasProvider extends ChangeNotifier {
     notifyListeners();
     guardarDivisasEnFirebase(userEmail);
   }
+
+  /// 🔹 Edita la cantidad de la divisa directamente (modo edición completa)
+  void editarCantidadDivisa(int index, int nuevaCantidad, String userEmail) {
+    if (index < 0 || index >= divisas.length) return;
+
+    divisas[index].cantidad = nuevaCantidad;
+    notifyListeners(); // ✅ protegida: se llama aquí, dentro de la clase
+    guardarDivisasEnFirebase(userEmail);
+  }
 }

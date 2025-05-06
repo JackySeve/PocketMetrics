@@ -518,23 +518,6 @@ class AlcanciaProvider with ChangeNotifier {
     }
   }
 
-  Future<UserCredential?> signInWithGoogle() async {
-    final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
-    final GoogleSignInAuthentication? googleAuth =
-        await googleUser?.authentication;
-    final credential = GoogleAuthProvider.credential(
-      accessToken: googleAuth?.accessToken,
-      idToken: googleAuth?.idToken,
-    );
-    final UserCredential userCredential =
-        await FirebaseAuth.instance.signInWithCredential(credential);
-
-    _user = userCredential.user;
-    notifyListeners();
-
-    return userCredential;
-  }
-
   Future<void> signOut() async {
     try {
       await FirebaseAuth.instance.signOut();

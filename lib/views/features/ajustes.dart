@@ -3,6 +3,8 @@
 import 'package:alcancia_movil/providers/alcancia_provider.dart';
 import 'package:alcancia_movil/views/auth/inicioSesionUsuario.dart';
 import 'package:alcancia_movil/views/home/menuDesplegablePrincipal.dart';
+import 'package:alcancia_movil/views/secondaries/NotificacionesMotivacionalesScreen%20.dart';
+import 'package:alcancia_movil/views/secondaries/recordatorios_screen.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -156,23 +158,36 @@ class _AjustesState extends State<Ajustes> {
             mainAxisAlignment: MainAxisAlignment.start,
             children: [
               const SizedBox(height: 10),
-
               Image.asset(
                 'lib/assets/images/logo.png',
                 height: 150,
                 width: 150,
               ),
-
               const SizedBox(height: 20),
-
               _buildButton(
                   'Cambiar Contraseña', Colors.blue, _showChangePasswordDialog),
               const SizedBox(height: 16),
               _buildButton(
                   'Eliminar Cuenta', Colors.red, _showDeleteAccountDialog),
               const SizedBox(height: 16),
-              _buildButton('Editar Información', Colors.orange,
-                  _showEditUserInfoDialog), // Nuevo botón
+              _buildButton(
+                  'Editar Información', Colors.orange, _showEditUserInfoDialog),
+              const SizedBox(height: 16),
+              _buildButton('Recordatorios', Colors.teal, () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) => RecordatoriosScreen()),
+                );
+              }),
+              const SizedBox(height: 16),
+              _buildButton('Notificaciones', Colors.purple, () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) => NotificacionesMotivacionalesScreen()),
+                );
+              }),
             ],
           ),
         ),

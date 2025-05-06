@@ -47,59 +47,64 @@ class _FinanciamientoFormState extends State<FinanciamientoForm> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Nuevo Financiamiento')),
-      body: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Form(
-          key: _formKey,
-          child: ListView(
-            children: [
-              TextFormField(
-                decoration:
-                    const InputDecoration(labelText: 'Monto del préstamo'),
-                inputFormatters: [ThousandsSeparatorInputFormatter()],
-                keyboardType: TextInputType.number,
-                validator: (value) {
-                  final v = double.tryParse(value!.replaceAll(',', ''));
-                  return (v == null || v <= 0)
-                      ? 'Ingrese un monto válido'
-                      : null;
-                },
-                onSaved: (value) =>
-                    _montoPrestamo = double.parse(value!.replaceAll(',', '')),
-              ),
-              const SizedBox(height: 16),
-              TextFormField(
-                decoration: const InputDecoration(
-                    labelText: 'Tasa de Interés Anual (%)'),
-                keyboardType: TextInputType.number,
-                validator: (value) {
-                  final v = double.tryParse(value ?? '');
-                  return (v == null || v < 0)
-                      ? 'Ingrese una tasa válida'
-                      : null;
-                },
-                onSaved: (value) => _tasaInteres = double.parse(value!),
-              ),
-              const SizedBox(height: 16),
-              TextFormField(
-                decoration: const InputDecoration(labelText: 'Plazo (meses)'),
-                keyboardType: TextInputType.number,
-                validator: (value) {
-                  final v = int.tryParse(value ?? '');
-                  return (v == null || v <= 0)
-                      ? 'Ingrese un plazo válido'
-                      : null;
-                },
-                onSaved: (value) => _plazoEnMeses = int.parse(value!),
-              ),
-              const SizedBox(height: 24),
-              ElevatedButton(
-                onPressed: _submitForm,
-                child: const Text('Calcular y Guardar'),
-              )
-            ],
+    return GestureDetector(
+      onTap: () => FocusScope.of(context).unfocus(),
+      child: Scaffold(
+        appBar: AppBar(title: const Text('Nuevo Financiamiento')),
+        body: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Form(
+            key: _formKey,
+            child: ListView(
+              children: [
+                TextFormField(
+                  decoration:
+                      const InputDecoration(labelText: 'Monto del préstamo'),
+                  inputFormatters: [ThousandsSeparatorInputFormatter()],
+                  keyboardType: TextInputType.number,
+                  validator: (value) {
+                    // Elimina tanto las comas como los puntos antes de hacer el parseo
+                    final v =
+                        double.tryParse(value!.replaceAll(RegExp(r'[,.]'), ''));
+                    return (v == null || v <= 0)
+                        ? 'Ingrese un monto válido'
+                        : null;
+                  },
+                  onSaved: (value) => _montoPrestamo =
+                      double.parse(value!.replaceAll(RegExp(r'[,.]'), '')),
+                ),
+                const SizedBox(height: 16),
+                TextFormField(
+                  decoration: const InputDecoration(
+                      labelText: 'Tasa de Interés Anual (%)'),
+                  keyboardType: TextInputType.number,
+                  validator: (value) {
+                    final v = double.tryParse(value ?? '');
+                    return (v == null || v < 0)
+                        ? 'Ingrese una tasa válida'
+                        : null;
+                  },
+                  onSaved: (value) => _tasaInteres = double.parse(value!),
+                ),
+                const SizedBox(height: 16),
+                TextFormField(
+                  decoration: const InputDecoration(labelText: 'Plazo (meses)'),
+                  keyboardType: TextInputType.number,
+                  validator: (value) {
+                    final v = int.tryParse(value ?? '');
+                    return (v == null || v <= 0)
+                        ? 'Ingrese un plazo válido'
+                        : null;
+                  },
+                  onSaved: (value) => _plazoEnMeses = int.parse(value!),
+                ),
+                const SizedBox(height: 24),
+                ElevatedButton(
+                  onPressed: _submitForm,
+                  child: const Text('Calcular y Guardar'),
+                )
+              ],
+            ),
           ),
         ),
       ),
@@ -113,10 +118,12 @@ class ThousandsSeparatorInputFormatter extends TextInputFormatter {
       TextEditingValue oldValue, TextEditingValue newValue) {
     final int selectionIndexFromTheRight =
         newValue.text.length - newValue.selection.end;
-    final number = int.tryParse(newValue.text.replaceAll(RegExp(r'[,.]'), ''));
+
+    final number = int.tryParse(newValue.text.replaceAll(RegExp(r'[.,]'), ''));
     if (number == null) return newValue;
 
-    final newString = NumberFormat.decimalPattern().format(number);
+    final newString = NumberFormat.decimalPattern('es_CO').format(number);
+
     return TextEditingValue(
       text: newString,
       selection: TextSelection.collapsed(

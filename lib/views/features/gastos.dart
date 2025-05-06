@@ -20,7 +20,9 @@ class _PantallaGastosState extends State<PantallaGastos> {
   final TextEditingController _nombreController = TextEditingController();
   final TextEditingController _descripcionController = TextEditingController();
   final TextEditingController _valorController = TextEditingController();
+  final GlobalKey<FormState> _formKey = GlobalKey<FormState>(); // FormKey
   DateTime _fechaSeleccionada = DateTime.now();
+
   @override
   void initState() {
     super.initState();
@@ -49,6 +51,7 @@ class _PantallaGastosState extends State<PantallaGastos> {
               itemCount: gastosProvider.gastos.length,
               itemBuilder: (context, index) {
                 final gasto = gastosProvider.gastos[index];
+                final nombreMes = obtenerNombreMes(gasto.fecha.month);
                 return Card(
                   margin: const EdgeInsets.all(8.0),
                   child: ListTile(
@@ -59,9 +62,8 @@ class _PantallaGastosState extends State<PantallaGastos> {
                       children: [
                         Text('Descripción: ${gasto.descripcion}'),
                         Text(
-                            'Fecha: ${DateFormat('dd/MM/yyyy').format(gasto.fecha)}'),
-                        Text(
-                            'Valor: ${NumberFormat.currency(symbol: '\$', decimalDigits: 0).format(gasto.valor)}'),
+                            'Fecha: ${gasto.fecha.day} de $nombreMes de ${gasto.fecha.year}'),
+                        Text('Valor: ${formatCurrency(gasto.valor)}'),
                       ],
                     ),
                     trailing: Row(
@@ -128,54 +130,81 @@ class _PantallaGastosState extends State<PantallaGastos> {
       builder: (context) {
         return AlertDialog(
           title: Text(gastoEditando == null ? 'Agregar Gasto' : 'Editar Gasto'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextField(
-                controller: _nombreController,
-                decoration: const InputDecoration(labelText: 'Nombre'),
-              ),
-              TextField(
-                controller: _descripcionController,
-                decoration: const InputDecoration(labelText: 'Descripción'),
-              ),
-              TextField(
-                controller: _valorController,
-                keyboardType: TextInputType.number,
-                decoration: const InputDecoration(labelText: 'Valor'),
-                inputFormatters: [ThousandsSeparatorInputFormatter()],
-              ),
-              GestureDetector(
-                onTap: () async {
-                  DateTime? fechaSeleccionada = await showDatePicker(
-                    context: context,
-                    initialDate: _fechaSeleccionada,
-                    firstDate: DateTime(2000),
-                    lastDate: DateTime(2100),
-                  );
-                  if (fechaSeleccionada != null) {
-                    setState(() => _fechaSeleccionada = fechaSeleccionada);
-                  }
-                },
-                child: Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Text(
-                      'Fecha: ${DateFormat('dd/MM/yyyy').format(_fechaSeleccionada)}'),
+          content: Form(
+            // Se envuelve el contenido en un Form
+            key: _formKey,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextFormField(
+                  controller: _nombreController,
+                  decoration: const InputDecoration(labelText: 'Nombre'),
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'El nombre es obligatorio';
+                    }
+                    return null;
+                  },
                 ),
-              ),
-            ],
+                TextFormField(
+                  controller: _descripcionController,
+                  decoration: const InputDecoration(labelText: 'Descripción'),
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'La descripción es obligatoria';
+                    }
+                    return null;
+                  },
+                ),
+                TextFormField(
+                  controller: _valorController,
+                  keyboardType: TextInputType.number,
+                  decoration: const InputDecoration(labelText: 'Valor'),
+                  inputFormatters: [ThousandsSeparatorInputFormatter()],
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'El valor es obligatorio';
+                    }
+
+                    final parsedValue =
+                        int.tryParse(value.replaceAll(RegExp(r'[,.]'), ''));
+                    if (parsedValue == null || parsedValue <= 0) {
+                      return 'Debe ser un número mayor a cero';
+                    }
+                    return null;
+                  },
+                ),
+                GestureDetector(
+                  onTap: () async {
+                    DateTime? fechaSeleccionada = await showDatePicker(
+                      context: context,
+                      initialDate: _fechaSeleccionada,
+                      firstDate: DateTime(2000),
+                      lastDate: DateTime(2100),
+                    );
+                    if (fechaSeleccionada != null) {
+                      setState(() => _fechaSeleccionada = fechaSeleccionada);
+                    }
+                  },
+                  child: Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Text(
+                        'Fecha: ${DateFormat('dd/MM/yyyy').format(_fechaSeleccionada)}'),
+                  ),
+                ),
+              ],
+            ),
           ),
           actions: [
             TextButton(
-                onPressed: () => Navigator.pop(context),
-                style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
-                child: const Text('Cancelar', style: TextStyle(color: Colors.white))),
+              onPressed: () => Navigator.pop(context),
+              style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
+              child:
+                  const Text('Cancelar', style: TextStyle(color: Colors.white)),
+            ),
             ElevatedButton(
               onPressed: () {
-                if (_nombreController.text.isNotEmpty &&
-                    _descripcionController.text.isNotEmpty &&
-                    _valorController.text.isNotEmpty &&
-                    userEmail != null) {
+                if (_formKey.currentState?.validate() ?? false) {
                   final nuevoGasto = Gasto(
                     id: gastoEditando?.id ??
                         DateTime.now().millisecondsSinceEpoch.toString(),
@@ -187,21 +216,49 @@ class _PantallaGastosState extends State<PantallaGastos> {
                   );
 
                   if (gastoEditando == null) {
-                    gastosProvider.agregarGasto(nuevoGasto, userEmail);
+                    gastosProvider.agregarGasto(nuevoGasto, userEmail!);
                   } else {
-                    gastosProvider.editarGasto(nuevoGasto, userEmail);
+                    gastosProvider.editarGasto(nuevoGasto, userEmail!);
                   }
 
                   Navigator.pop(context);
                 }
               },
               style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-              child: const Text('Guardar', style: TextStyle(color: Colors.white),),
+              child:
+                  const Text('Guardar', style: TextStyle(color: Colors.white)),
             ),
           ],
         );
       },
     );
+  }
+
+  String formatCurrency(num amount) {
+    final format =
+        NumberFormat.currency(locale: 'es_CO', symbol: '\$', decimalDigits: 0);
+    return format.format(amount);
+  }
+
+  String obtenerNombreMes(int numeroMes) {
+    const meses = [
+      'Enero',
+      'Febrero',
+      'Marzo',
+      'Abril',
+      'Mayo',
+      'Junio',
+      'Julio',
+      'Agosto',
+      'Septiembre',
+      'Octubre',
+      'Noviembre',
+      'Diciembre'
+    ];
+
+    return (numeroMes >= 1 && numeroMes <= 12)
+        ? meses[numeroMes - 1]
+        : 'Mes inválido';
   }
 }
 
@@ -211,10 +268,12 @@ class ThousandsSeparatorInputFormatter extends TextInputFormatter {
       TextEditingValue oldValue, TextEditingValue newValue) {
     final int selectionIndexFromTheRight =
         newValue.text.length - newValue.selection.end;
-    final number = int.tryParse(newValue.text.replaceAll(RegExp(r'[,.]'), ''));
+
+    final number = int.tryParse(newValue.text.replaceAll(RegExp(r'[.,]'), ''));
     if (number == null) return newValue;
 
-    final newString = NumberFormat.decimalPattern().format(number);
+    final newString = NumberFormat.decimalPattern('es_CO').format(number);
+
     return TextEditingValue(
       text: newString,
       selection: TextSelection.collapsed(

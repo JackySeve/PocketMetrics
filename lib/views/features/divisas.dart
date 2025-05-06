@@ -13,22 +13,18 @@ class ThousandsSeparatorInputFormatter extends TextInputFormatter {
   @override
   TextEditingValue formatEditUpdate(
       TextEditingValue oldValue, TextEditingValue newValue) {
-    if (newValue.text.isEmpty) {
-      return newValue.copyWith(text: '');
-    }
+    final int selectionIndexFromTheRight =
+        newValue.text.length - newValue.selection.end;
 
-    final int selectionIndex =
-        newValue.text.length - newValue.selection.extentOffset;
-    final String newString =
-        newValue.text.replaceAll(',', '').replaceAll('.', '');
-    final String formattedString =
-        NumberFormat.decimalPattern('es_CO').format(int.parse(newString));
+    final number = int.tryParse(newValue.text.replaceAll(RegExp(r'[.,]'), ''));
+    if (number == null) return newValue;
+
+    final newString = NumberFormat.decimalPattern('es_CO').format(number);
 
     return TextEditingValue(
-      text: formattedString,
+      text: newString,
       selection: TextSelection.collapsed(
-        offset: formattedString.length - selectionIndex,
-      ),
+          offset: newString.length - selectionIndexFromTheRight),
     );
   }
 }
@@ -122,9 +118,7 @@ class _DivisasState extends State<Divisas> {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: () {
-        FocusManager.instance.primaryFocus?.unfocus();
-      },
+      onTap: () => FocusScope.of(context).unfocus(),
       child: Scaffold(
         appBar: AppBar(title: const Text('Conversor de Divisas')),
         drawer: MenuDesplegable(
@@ -192,7 +186,7 @@ class _DivisasState extends State<Divisas> {
           _valorIngresado = double.tryParse(
                   _valorController.text.replaceAll(RegExp(r'[,.]'), '')) ??
               0;
-          _resetConversion(); // Reiniciar conversión cuando el valor cambie
+          _resetConversion();
         });
       },
     );

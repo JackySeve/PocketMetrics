@@ -95,7 +95,7 @@ class _FinanciamientoScreenState extends State<FinanciamientoScreen> {
                   margin:
                       const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                   child: ListTile(
-                    title: Text('Monto: \$${formatCurrency(f.montoPrestamo)}'),
+                    title: Text('Monto: ${formatCurrency(f.montoPrestamo)}'),
                     subtitle: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -127,8 +127,9 @@ class _FinanciamientoScreenState extends State<FinanciamientoScreen> {
     );
   }
 
-  String formatCurrency(double value) {
-    final formatter = NumberFormat.currency(symbol: '\$', decimalDigits: 0);
-    return formatter.format(value);
+  String formatCurrency(num amount) {
+    final format =
+        NumberFormat.currency(locale: 'es_CO', symbol: '\$', decimalDigits: 0);
+    return format.format(amount);
   }
 }
