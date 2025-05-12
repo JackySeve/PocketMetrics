@@ -150,6 +150,7 @@ class _PantallaPrincipalState extends State<PantallaPrincipal> {
             },
           ),
         ),
+        const SizedBox(height: 70),
       ],
     );
   }

@@ -106,7 +106,7 @@ class _RegistroUsuarioState extends State<RegistroUsuario> {
                             return 'Ingrese su correo';
                           }
                           String pattern =
-                              r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}\$';
+                              r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$';
                           if (!RegExp(pattern).hasMatch(value)) {
                             return 'Formato de correo inválido';
                           }

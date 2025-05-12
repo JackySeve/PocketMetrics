@@ -39,13 +39,23 @@ class _MenuDesplegableState extends State<MenuDesplegable> {
 
   // Define rangos según nivel
   final List<Map<String, dynamic>> _rankThresholds = [
-    {'name': 'Principiante', 'minLevel': 0, 'maxLevel': 4},
-    {'name': 'Aprendiz', 'minLevel': 5, 'maxLevel': 9},
-    {'name': 'Intermedio', 'minLevel': 10, 'maxLevel': 14},
-    {'name': 'Avanzado', 'minLevel': 15, 'maxLevel': 19},
-    {'name': 'Experto', 'minLevel': 20, 'maxLevel': 29},
-    {'name': 'Maestro', 'minLevel': 30, 'maxLevel': 49},
-    {'name': 'Leyenda', 'minLevel': 50, 'maxLevel': 9999},
+    {'name': 'Ahorrador Novato', 'minLevel': 0, 'maxLevel': 4},
+    {'name': 'Ahorrador en Práctica', 'minLevel': 5, 'maxLevel': 9},
+    {'name': 'Ahorrador Constante', 'minLevel': 10, 'maxLevel': 14},
+    {'name': 'Estratega Financiero', 'minLevel': 15, 'maxLevel': 19},
+    {'name': 'Inversionista en Crecimiento', 'minLevel': 20, 'maxLevel': 29},
+    {'name': 'Maestro del Ahorro', 'minLevel': 30, 'maxLevel': 49},
+    {'name': 'Leyenda Financiera', 'minLevel': 50, 'maxLevel': 99},
+    {'name': 'Ícono del Ahorro', 'minLevel': 100, 'maxLevel': 149},
+    {'name': 'Sabio Inversionista', 'minLevel': 150, 'maxLevel': 199},
+    {'name': 'Arquitecto Financiero', 'minLevel': 200, 'maxLevel': 249},
+    {'name': 'Magnate del Ahorro', 'minLevel': 250, 'maxLevel': 299},
+    {'name': 'Mente Maestra Financiera', 'minLevel': 300, 'maxLevel': 349},
+    {'name': 'Titán de las Finanzas', 'minLevel': 350, 'maxLevel': 399},
+    {'name': 'Oráculo Económico', 'minLevel': 400, 'maxLevel': 449},
+    {'name': 'Leyenda Inmortal del Ahorro', 'minLevel': 450, 'maxLevel': 499},
+    {'name': 'Divinidad Financiera', 'minLevel': 500, 'maxLevel': 999},
+    {'name': 'Entidad Suprema del Ahorro', 'minLevel': 1000, 'maxLevel': 9999},
   ];
 
   @override

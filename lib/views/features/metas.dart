@@ -241,8 +241,8 @@ class _MetasState extends State<Metas> {
                                                       DateTime.now()) &&
                                                   meta.valorAhorrado <
                                                       meta.valorObjetivo
-                                              ? Colors.black
-                                              : Colors.red,
+                                              ? Colors.red
+                                              : Colors.black,
                                     ),
                                   ),
                                 ),
@@ -290,10 +290,11 @@ class _MetasState extends State<Metas> {
                                 'Valor Objetivo: ${formatCurrency(meta.valorObjetivo)}'),
                             Text(
                                 'Valor Ahorrado: ${formatCurrency(meta.valorAhorrado)}'),
-                            Text('Detalle: ${meta.detalle}'),
+                            Text(
+                                'Detalle: ${meta.detalle.trim().isEmpty ? 'Sin detalle' : meta.detalle}'),
                             Text('Categoría: ${meta.categoria.name}'),
                             Text(
-                                'Fecha Límite: ${_fechaLimite.day} de ${obtenerNombreMes(_fechaLimite.month)} de ${_fechaLimite.year}'),
+                                'Fecha Límite: ${meta.fechaLimite.day} de ${obtenerNombreMes(meta.fechaLimite.month)} de ${meta.fechaLimite.year}'),
                             const SizedBox(height: 8),
                             LinearProgressIndicator(
                               value: meta.valorAhorrado / meta.valorObjetivo,
@@ -610,8 +611,16 @@ class _MetasState extends State<Metas> {
                   final alcanciaProvider =
                       Provider.of<AlcanciaProvider>(context, listen: false);
 
-                  meta.valorAhorrado = _valorObjetivo;
-                  onValorActualizado(_valorObjetivo);
+                  bool ajustado = false;
+                  final nuevoValor = _valorObjetivo > meta.valorObjetivo
+                      ? () {
+                          ajustado = true;
+                          return meta.valorObjetivo;
+                        }()
+                      : _valorObjetivo;
+
+                  meta.valorAhorrado = nuevoValor;
+                  onValorActualizado(nuevoValor);
 
                   if (userEmail != null) {
                     alcanciaProvider.guardarMetasEnFirebase(
@@ -625,6 +634,16 @@ class _MetasState extends State<Metas> {
                       SnackBar(
                           content:
                               Text('¡Meta cumplida! Ganaste $xpReward XP')),
+                    );
+                  }
+
+                  if (ajustado) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text(
+                          'El valor ingresado excede el objetivo, se ajustó automáticamente.',
+                        ),
+                      ),
                     );
                   }
 
